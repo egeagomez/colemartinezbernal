@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🧭 La Rosa de los Vientos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:28px; min-height:100vh;
+      background:linear-gradient(180deg,#001a0a 0%,#0a2510 100%) fixed;
+    }
+
+    /* ── Top bar ─────────────────────────────────────── */
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:600px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#1b5e20; color:#FFD700; border:2px solid #4CAF50;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#4CAF50; color:#fff; }
+    .score-box {
+      background:#0a2510; color:#FFD700; border:2px solid #4CAF50;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+
+    /* ── HUD ─────────────────────────────────────────── */
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:3px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#1b5e20,#388E3C);
+      color:#FFD700; padding:4px 16px; border-radius:20px; font-size:.95rem;
+      border:1px solid #4CAF50;
+    }
+    .lives { font-size:1.35rem; letter-spacing:3px; }
+    .wave-info { color:#a5d6a7; font-size:.9rem; font-family:'Patrick Hand',cursive; }
+
+    /* ── Compass scene ───────────────────────────────── */
+    .compass-wrap {
+      position:relative;
+      width:520px; height:440px;
+    }
+    .compass-scene {
+      position:absolute; inset:0;
+      background:url('fondorosavientos.jpg') center/cover no-repeat;
+      border-radius:20px;
+      border:3px solid #4CAF50;
+      box-shadow:0 0 36px rgba(0,200,60,.35);
+      overflow:hidden;
+    }
+    .scene-tint {
+      position:absolute; inset:0;
+      background:rgba(0,10,0,.22); border-radius:17px;
+    }
+
+    /* ── Direction labels ────────────────────────────── */
+    .dir-label {
+      position:absolute; font-family:'Patrick Hand',cursive;
+      font-size:1.5rem; font-weight:bold; letter-spacing:1px;
+      pointer-events:none; z-index:4;
+      text-shadow:0 0 10px #000, 0 0 20px #000;
+    }
+    .dir-n { top:6px;        left:50%; transform:translateX(-50%); color:#42a5f5; }
+    .dir-s { bottom:6px;     left:50%; transform:translateX(-50%); color:#ef9a9a; }
+    .dir-e { right:10px;     top:50%;  transform:translateY(-50%); color:#ffe082; }
+    .dir-o { left:10px;      top:50%;  transform:translateY(-50%); color:#ce93d8; }
+
+    /* ── Objects at cardinal directions ─────────────── */
+    .obj-item {
+      position:absolute; z-index:6; width:54px; height:54px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2.2rem; border-radius:50%;
+      background:rgba(0,20,0,.7); border:2px solid rgba(76,175,80,.4);
+      transition:transform .25s, opacity .25s, box-shadow .25s;
+      cursor:default; user-select:none;
+    }
+    .obj-item.hidden-item { opacity:0; pointer-events:none; }
+    .obj-item.active {
+      border-color:#FFD700;
+      box-shadow:0 0 18px rgba(255,215,0,.9), 0 0 40px rgba(255,215,0,.45);
+      animation:objPulse 1s ease-in-out infinite alternate;
+    }
+    .obj-item.collected {
+      animation:objCollect .45s ease forwards;
+    }
+    @keyframes objPulse {
+      from { transform:scale(1);    box-shadow:0 0 14px rgba(255,215,0,.7); }
+      to   { transform:scale(1.18); box-shadow:0 0 36px rgba(255,215,0,1), 0 0 60px rgba(255,200,0,.5); }
+    }
+    @keyframes objCollect {
+      0%   { transform:scale(1);    opacity:1; }
+      50%  { transform:scale(2.0);  opacity:.7; }
+      100% { transform:scale(0);    opacity:0; }
+    }
+
+    /* ── Harry ───────────────────────────────────────── */
+    .harry-center {
+      position:absolute;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      font-size:2.8rem; z-index:8;
+      filter:drop-shadow(0 0 14px #FFD700) drop-shadow(0 0 6px #4CAF50);
+      transition:left .45s cubic-bezier(.4,0,.2,1), top .45s cubic-bezier(.4,0,.2,1),
+                 transform .45s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Flash ───────────────────────────────────────── */
+    .flash {
+      position:absolute; inset:0; border-radius:17px;
+      pointer-events:none; opacity:0; transition:opacity .12s; z-index:20;
+    }
+    .flash.green { background:rgba(76,175,80,.30); opacity:1; }
+    .flash.red   { background:rgba(244,67,54,.30); opacity:1; }
+
+    /* ── Overlay ─────────────────────────────────────── */
+    .overlay {
+      position:absolute; inset:0; display:none;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:14px;
+      background:rgba(0,10,0,.88); border-radius:17px;
+      font-family:'Patrick Hand',cursive; color:#FFD700;
+      text-align:center; padding:24px; z-index:25;
+    }
+    .overlay.show { display:flex; }
+    .overlay h2  { font-size:1.85rem; margin:0; text-shadow:0 0 16px #FFD700; }
+    .overlay p   { font-size:.98rem; color:#a5d6a7; margin:0; }
+    .btn-play {
+      background:linear-gradient(135deg,#1b5e20,#388E3C);
+      color:#FFD700; border:2px solid #FFD700; border-radius:20px;
+      padding:10px 32px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+    }
+    .btn-play:hover { background:#4CAF50; color:#fff; }
+
+    /* ── Question card ───────────────────────────────── */
+    .question-card {
+      width:100%; max-width:520px;
+      background:linear-gradient(135deg,#0a2510,#1b3a1b);
+      border:2px solid #4CAF50; border-radius:16px;
+      padding:12px 24px 10px; margin-top:12px;
+      text-align:center; font-family:'Patrick Hand',cursive;
+    }
+    .q-label    { font-size:.88rem; color:#a5d6a7; margin-bottom:2px; }
+    .q-text     {
+      font-size:1.55rem; color:#FFD700; font-weight:bold;
+      text-shadow:0 0 12px rgba(255,215,0,.5);
+      min-height:2.2rem; transition:opacity .15s;
+    }
+    .q-feedback {
+      min-height:1.6rem; font-size:1.05rem; margin-top:4px; transition:opacity .15s;
+    }
+    .q-feedback.correct { color:#69f0ae; }
+    .q-feedback.wrong   { color:#ff5252; }
+
+    /* ── Direction cross buttons ─────────────────────── */
+    .dir-cross {
+      display:grid;
+      grid-template-columns:110px 110px 110px;
+      grid-template-rows:60px 60px;
+      gap:8px; margin-top:12px;
+    }
+    .dir-btn {
+      font-family:'Patrick Hand',cursive; font-size:1.25rem; font-weight:bold;
+      border-radius:16px; cursor:pointer; border:3px solid;
+      transition:transform .1s, box-shadow .15s;
+      display:flex; align-items:center; justify-content:center; gap:5px;
+    }
+    .dir-btn:disabled { opacity:.35; cursor:default; transform:none !important; }
+
+    /* N = blue, S = red, E = yellow, O = purple */
+    .btn-n { background:linear-gradient(135deg,#0d47a1,#1565c0); color:#fff; border-color:#42a5f5;
+             grid-column:2; grid-row:1; box-shadow:0 0 10px rgba(66,165,245,.4); }
+    .btn-s { background:linear-gradient(135deg,#b71c1c,#c62828); color:#fff; border-color:#ef9a9a;
+             grid-column:2; grid-row:2; box-shadow:0 0 10px rgba(244,67,54,.4); }
+    .btn-e { background:linear-gradient(135deg,#e65100,#f57c00); color:#fff; border-color:#ffe082;
+             grid-column:3; grid-row:1; box-shadow:0 0 10px rgba(255,152,0,.4); }
+    .btn-o { background:linear-gradient(135deg,#4a148c,#6a1b9a); color:#FFD700; border-color:#ce93d8;
+             grid-column:1; grid-row:1; box-shadow:0 0 10px rgba(200,0,255,.4); }
+    .dir-btn:hover:not(:disabled) {
+      transform:scale(1.08); filter:brightness(1.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-btn" href="../index.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">🧭 La Rosa de los Vientos</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="lives"       id="livesDisp">❤️❤️❤️</div>
+    <div class="wave-info"   id="waveInfo"></div>
+  </div>
+
+  <!-- ── Compass scene ───────────────────────────────── -->
+  <div class="compass-wrap">
+    <div class="compass-scene" id="compassScene">
+      <div class="scene-tint"></div>
+      <div class="flash" id="flash"></div>
+
+      <!-- Direction labels -->
+      <div class="dir-label dir-n">N</div>
+      <div class="dir-label dir-s">S</div>
+      <div class="dir-label dir-e">E</div>
+      <div class="dir-label dir-o">O</div>
+
+      <!-- Objects (4 cardinal positions, filled by JS) -->
+      <div class="obj-item hidden-item" id="objN" style="left:233px; top:22px;"></div>
+      <div class="obj-item hidden-item" id="objS" style="left:233px; bottom:22px;"></div>
+      <div class="obj-item hidden-item" id="objE" style="right:22px; top:193px;"></div>
+      <div class="obj-item hidden-item" id="objO" style="left:22px;  top:193px;"></div>
+
+      <!-- Harry -->
+      <div class="harry-center" id="harry">🧙‍♂️</div>
+
+      <!-- Overlays -->
+      <div class="overlay show" id="readyOverlay">
+        <h2>🧭 La Rosa de los Vientos</h2>
+        <p>¡Ayuda a Harry a recoger todos los objetos mágicos<br>
+           indicando en qué dirección están!</p>
+        <div style="font-size:1.7rem;letter-spacing:8px;margin:4px 0">⬆️ ⬇️ ⬅️ ➡️</div>
+        <p style="font-size:.88rem; color:#ffe082">
+          <b style="color:#42a5f5">N</b>=Norte &nbsp;
+          <b style="color:#ef9a9a">S</b>=Sur &nbsp;
+          <b style="color:#ffe082">E</b>=Este &nbsp;
+          <b style="color:#ce93d8">O</b>=Oeste
+        </p>
+        <button class="btn-play" onclick="startGame()">▶ ¡Comenzar!</button>
+      </div>
+
+      <div class="overlay" id="waveWinOverlay">
+        <h2 id="waveWinTitle">✨ ¡Todos recogidos!</h2>
+        <p id="waveWinMsg"></p>
+        <button class="btn-play" onclick="nextWave()">🔮 ¡Siguiente ronda!</button>
+      </div>
+
+      <div class="overlay" id="levelUpOverlay">
+        <h2 id="levelUpTitle">⚡ ¡Nivel superado!</h2>
+        <p id="levelUpMsg"></p>
+        <button class="btn-play" onclick="nextLevel()">🌟 ¡Siguiente nivel!</button>
+        <a class="back-btn" href="../index.html" style="margin-top:2px">← Inicio</a>
+      </div>
+
+      <div class="overlay" id="winOverlay">
+        <h2>🏆 ¡Brujo Experto!</h2>
+        <p id="winMsg"></p>
+        <button class="btn-play" onclick="restartGame()">🔄 Jugar de nuevo</button>
+        <a class="back-btn" href="../index.html" style="margin-top:2px">← Inicio</a>
+      </div>
+
+      <div class="overlay" id="gameOverOverlay">
+        <h2>💔 ¡Los objetos se perdieron!</h2>
+        <p>Se te acabaron las vidas…<br>¡Vuelve a intentarlo!</p>
+        <button class="btn-play" onclick="restartLevel()">🔄 Intentar de nuevo</button>
+        <a class="back-btn" href="../index.html" style="margin-top:2px">← Inicio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Question card ───────────────────────────────── -->
+  <div class="question-card">
+    <div class="q-label">¿En qué dirección está el objeto?</div>
+    <div class="q-text" id="qText">–</div>
+    <div class="q-feedback" id="qFeedback"></div>
+  </div>
+
+  <!-- ── Direction cross buttons ─────────────────────── -->
+  <div class="dir-cross">
+    <button class="dir-btn btn-o" id="btnO" onclick="guess('O')" disabled>⬅️ Oeste</button>
+    <button class="dir-btn btn-n" id="btnN" onclick="guess('N')" disabled>⬆️ Norte</button>
+    <button class="dir-btn btn-e" id="btnE" onclick="guess('E')" disabled>Este ➡️</button>
+    <!-- Sur spans beneath Norte -->
+    <button class="dir-btn btn-s" id="btnS" onclick="guess('S')" disabled>⬇️ Sur</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ── Levels ────────────────────────────────────────
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      wavesNeeded:3 },
+    { name:'⚡ Mago',          wavesNeeded:4 },
+    { name:'🌟 Archimago',     wavesNeeded:5 },
+    { name:'🧙 Brujo Experto', wavesNeeded:6 },
+  ];
+
+  // ── Object pool ───────────────────────────────────
+  const OBJECTS = [
+    { icon:'🔮', name:'la bola mágica' },
+    { icon:'🧪', name:'la poción' },
+    { icon:'📜', name:'el pergamino' },
+    { icon:'🪄', name:'la varita' },
+    { icon:'🦉', name:'el búho' },
+    { icon:'🧹', name:'la escoba' },
+    { icon:'⚗️', name:'el caldero' },
+    { icon:'🎩', name:'el sombrero' },
+    { icon:'🌟', name:'la estrella' },
+    { icon:'💎', name:'la gema' },
+    { icon:'🗝️', name:'la llave' },
+    { icon:'📚', name:'el libro' },
+    { icon:'🍎', name:'la manzana' },
+    { icon:'🕯️', name:'la vela' },
+    { icon:'🐸', name:'la rana' },
+    { icon:'🦋', name:'la mariposa' },
+  ];
+
+  // ── Harry move targets (px from scene top-left) ──
+  // Harry element uses CSS left/top absolute (overrides the transform centering)
+  const SCENE_W = 520, SCENE_H = 440;
+  const HARRY_SZ = 50; // approx rendered size
+  const HARRY_CENTER = { l: (SCENE_W/2 - HARRY_SZ/2), t: (SCENE_H/2 - HARRY_SZ/2) };
+  const HARRY_TARGETS = {
+    N: { l: SCENE_W/2 - HARRY_SZ/2, t: 40 },
+    S: { l: SCENE_W/2 - HARRY_SZ/2, t: SCENE_H - 90 },
+    E: { l: SCENE_W - 90,            t: SCENE_H/2 - HARRY_SZ/2 },
+    O: { l: 28,                      t: SCENE_H/2 - HARRY_SZ/2 },
+  };
+
+  // ── State ─────────────────────────────────────────
+  let levelIdx  = parseInt(sessionStorage.getItem('mat8_level') || '0');
+  if (levelIdx >= LEVELS.length) levelIdx = LEVELS.length - 1;
+
+  let lives      = 3;
+  let score      = 0;
+  let waveCount  = 0;      // waves completed this level
+  let locked     = false;
+
+  // Per-wave
+  let waveObjs   = {};     // { N: objData, S: ..., E: ..., O: ... }
+  let waveQueue  = [];     // order in which to ask cardinal directions
+  let waveIdx    = 0;      // current question index within wave
+  let activeDir  = '';     // 'N'|'S'|'E'|'O'
+
+  // ── DOM ───────────────────────────────────────────
+  const $        = id => document.getElementById(id);
+  const harryEl  = $('harry');
+  const flashEl  = $('flash');
+  const qTextEl  = $('qText');
+  const qFbEl    = $('qFeedback');
+  const DIRS     = ['N','S','E','O'];
+
+  // ── Utils ─────────────────────────────────────────
+  function shuffle(arr) {
+    for (let i=arr.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+  function pickN(arr, n) { return shuffle([...arr]).slice(0, n); }
+
+  // ── HUD ───────────────────────────────────────────
+  function updateHUD() {
+    $('levelBadge').textContent = LEVELS[levelIdx].name;
+    $('livesDisp').textContent  = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3-lives));
+    const total = LEVELS[levelIdx].wavesNeeded;
+    $('waveInfo').textContent   = `Ronda ${Math.min(waveCount+1, total)} / ${total}`;
+  }
+
+  // ── Buttons ───────────────────────────────────────
+  function setBtns(enabled) {
+    ['N','S','E','O'].forEach(d => $('btn'+d).disabled = !enabled);
+  }
+
+  // ── Harry movement ────────────────────────────────
+  function harryTo(dir, cb) {
+    const pos = dir === 'CENTER' ? HARRY_CENTER : HARRY_TARGETS[dir];
+    // Switch from transform-centering to absolute positioning
+    harryEl.style.transform = 'none';
+    harryEl.style.left      = pos.l + 'px';
+    harryEl.style.top       = pos.t + 'px';
+    if (cb) setTimeout(cb, 480);
+  }
+
+  // ── Flash ─────────────────────────────────────────
+  function flashScene(cls) {
+    flashEl.className = 'flash ' + cls;
+    setTimeout(() => { flashEl.className = 'flash'; }, 280);
+  }
+
+  // ── Build wave ────────────────────────────────────
+  function buildWave() {
+    waveObjs  = {};
+    waveQueue = shuffle([...DIRS]);
+    waveIdx   = 0;
+
+    // Pick 4 unique objects from pool
+    const chosen = pickN(OBJECTS, 4);
+    DIRS.forEach((d, i) => {
+      waveObjs[d] = chosen[i];
+      const el = $('obj'+d);
+      el.textContent = chosen[i].icon;
+      el.className   = 'obj-item';   // visible, not active, not collected
+    });
+
+    showNextQuestion();
+  }
+
+  // ── Show next question in wave ────────────────────
+  function showNextQuestion() {
+    if (waveIdx >= waveQueue.length) {
+      // All collected!
+      waveCount++;
+      setBtns(false);
+      qTextEl.textContent   = '✨';
+      qFbEl.className       = 'q-feedback';
+      qFbEl.textContent     = '';
+      setTimeout(checkLevelWin, 500);
+      return;
+    }
+
+    activeDir = waveQueue[waveIdx];
+    const obj = waveObjs[activeDir];
+
+    // Deactivate all, activate current
+    DIRS.forEach(d => {
+      const el = $('obj'+d);
+      el.classList.remove('active');
+    });
+    $('obj'+activeDir).classList.add('active');
+
+    qTextEl.textContent  = `¿Dónde está ${obj.icon} ${obj.name}?`;
+    qFbEl.className      = 'q-feedback';
+    qFbEl.textContent    = '';
+    setBtns(true);
+    locked = false;
+  }
+
+  // ── Guess ─────────────────────────────────────────
+  function guess(dir) {
+    if (locked) return;
+    locked = true;
+    setBtns(false);
+
+    if (dir === activeDir) {
+      // ✅ Correct
+      flashScene('green');
+      qFbEl.className   = 'q-feedback correct';
+      qFbEl.textContent = `✅ ¡Correcto! Está al ${dirName(activeDir)}`;
+      score += 10 * (levelIdx + 1);
+      $('scoreDisp').textContent = score;
+
+      // Harry moves there, then collects, then returns
+      harryTo(activeDir, () => {
+        $('obj'+activeDir).classList.add('collected');
+        setTimeout(() => {
+          harryTo('CENTER', () => {
+            waveIdx++;
+            showNextQuestion();
+          });
+        }, 200);
+      });
+
+    } else {
+      // ❌ Wrong
+      flashScene('red');
+      qFbEl.className   = 'q-feedback wrong';
+      qFbEl.textContent = `❌ No… está al ${dirName(activeDir)}, no al ${dirName(dir)}`;
+      lives--;
+      updateHUD();
+      if (lives <= 0) {
+        setTimeout(showGameOver, 900);
+      } else {
+        // Allow retry of same question
+        setTimeout(() => {
+          qFbEl.className  = 'q-feedback';
+          qFbEl.textContent = '';
+          setBtns(true);
+          locked = false;
+        }, 1400);
+      }
+    }
+  }
+
+  function dirName(d) {
+    return { N:'Norte', S:'Sur', E:'Este', O:'Oeste' }[d];
+  }
+
+  // ── Check if level won ─────────────────────────────
+  function checkLevelWin() {
+    const needed = LEVELS[levelIdx].wavesNeeded;
+    if (waveCount >= needed) {
+      if (levelIdx >= LEVELS.length - 1) {
+        showFinalWin();
+      } else {
+        $('levelUpTitle').textContent = `⚡ ¡Nivel ${LEVELS[levelIdx].name} superado!`;
+        $('levelUpMsg').textContent   = `Has recogido todos los objetos mágicos. Siguiente: ${LEVELS[levelIdx+1].name}`;
+        $('levelUpOverlay').classList.add('show');
+      }
+    } else {
+      const left = needed - waveCount;
+      $('waveWinTitle').textContent = '✨ ¡Ronda superada!';
+      $('waveWinMsg').textContent   = `¡Genial! Quedan ${left} ronda${left>1?'s':''} para el siguiente nivel.`;
+      $('waveWinOverlay').classList.add('show');
+    }
+  }
+
+  // ── Transitions ───────────────────────────────────
+  function nextWave() {
+    $('waveWinOverlay').classList.remove('show');
+    updateHUD();
+    harryTo('CENTER', null);
+    buildWave();
+  }
+
+  function nextLevel() {
+    levelIdx++;
+    sessionStorage.setItem('mat8_level', levelIdx);
+    $('levelUpOverlay').classList.remove('show');
+    waveCount = 0;
+    lives     = 3;
+    updateHUD();
+    harryTo('CENTER', null);
+    buildWave();
+  }
+
+  function showFinalWin() {
+    $('winMsg').textContent = `¡Eres un Brujo Experto de la orientación! Puntuación: ${score} ⭐`;
+    $('winOverlay').classList.add('show');
+  }
+
+  function showGameOver() {
+    setBtns(false);
+    $('gameOverOverlay').classList.add('show');
+  }
+
+  function restartLevel() {
+    $('gameOverOverlay').classList.remove('show');
+    lives     = 3;
+    waveCount = 0;
+    updateHUD();
+    harryTo('CENTER', null);
+    buildWave();
+  }
+
+  function restartGame() {
+    $('winOverlay').classList.remove('show');
+    levelIdx  = 0;
+    lives     = 3;
+    score     = 0;
+    waveCount = 0;
+    sessionStorage.setItem('mat8_level', 0);
+    $('scoreDisp').textContent = 0;
+    updateHUD();
+    harryTo('CENTER', null);
+    buildWave();
+  }
+
+  // ── Start ─────────────────────────────────────────
+  function startGame() {
+    $('readyOverlay').classList.remove('show');
+    updateHUD();
+    buildWave();
+  }
+
+  // ── Init ──────────────────────────────────────────
+  // Set Harry to center using absolute coords
+  harryEl.style.transform = 'none';
+  harryEl.style.left      = HARRY_CENTER.l + 'px';
+  harryEl.style.top       = HARRY_CENTER.t + 'px';
+  updateHUD();
+  </script>
+</body>
+</html>
