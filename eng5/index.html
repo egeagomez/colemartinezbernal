@@ -109,16 +109,24 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 
 <!-- ═══ PHASE 2: LABEL ═══ -->
 <div class="phase" id="phase2">
-  <p class="ph-title">Look at the picture. Drag the word to the right number!</p>
-  <div class="label-wrap">
-    <div class="pic-panel" id="picPanel">
-      <img src="label objets.jpg" alt="objects" id="picImg">
-    </div>
-    <div class="label-row" id="labelRow"></div>
-    <div class="word-bank" id="wb2"></div>
+  <!-- sub A: items 1-5 -->
+  <div id="sp5a">
+    <p class="ph-title">Step 1 / 2 &nbsp;🏷️ Drag the word to the right number!</p>
+    <img src="label objets.jpg" alt="" style="width:100%;max-width:400px;border-radius:10px;border:2px solid #2979ff;opacity:.6;margin-bottom:8px">
+    <div class="label-row" id="labelRowA"></div>
+    <div class="word-bank" id="wb2a"></div>
+    <div class="fb" id="fb5a"></div>
+    <button class="btn-next" id="btnP5A" onclick="nextSubP5()" disabled>✅ Next →</button>
   </div>
-  <div class="fb" id="fb2"></div>
-  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Spell</button>
+  <!-- sub B: items 6-10 -->
+  <div id="sp5b" style="display:none">
+    <p class="ph-title">Step 2 / 2 &nbsp;🏷️ Almost there — last 5 labels!</p>
+    <img src="label objets.jpg" alt="" style="width:100%;max-width:400px;border-radius:10px;border:2px solid #2979ff;opacity:.6;margin-bottom:8px">
+    <div class="label-row" id="labelRowB"></div>
+    <div class="word-bank" id="wb2b"></div>
+    <div class="fb" id="fb5b"></div>
+    <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Spell</button>
+  </div>
 </div>
 
 <!-- ═══ PHASE 3: SCRAMBLE ═══ -->
@@ -199,53 +207,46 @@ function drawLine(a,b,col){
 buildP1();
 
 /* ══ P2 LABEL ══ */
-// place numbered badges at approximate positions (% based) for a generic room image
-const LABEL_POS=[
-  {pct:[15,20]},{pct:[45,15]},{pct:[75,20]},
-  {pct:[20,55]},{pct:[50,50]},{pct:[80,55]},
-  {pct:[10,80]},{pct:[40,78]},{pct:[65,80]},{pct:[85,82]},
-];
-let p2Built=false,filled2=0;
-const P2_ITEMS=shuffle([...OBJECTS]);
+let p2Built=false,filledA=0,filledB=0;
+const P2_FIXED=[...OBJECTS]; // fixed order, no shuffle, so numbers stay consistent
 function buildP2(){
   if(p2Built)return;p2Built=true;
-  const img=$('picImg');
-  // add number badges after image loads
-  function addBadges(){
-    const pp=$('picPanel');
-    const w=img.offsetWidth,h=img.offsetHeight;
-    P2_ITEMS.forEach((o,i)=>{
-      const badge=document.createElement('div');badge.className='num-badge';badge.textContent=i+1;
-      badge.style.left=Math.round(LABEL_POS[i].pct[0]/100*w-15)+'px';
-      badge.style.top=Math.round(LABEL_POS[i].pct[1]/100*h-15)+'px';
-      pp.appendChild(badge);
-    });
+  const groupA=P2_FIXED.slice(0,5), groupB=P2_FIXED.slice(5,10);
+  function makeRows(arr,offset,rowId,wbId){
+    $(rowId).innerHTML=arr.map((o,i)=>{
+      const n=offset+i+1,idx=offset+i;
+      return `<div class="lbl-slot">
+        <div class="lbl-num">${n}</div>
+        <span style="font-size:1.4rem">${o.emoji}</span>
+        <div class="drop-zone" id="lz${idx}" data-i="${idx}" data-word="${o.word}" data-grp="${offset===0?'A':'B'}"
+          ondragover="lo(event)" ondrop="ld(event)" ondragenter="le(event)" ondragleave="ll(event)">___</div>
+      </div>`;
+    }).join('');
+    $(wbId).innerHTML=shuffle(arr.map((o,i)=>({o,i:offset+i}))).map(({o,i})=>
+      `<div class="drag-word" id="ldw${i}" draggable="true" data-i="${i}"
+        ondragstart="ls(event)" ontouchstart="lt2S(event)" ontouchmove="lt2M(event)" ontouchend="lt2E(event)">
+        ${o.emoji} ${o.word}</div>`).join('');
   }
-  if(img.complete)addBadges();else img.onload=addBadges;
-  $('labelRow').innerHTML=P2_ITEMS.map((o,i)=>`
-    <div class="lbl-slot">
-      <div class="lbl-num">${i+1}</div>
-      <div class="drop-zone" id="lz${i}" data-i="${i}" data-word="${o.word}"
-        ondragover="lo(event)" ondrop="ld(event)" ondragenter="le(event)" ondragleave="ll(event)">___</div>
-    </div>`).join('');
-  $('wb2').innerHTML=shuffle(P2_ITEMS.map((o,i)=>({o,i}))).map(({o,i})=>`
-    <div class="drag-word" id="ldw${i}" draggable="true" data-i="${i}"
-      ondragstart="ls(event)" ontouchstart="lt2S(event)" ontouchmove="lt2M(event)" ontouchend="lt2E(event)">
-      ${o.emoji} ${o.word}</div>`).join('');
+  makeRows(groupA,0,'labelRowA','wb2a');
+  makeRows(groupB,5,'labelRowB','wb2b');
 }
+function nextSubP5(){$('sp5a').style.display='none';$('sp5b').style.display='';window.scrollTo(0,0);}
 let ldI=null;
 function ls(e){ldI=parseInt(e.currentTarget.dataset.i);e.dataTransfer.setData('text',ldI);}
 function lo(e){e.preventDefault();}function le(e){e.currentTarget.classList.add('over');}function ll(e){e.currentTarget.classList.remove('over');}
 function ld(e){e.preventDefault();e.currentTarget.classList.remove('over');ldrop(e.currentTarget,parseInt(e.dataTransfer.getData('text')));}
 function ldrop(z,i){
-  if(P2_ITEMS[i].word===z.dataset.word){
-    flash('g');addScore(8);filled2++;
-    z.textContent=P2_ITEMS[i].emoji+' '+P2_ITEMS[i].word;z.classList.add('filled');
-    $('ldw'+i).classList.add('used');speak(P2_ITEMS[i].word);
-    if(filled2===OBJECTS.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 All labelled!';$('btn2').disabled=false;markDone(2);}
+  const grp=z.dataset.grp;
+  if(P2_FIXED[i].word===z.dataset.word){
+    flash('g');addScore(8);
+    z.textContent=P2_FIXED[i].emoji+' '+P2_FIXED[i].word;z.classList.add('filled');
+    $('ldw'+i).classList.add('used');speak(P2_FIXED[i].word);
+    if(grp==='A'){filledA++;if(filledA===5){$('fb5a').className='fb ok';$('fb5a').textContent='🎉 Great!';$('btnP5A').disabled=false;}}
+    else{filledB++;if(filledB===5){$('fb5b').className='fb ok';$('fb5b').textContent='🎉 All labelled!';$('btn2').disabled=false;markDone(2);}}
   } else {
     flash('r');z.classList.add('wrong-fill');setTimeout(()=>z.classList.remove('wrong-fill'),400);
-    $('fb2').className='fb no';$('fb2').textContent='❌ Wrong – try again!';
+    const fbId=grp==='A'?'fb5a':'fb5b';
+    $(fbId).className='fb no';$(fbId).textContent='❌ Wrong – try again!';
   }
 }
 let lt2C=null,lt2I=null;

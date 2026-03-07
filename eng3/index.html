@@ -102,15 +102,30 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 
 <!-- ═══ PHASE 2: DRAG SENTENCES ═══ -->
 <div class="phase" id="phase2">
-  <div class="section-title">🎨 Colours — drag the word to complete each sentence</div>
-  <div class="sentence-list" id="colSents"></div>
-  <div class="section-title">🐾 Pets — what animal is it?</div>
-  <div class="sentence-list" id="petSents"></div>
-  <div class="section-title">🍕 Foods — what food do you like?</div>
-  <div class="sentence-list" id="foodSents"></div>
-  <div class="word-bank" id="wordBank2"></div>
-  <div class="fb" id="fb2"></div>
-  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Dress Up!</button>
+  <!-- sub A: colours -->
+  <div id="sp2a">
+    <p class="ph-title">Step 1 / 3 &nbsp;🎨 Drag the <strong>colour</strong> to finish each sentence!</p>
+    <div class="sentence-list" id="colSents"></div>
+    <div class="word-bank" id="wbCol"></div>
+    <div class="fb" id="fb2a"></div>
+    <button class="btn-next" id="btnA" onclick="nextSub2('sp2b')" disabled>✅ Next →</button>
+  </div>
+  <!-- sub B: pets -->
+  <div id="sp2b" style="display:none">
+    <p class="ph-title">Step 2 / 3 &nbsp;🐾 Drag the <strong>animal</strong> to finish each sentence!</p>
+    <div class="sentence-list" id="petSents"></div>
+    <div class="word-bank" id="wbPet"></div>
+    <div class="fb" id="fb2b"></div>
+    <button class="btn-next" id="btnB" onclick="nextSub2('sp2c')" disabled>✅ Next →</button>
+  </div>
+  <!-- sub C: foods -->
+  <div id="sp2c" style="display:none">
+    <p class="ph-title">Step 3 / 3 &nbsp;🍕 Drag the <strong>food</strong> to finish each sentence!</p>
+    <div class="sentence-list" id="foodSents"></div>
+    <div class="word-bank" id="wbFood"></div>
+    <div class="fb" id="fb2c"></div>
+    <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Dress Up!</button>
+  </div>
 </div>
 
 <!-- ═══ PHASE 3: DRESS UP ═══ -->
@@ -190,74 +205,83 @@ function drawLine1(li,ri,col){
 buildMatch1();
 
 /* ══ PHASE 2 ══ */
-const SENT_DATA=[
-  {cat:'col',img:'🔴',before:'An apple is',word:'red',after:''},
-  {cat:'col',img:'🔵',before:'The sea is',word:'blue',after:''},
-  {cat:'col',img:'🟢',before:'Leaves are',word:'green',after:''},
-  {cat:'col',img:'🟡',before:'A lemon is',word:'yellow',after:''},
-  {cat:'col',img:'🟠',before:'A carrot is',word:'orange',after:''},
-  {cat:'col',img:'🩷',before:'A flamingo is',word:'pink',after:''},
-  {cat:'pet',img:'🐶',before:'A',word:'dog',after:'says woof!'},
-  {cat:'pet',img:'🐱',before:'A',word:'cat',after:'says meow!'},
-  {cat:'pet',img:'🐟',before:'A',word:'fish',after:'lives in water'},
-  {cat:'pet',img:'🐰',before:'A',word:'rabbit',after:'has long ears'},
-  {cat:'food',img:'🍕',before:'I love',word:'pizza',after:''},
-  {cat:'food',img:'🍝',before:'I like',word:'pasta',after:''},
-  {cat:'food',img:'🍦',before:'I enjoy',word:'ice cream',after:''},
-  {cat:'food',img:'🍗',before:'I like',word:'chicken',after:''},
+const SENT_GROUPS={
+  col:[
+    {img:'🔴',before:'An apple is',   word:'red',   after:''},
+    {img:'🔵',before:'The sea is',     word:'blue',  after:''},
+    {img:'🟢',before:'Leaves are',     word:'green', after:''},
+    {img:'🟡',before:'A lemon is',     word:'yellow',after:''},
+    {img:'🟠',before:'A carrot is',    word:'orange',after:''},
+    {img:'🩷',before:'A flamingo is',  word:'pink',  after:''},
+  ],
+  pet:[
+    {img:'🐶',before:'A',word:'dog',   after:'says woof!'},
+    {img:'🐱',before:'A',word:'cat',   after:'says meow!'},
+    {img:'🐟',before:'A',word:'fish',  after:'lives in water'},
+    {img:'🐰',before:'A',word:'rabbit',after:'has long ears'},
+  ],
+  food:[
+    {img:'🍕',before:'I love', word:'pizza',    after:''},
+    {img:'🍝',before:'I like', word:'pasta',    after:''},
+    {img:'🍦',before:'I enjoy',word:'ice cream',after:''},
+    {img:'🍗',before:'I like', word:'chicken',  after:''},
+  ]
+};
+const SUB2_CFG=[
+  {key:'col', sentId:'colSents', wbId:'wbCol',  fbId:'fb2a', btnId:'btnA'},
+  {key:'pet', sentId:'petSents', wbId:'wbPet',  fbId:'fb2b', btnId:'btnB'},
+  {key:'food',sentId:'foodSents',wbId:'wbFood', fbId:'fb2c', btnId:'btn2'},
 ];
-let p2Built=false,filled2=0;
+let p2Built=false, subFilled2=[0,0,0];
 function buildPhase2(){
   if(p2Built)return;p2Built=true;
-  const groups={col:[],pet:[],food:[]};
-  SENT_DATA.forEach((s,i)=>groups[s.cat].push({...s,idx:i}));
-  function makeSents(arr,contId){
-    const cont=$(contId);
-    cont.innerHTML=arr.map(s=>`
-      <div class="sentence">
+  SUB2_CFG.forEach((cfg,si)=>{
+    const arr=SENT_GROUPS[cfg.key];
+    $(cfg.sentId).innerHTML=arr.map((s,li)=>{
+      const idx=si*10+li; // unique across all groups
+      return `<div class="sentence">
         <span class="simg">${s.img}</span>
         <span>${s.before}</span>
-        <div class="drop-zone" id="dz${s.idx}" data-idx="${s.idx}" data-word="${s.word}"
-          ondragover="dzOver(event)" ondrop="dzDrop(event)" ondragenter="dzEnter(event)" ondragleave="dzLeave(event)">
-          ___
-        </div>
+        <div class="drop-zone" id="dz${idx}" data-idx="${idx}" data-si="${si}" data-word="${s.word}"
+          ondragover="dzOver(event)" ondrop="dzDrop(event)" ondragenter="dzEnter(event)" ondragleave="dzLeave(event)">___</div>
         <span>${s.after}</span>
-      </div>`).join('');
-  }
-  makeSents(groups.col,'colSents');
-  makeSents(groups.pet,'petSents');
-  makeSents(groups.food,'foodSents');
-  const bank=$('wordBank2');
-  const allWords=shuffle(SENT_DATA.map((s,i)=>({word:s.word,idx:i})));
-  bank.innerHTML=allWords.map(w=>`<div class="drag-word" id="dw${w.idx}" draggable="true" data-idx="${w.idx}"
-    ondragstart="dwStart(event)" ontouchstart="twStart(event)" ontouchmove="twMove(event)" ontouchend="twEnd(event)">
-    ${w.word}</div>`).join('');
+      </div>`;
+    }).join('');
+    $(cfg.wbId).innerHTML=shuffle(arr.map((s,li)=>({word:s.word,idx:si*10+li}))).map(w=>
+      `<div class="drag-word" id="dw${w.idx}" draggable="true" data-idx="${w.idx}" data-si="${si}"
+        ondragstart="dwStart(event)" ontouchstart="twStart(event)" ontouchmove="twMove(event)" ontouchend="twEnd(event)">
+        ${w.word}</div>`).join('');
+  });
 }
+function nextSub2(id){$('sp2a').style.display='none';$('sp2b').style.display='none';$('sp2c').style.display='none';$(id).style.display='';window.scrollTo(0,0);}
+function getWordBySentIdx(idx){const si=Math.floor(idx/10),li=idx%10;return SENT_GROUPS[SUB2_CFG[si].key][li].word;}
 let dragIdx=null;
-function dwStart(e){dragIdx=parseInt(e.target.dataset.idx);e.dataTransfer.setData('text',dragIdx);}
+function dwStart(e){dragIdx=parseInt(e.currentTarget.dataset.idx);e.dataTransfer.setData('text',dragIdx);}
 function dzOver(e){e.preventDefault();}
 function dzEnter(e){e.currentTarget.classList.add('over');}
 function dzLeave(e){e.currentTarget.classList.remove('over');}
 function dzDrop(e){
   e.preventDefault();e.currentTarget.classList.remove('over');
-  const idx=parseInt(e.dataTransfer.getData('text'));
-  dropOnZone(e.currentTarget,idx);
+  dropOnZone(e.currentTarget,parseInt(e.dataTransfer.getData('text')));
 }
 function dropOnZone(zone,idx){
-  const expected=zone.dataset.word;
-  const given=SENT_DATA[idx].word;
+  const si=parseInt(zone.dataset.si),expected=zone.dataset.word,given=getWordBySentIdx(idx);
   if(given===expected){
-    flash('g');addScore(8);filled2++;
+    flash('g');addScore(8);subFilled2[si]++;
     zone.textContent=given;zone.classList.add('filled');
-    $('dw'+idx).classList.add('used');
-    speak(given);
-    if(filled2===SENT_DATA.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 All done!';$('btn2').disabled=false;markDone(2);}
+    $('dw'+idx).classList.add('used');speak(given);
+    const cfg=SUB2_CFG[si],tot=SENT_GROUPS[cfg.key].length;
+    if(subFilled2[si]===tot){
+      $(cfg.fbId).className='fb ok';$(cfg.fbId).textContent='🎉 Well done!';
+      $(cfg.btnId).disabled=false;
+      if(si===2)markDone(2);
+    }
   } else {
     flash('r');zone.classList.add('wrong-fill');setTimeout(()=>zone.classList.remove('wrong-fill'),400);
-    $('fb2').className='fb no';$('fb2').textContent='❌ Not quite!';
+    $(SUB2_CFG[parseInt(zone.dataset.si)].fbId).className='fb no';
+    $(SUB2_CFG[parseInt(zone.dataset.si)].fbId).textContent='❌ Not quite!';
   }
 }
-// Touch drag
 let touchEl=null,clone=null,touchDragIdx=null;
 function twStart(e){
   touchEl=e.currentTarget;touchDragIdx=parseInt(touchEl.dataset.idx);
