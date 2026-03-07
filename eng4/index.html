@@ -94,17 +94,30 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 
 <!-- ═══ PHASE 2 ═══ -->
 <div class="phase" id="phase2">
-  <div class="sent-section">
-    <div class="s-title">🧺 Is it clean or dirty?</div>
+  <!-- sub-panel A -->
+  <div id="sp2a">
+    <p class="ph-title">Step 1 / 3 &nbsp;🧺 Is it <strong>clean</strong> or <strong>dirty</strong>?</p>
     <div class="sentence-list" id="cdSents"></div>
-    <div class="s-title">✨ Is it new or old?</div>
-    <div class="sentence-list" id="noSents"></div>
-    <div class="s-title">📏 Is it big or small? Long or short?</div>
-    <div class="sentence-list" id="bsSents"></div>
+    <div class="word-bank" id="wbCD"></div>
+    <div class="fb" id="fb2a"></div>
+    <button class="btn-next" id="btnA" onclick="nextSub('sp2b')" disabled>✅ Next →</button>
   </div>
-  <div class="word-bank" id="wordBank2"></div>
-  <div class="fb" id="fb2"></div>
-  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Sort Clothes</button>
+  <!-- sub-panel B -->
+  <div id="sp2b" style="display:none">
+    <p class="ph-title">Step 2 / 3 &nbsp;✨ Is it <strong>new</strong> or <strong>old</strong>?</p>
+    <div class="sentence-list" id="noSents"></div>
+    <div class="word-bank" id="wbNO"></div>
+    <div class="fb" id="fb2b"></div>
+    <button class="btn-next" id="btnB" onclick="nextSub('sp2c')" disabled>✅ Next →</button>
+  </div>
+  <!-- sub-panel C -->
+  <div id="sp2c" style="display:none">
+    <p class="ph-title">Step 3 / 3 &nbsp;📏 Big, small, long or short?</p>
+    <div class="sentence-list" id="bsSents"></div>
+    <div class="word-bank" id="wbBS"></div>
+    <div class="fb" id="fb2c"></div>
+    <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Sort Clothes</button>
+  </div>
 </div>
 
 <!-- ═══ PHASE 3 ═══ -->
@@ -171,55 +184,75 @@ function pClick(i){
 }
 buildP1();
 
-/* ══ PHASE 2 ══ */
-const SENTS=[
-  {cat:'cd',img:'🧺',before:'The shirt is',word:'clean',after:''},
-  {cat:'cd',img:'🤢',before:'The jeans are',word:'dirty',after:''},
-  {cat:'cd',img:'🧺',before:'The dress is',word:'clean',after:'— I just washed it!'},
-  {cat:'cd',img:'🤢',before:'The jumper is',word:'dirty',after:'— yuck!'},
-  {cat:'no',img:'✨',before:'The trainers are',word:'new',after:''},
-  {cat:'no',img:'📦',before:'The hat is',word:'old',after:''},
-  {cat:'no',img:'✨',before:'The jacket is',word:'new',after:'— I love it!'},
-  {cat:'no',img:'📦',before:'The t-shirt is',word:'old',after:''},
-  {cat:'bs',img:'🐘',before:'The elephant is',word:'big',after:''},
-  {cat:'bs',img:'🐭',before:'The mouse is',word:'small',after:''},
-  {cat:'bs',img:'📏',before:'The snake is',word:'long',after:''},
-  {cat:'bs',img:'📐',before:'The pencil is',word:'short',after:''},
+/* ══ PHASE 2 — 3 sub-panels ══ */
+const GROUPS={
+  cd:[
+    {img:'🧺',before:'The shirt is',   word:'clean',after:''},
+    {img:'🤢',before:'The jeans are',   word:'dirty',after:''},
+    {img:'🧺',before:'The dress is',    word:'clean',after:'— I just washed it!'},
+    {img:'🤢',before:'The jumper is',   word:'dirty',after:'— yuck!'},
+  ],
+  no:[
+    {img:'✨',before:'The trainers are',word:'new',  after:''},
+    {img:'📦',before:'The hat is',      word:'old',  after:''},
+    {img:'✨',before:'The jacket is',   word:'new',  after:'— I love it!'},
+    {img:'📦',before:'The t-shirt is',  word:'old',  after:''},
+  ],
+  bs:[
+    {img:'🐘',before:'The elephant is', word:'big',  after:''},
+    {img:'🐭',before:'The mouse is',    word:'small',after:''},
+    {img:'📏',before:'The snake is',    word:'long', after:''},
+    {img:'📐',before:'The pencil is',   word:'short',after:''},
+  ]
+};
+const SUB_CFG=[
+  {key:'cd',sentId:'cdSents',wbId:'wbCD',fbId:'fb2a',btnId:'btnA',total:4},
+  {key:'no',sentId:'noSents',wbId:'wbNO',fbId:'fb2b',btnId:'btnB',total:4},
+  {key:'bs',sentId:'bsSents',wbId:'wbBS',fbId:'fb2c',btnId:'btn2',total:4},
 ];
-let p2Built=false,filled2=0;
+let p2Built=false,subFilled=[0,0,0];
 function buildP2(){
   if(p2Built)return;p2Built=true;
-  function makeSL(arr,cid){
-    $(cid).innerHTML=arr.map((s,i)=>`
-      <div class="sentence">
+  SUB_CFG.forEach((cfg,si)=>{
+    const arr=GROUPS[cfg.key];
+    $(cfg.sentId).innerHTML=arr.map((s,li)=>{
+      const idx=si*4+li;
+      return `<div class="sentence">
         <span class="sim">${s.img}</span>
         <span>${s.before}</span>
-        <div class="drop-zone" id="dz${s._i}" data-idx="${s._i}" data-word="${s.word}"
+        <div class="drop-zone" id="dz${idx}" data-idx="${idx}" data-si="${si}" data-word="${s.word}"
           ondragover="dzO(event)" ondrop="dzD(event)" ondragenter="dzE(event)" ondragleave="dzL(event)">___</div>
         <span>${s.after}</span>
-      </div>`).join('');
-  }
-  const g={cd:[],no:[],bs:[]};
-  SENTS.forEach((s,i)=>{s._i=i;g[s.cat].push(s);});
-  makeSL(g.cd,'cdSents');makeSL(g.no,'noSents');makeSL(g.bs,'bsSents');
-  const wb=$('wordBank2');
-  wb.innerHTML=shuffle(SENTS.map((s,i)=>({w:s.word,i}))).map(x=>`
-    <div class="drag-word" id="dw${x.i}" draggable="true" data-idx="${x.i}"
-      ondragstart="dwS(event)" ontouchstart="tw2S(event)" ontouchmove="tw2M(event)" ontouchend="tw2E(event)">
-      ${SENTS[x.i].word}</div>`).join('');
+      </div>`;
+    }).join('');
+    const words=shuffle(arr.map((s,li)=>({word:s.word,idx:si*4+li})));
+    $(cfg.wbId).innerHTML=words.map(w=>
+      `<div class="drag-word" id="dw${w.idx}" draggable="true" data-idx="${w.idx}"
+        ondragstart="dwS(event)" ontouchstart="tw2S(event)" ontouchmove="tw2M(event)" ontouchend="tw2E(event)">
+        ${w.word}</div>`).join('');
+  });
 }
+function nextSub(id){$('sp2a').style.display='none';$('sp2b').style.display='none';$('sp2c').style.display='none';$(id).style.display='';window.scrollTo(0,0);}
 let dragI2=null;
-function dwS(e){dragI2=parseInt(e.target.dataset.idx);e.dataTransfer.setData('text',dragI2);}
+function dwS(e){dragI2=parseInt(e.currentTarget.dataset.idx);e.dataTransfer.setData('text',dragI2);}
 function dzO(e){e.preventDefault();}function dzE(e){e.currentTarget.classList.add('over');}function dzL(e){e.currentTarget.classList.remove('over');}
 function dzD(e){e.preventDefault();e.currentTarget.classList.remove('over');dropOnDZ(e.currentTarget,parseInt(e.dataTransfer.getData('text')));}
+function getWord(idx){const si=Math.floor(idx/4),li=idx%4;return GROUPS[SUB_CFG[si].key][li].word;}
 function dropOnDZ(z,idx){
-  if(SENTS[idx].word===z.dataset.word){
-    flash('g');addScore(8);filled2++;
-    z.textContent=SENTS[idx].word;z.classList.add('filled');$('dw'+idx).classList.add('used');speak(SENTS[idx].word);
-    if(filled2===SENTS.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 Well done!';$('btn2').disabled=false;markDone(2);}
+  const si=parseInt(z.dataset.si),expected=z.dataset.word,given=getWord(idx);
+  if(given===expected){
+    flash('g');addScore(8);subFilled[si]++;
+    z.textContent=given;z.classList.add('filled');$('dw'+idx).classList.add('used');speak(given);
+    const cfg=SUB_CFG[si];
+    if(subFilled[si]===cfg.total){
+      $(cfg.fbId).className='fb ok';$(cfg.fbId).textContent='🎉 Well done!';
+      $(cfg.btnId).disabled=false;
+      if(si===2)markDone(2);
+    }
   } else {
     flash('r');z.classList.add('wrong-fill');setTimeout(()=>z.classList.remove('wrong-fill'),400);
-    $('fb2').className='fb no';$('fb2').textContent='❌ Try again!';
+    const cfg=SUB_CFG[parseInt(z.dataset.si)];
+    $(cfg.fbId).className='fb no';$(cfg.fbId).textContent='❌ Try again!';
   }
 }
 let t2El=null,t2Cl=null,t2I=null;
