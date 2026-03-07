@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🪄 La Varita de Harry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:28px; min-height:100vh;
+      background:linear-gradient(180deg,#0a001c 0%,#1a0533 100%) fixed;
+    }
+
+    /* ── Top bar ─────────────────────────────────────── */
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:720px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+
+    /* ── HUD ─────────────────────────────────────────── */
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:3px 0 8px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 16px; border-radius:20px; font-size:.95rem;
+    }
+    .lives { font-size:1.35rem; letter-spacing:3px; }
+    .streak-wrap { display:flex; gap:5px; align-items:center; }
+    .sdot {
+      width:16px; height:16px; border-radius:50%;
+      background:#2d004a; border:2px solid #7c43bd; transition:background .2s;
+    }
+    .sdot.on { background:#FFD700; border-color:#F9A825; }
+
+    /* ── Game scene ──────────────────────────────────── */
+    .game-scene {
+      position:relative; overflow:hidden;
+      width:700px; height:280px;
+      border:3px solid #7c43bd; border-radius:18px;
+      box-shadow:0 0 32px rgba(100,0,200,.55);
+    }
+    .scene-bg {
+      position:absolute; inset:0;
+      background:url('fondomago.jpg') center/cover no-repeat;
+    }
+    .scene-tint {
+      position:absolute; inset:0;
+      background:linear-gradient(180deg,
+        rgba(0,0,20,.1) 0%,
+        rgba(0,0,30,.55) 60%,
+        rgba(0,0,40,.80) 100%);
+    }
+
+    /* ── Ground path ─────────────────────────────────── */
+    .path-ground {
+      position:absolute; bottom:0; left:0; right:0; height:80px;
+      background:linear-gradient(180deg,transparent 0%,rgba(0,0,20,.5) 100%);
+    }
+
+    /* ── Characters ──────────────────────────────────── */
+    .char {
+      position:absolute; bottom:18px; z-index:6;
+      font-size:3rem; line-height:1;
+    }
+    .char-wizard { left:12px; filter:drop-shadow(0 0 10px rgba(255,215,0,.5)); }
+    .char-wand   {
+      right:12px;
+      filter:drop-shadow(0 0 18px rgba(255,215,0,.9));
+      animation:wandPulse 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes wandPulse {
+      from { filter:drop-shadow(0 0 10px rgba(255,215,0,.7)); transform:scale(1); }
+      to   { filter:drop-shadow(0 0 30px rgba(255,215,0,1)) drop-shadow(0 0 55px rgba(200,80,255,.7)); transform:scale(1.08); }
+    }
+
+    /* ── Stepping stones ─────────────────────────────── */
+    .step {
+      position:absolute; bottom:46px;
+      width:32px; height:32px; border-radius:50%;
+      border:2px solid rgba(124,67,189,.55);
+      background:rgba(8,0,32,.75);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Patrick Hand',cursive; font-size:.68rem;
+      color:rgba(180,130,255,.5);
+      transition:background .3s, border-color .3s, color .3s;
+    }
+    .step.passed {
+      background:rgba(124,67,189,.7); border-color:#ce93d8; color:#e1bee7;
+    }
+    .step.current {
+      background:rgba(255,215,0,.25); border-color:#FFD700; color:#FFD700;
+      box-shadow:0 0 10px rgba(255,215,0,.5);
+    }
+
+    /* ── Harry (moving marker) ───────────────────────── */
+    .harry {
+      position:absolute; bottom:62px; z-index:10;
+      font-size:2.1rem; line-height:1;
+      filter:drop-shadow(0 0 14px #FFD700);
+      transition:left .4s cubic-bezier(.4,0,.2,1);
+    }
+    .harry.bounce {
+      animation:harryBounce .35s ease;
+    }
+    .harry.shudder {
+      animation:harryShudder .35s ease;
+    }
+    @keyframes harryBounce {
+      0%   { transform:translateY(0); }
+      40%  { transform:translateY(-18px); }
+      100% { transform:translateY(0); }
+    }
+    @keyframes harryShudder {
+      0%,100%{ transform:translateX(0); }
+      25%    { transform:translateX(-8px); }
+      75%    { transform:translateX(8px); }
+    }
+
+    /* ── Number card ─────────────────────────────────── */
+    .number-card {
+      width:100%; max-width:700px;
+      background:linear-gradient(135deg,#12003a,#280050);
+      border:2px solid #7c43bd; border-radius:16px;
+      padding:16px 24px 12px; margin-top:12px;
+      text-align:center; font-family:'Patrick Hand',cursive;
+    }
+    .number-prompt {
+      font-size:1rem; color:#ce93d8; margin-bottom:4px;
+    }
+    .number-display {
+      font-size:5.2rem; font-weight:bold; color:#FFD700; line-height:1;
+      text-shadow:0 0 28px rgba(255,215,0,.6);
+      transition:opacity .15s;
+    }
+    .feedback {
+      min-height:2rem; font-size:1.15rem; margin-top:6px;
+      font-family:'Patrick Hand',cursive; transition:opacity .2s;
+    }
+    .feedback.correct { color:#69f0ae; }
+    .feedback.wrong   { color:#ff5252; }
+
+    /* ── PAR / IMPAR buttons ─────────────────────────── */
+    .btn-row {
+      display:flex; gap:24px; justify-content:center; margin-top:14px;
+    }
+    .btn-guess {
+      font-family:'Patrick Hand',cursive; font-size:1.6rem; font-weight:bold;
+      border-radius:20px; padding:13px 52px; cursor:pointer; border:3px solid;
+      transition:transform .1s, box-shadow .2s;
+    }
+    .btn-par {
+      background:linear-gradient(135deg,#1565c0,#0d47a1);
+      color:#fff; border-color:#42a5f5;
+      box-shadow:0 0 14px rgba(66,165,245,.4);
+    }
+    .btn-par:hover { transform:scale(1.06); box-shadow:0 0 26px rgba(66,165,245,.7); }
+    .btn-impar {
+      background:linear-gradient(135deg,#7c43bd,#4a0072);
+      color:#FFD700; border-color:#ce93d8;
+      box-shadow:0 0 14px rgba(200,0,255,.4);
+    }
+    .btn-impar:hover { transform:scale(1.06); box-shadow:0 0 26px rgba(255,215,0,.6); }
+    .btn-guess:disabled { opacity:.4; cursor:default; transform:none !important; }
+
+    /* ── Overlay inside scene ────────────────────────── */
+    .overlay {
+      position:absolute; inset:0; display:none;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:13px;
+      background:rgba(0,0,20,.88); border-radius:15px;
+      font-family:'Patrick Hand',cursive; color:#FFD700;
+      text-align:center; padding:24px; z-index:25;
+    }
+    .overlay.show { display:flex; }
+    .overlay h2 { font-size:1.85rem; margin:0; text-shadow:0 0 16px #FFD700; }
+    .overlay p  { font-size:.98rem; color:#ce93d8; margin:0; }
+    .btn-play {
+      background:linear-gradient(135deg,#7c43bd,#4a0072);
+      color:#FFD700; border:2px solid #FFD700; border-radius:20px;
+      padding:10px 32px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+    }
+    .btn-play:hover { background:#7c43bd; }
+    .info-tip {
+      font-family:'Patrick Hand',cursive; font-size:.88rem;
+      color:#9575cd; margin-top:8px; text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-btn" href="../index.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.15rem">🪄 La Varita de Harry</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="lives"        id="livesDisp">❤️❤️❤️</div>
+    <div class="streak-wrap"  id="streakWrap"></div>
+  </div>
+
+  <!-- ── Game scene ────────────────────────────────── -->
+  <div class="game-scene" id="gameScene">
+    <div class="scene-bg"></div>
+    <div class="scene-tint"></div>
+    <div class="path-ground"></div>
+
+    <!-- Fixed characters -->
+    <div class="char char-wizard" title="Harry">🧙‍♂️</div>
+    <div class="char char-wand"   title="Varita">🪄</div>
+
+    <!-- Harry's moving marker -->
+    <div class="harry" id="harry">🧹</div>
+
+    <!-- Stepping stones injected by JS -->
+
+    <!-- ── Overlays ── -->
+    <div class="overlay show" id="readyOverlay">
+      <h2>🪄 La Varita de Harry</h2>
+      <p>¡Harry necesita recuperar su varita mágica!<br>
+         Avanza un paso si el número es <b style="color:#42a5f5">PAR</b> o <b style="color:#FFD700">IMPAR</b></p>
+      <p style="font-size:.85rem;color:#9575cd">✅ Acierta → avanzas &nbsp;|&nbsp; ❌ Fallas → retrocedes</p>
+      <button class="btn-play" onclick="startGame()">▶ ¡Comenzar!</button>
+    </div>
+
+    <div class="overlay" id="winOverlay">
+      <h2 id="winTitle">🎉 ¡Harry recuperó su varita!</h2>
+      <p  id="winMsg"></p>
+      <button class="btn-play" id="winBtn" onclick="nextLevel()">⚡ Siguiente nivel</button>
+      <a class="back-btn" href="../index.html" style="margin-top:2px">← Inicio</a>
+    </div>
+
+    <div class="overlay" id="gameOverOverlay">
+      <h2>💔 ¡La varita se escapa!</h2>
+      <p>Se te acabaron las vidas…<br>¡Pero tú puedes, inténtalo otra vez!</p>
+      <button class="btn-play" onclick="restartLevel()">🔄 Intentar de nuevo</button>
+      <a class="back-btn" href="../index.html" style="margin-top:2px">← Inicio</a>
+    </div>
+  </div>
+
+  <!-- ── Number card ──────────────────────────────── -->
+  <div class="number-card">
+    <div class="number-prompt">¿Este número es <b>PAR</b> o <b>IMPAR</b>?</div>
+    <div class="number-display" id="numDisplay">–</div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- ── Buttons ──────────────────────────────────── -->
+  <div class="btn-row">
+    <button class="btn-guess btn-par"   id="btnPar"   onclick="guess('par')"   disabled>✌️ PAR</button>
+    <button class="btn-guess btn-impar" id="btnImpar" onclick="guess('impar')" disabled>☝️ IMPAR</button>
+  </div>
+  <div class="info-tip">
+    Número <b style="color:#42a5f5">PAR</b> = termina en 0, 2, 4, 6 u 8 &nbsp;|&nbsp;
+    <b style="color:#FFD700">IMPAR</b> = termina en 1, 3, 5, 7 ó 9
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ── Levels ────────────────────────────────────────
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      maxN:20,  streakGoal:4 },
+    { name:'⚡ Mago',          maxN:50,  streakGoal:4 },
+    { name:'🌟 Archimago',     maxN:100, streakGoal:5 },
+    { name:'🧙 Brujo Experto', maxN:500, streakGoal:5 },
+  ];
+
+  const TOTAL_STEPS = 12;
+
+  // Path anchors (scene is 700px wide)
+  // wizard emoji left:12px, ~48px wide → center ≈ 36px
+  // wand   emoji right:12px,~48px wide → center ≈ 664px
+  const PATH_LEFT  = 62;
+  const PATH_RIGHT = 638;
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat7_level') || '0');
+  if (levelIdx >= LEVELS.length) levelIdx = LEVELS.length - 1;
+
+  let lives    = 3;
+  let position = 0;   // 0 = at wizard, TOTAL_STEPS = at wand → WIN
+  let score    = 0;
+  let streak   = 0;
+  let locked   = false;
+  let currentN = 0;
+
+  // ── DOM shortcuts ────────────────────────────────
+  const $ = id => document.getElementById(id);
+  const harryEl    = $('harry');
+  const sceneEl    = $('gameScene');
+  const feedbackEl = $('feedback');
+  const numEl      = $('numDisplay');
+  const btnPar     = $('btnPar');
+  const btnImpar   = $('btnImpar');
+
+  // ── Build stepping stones ────────────────────────
+  let stepEls = [];
+
+  function buildSteps() {
+    stepEls.forEach(e => e.remove());
+    stepEls = [];
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const el  = document.createElement('div');
+      el.className    = 'step';
+      el.id           = 'step' + i;
+      el.textContent  = i;
+      const cx = PATH_LEFT + (PATH_RIGHT - PATH_LEFT) * i / (TOTAL_STEPS + 1);
+      el.style.left   = (cx - 16) + 'px';   // center 32px circle
+      sceneEl.appendChild(el);
+      stepEls.push(el);
+    }
+  }
+
+  function updateSteps() {
+    stepEls.forEach((el, i) => {
+      const n = i + 1;
+      el.classList.remove('passed', 'current');
+      if      (n < position)  el.classList.add('passed');
+      else if (n === position) el.classList.add('current');
+    });
+  }
+
+  // X pixel for Harry's left edge at path position p
+  function posToX(p) {
+    if (p <= 0)              return PATH_LEFT  - 18;   // near wizard
+    if (p >= TOTAL_STEPS)    return PATH_RIGHT + 6;    // near wand
+    const cx = PATH_LEFT + (PATH_RIGHT - PATH_LEFT) * p / (TOTAL_STEPS + 1);
+    return cx - 18;   // half of 2.1rem ≈ 17px
+  }
+
+  function moveHarry() {
+    harryEl.style.left = posToX(position) + 'px';
+    updateSteps();
+  }
+
+  // ── HUD ──────────────────────────────────────────
+  function updateHUD() {
+    $('levelBadge').textContent = LEVELS[levelIdx].name;
+    $('livesDisp').textContent  = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+    const goal = LEVELS[levelIdx].streakGoal;
+    const wrap = $('streakWrap');
+    wrap.innerHTML = '';
+    for (let i = 0; i < goal; i++) {
+      const d = document.createElement('div');
+      d.className = 'sdot' + (i < streak ? ' on' : '');
+      wrap.appendChild(d);
+    }
+  }
+
+  // ── New number ────────────────────────────────────
+  function newNumber() {
+    locked = false;
+    locked = false;
+    btnPar.disabled = btnImpar.disabled = false;
+    feedbackEl.className = 'feedback';
+    feedbackEl.textContent = '';
+    currentN = Math.floor(Math.random() * LEVELS[levelIdx].maxN) + 1;
+    numEl.textContent = currentN;
+  }
+
+  // ── Guess ─────────────────────────────────────────
+  function guess(type) {
+    if (locked) return;
+    locked = true;
+    btnPar.disabled = btnImpar.disabled = true;
+
+    const isEven  = currentN % 2 === 0;
+    const correct = (type === 'par' && isEven) || (type === 'impar' && !isEven);
+    const paridad = isEven ? 'PAR' : 'IMPAR';
+
+    if (correct) {
+      feedbackEl.className   = 'feedback correct';
+      feedbackEl.textContent = `✅ ¡Correcto! ${currentN} es ${paridad} — ¡avanzas!`;
+      position = Math.min(position + 1, TOTAL_STEPS);
+      streak++;
+      score += 10 * (levelIdx + 1);
+      $('scoreDisp').textContent = score;
+
+      // bounce animation
+      harryEl.classList.remove('bounce', 'shudder');
+      void harryEl.offsetWidth;
+      harryEl.classList.add('bounce');
+
+      moveHarry();
+
+      if (position >= TOTAL_STEPS) {
+        setTimeout(showWin, 700);
+        return;
+      }
+    } else {
+      feedbackEl.className   = 'feedback wrong';
+      feedbackEl.textContent = `❌ ¡Incorrecto! ${currentN} es ${paridad} — ¡retrocedes!`;
+      position = Math.max(position - 1, 0);
+      streak   = Math.max(streak - 1, 0);
+      lives--;
+
+      // shudder animation
+      harryEl.classList.remove('bounce', 'shudder');
+      void harryEl.offsetWidth;
+      harryEl.classList.add('shudder');
+
+      moveHarry();
+
+      if (lives <= 0) {
+        setTimeout(showGameOver, 700);
+        return;
+      }
+    }
+
+    updateHUD();
+    setTimeout(newNumber, 1500);
+  }
+
+  // ── Win ───────────────────────────────────────────
+  function showWin() {
+    const isLast = levelIdx >= LEVELS.length - 1;
+    $('winTitle').textContent = isLast
+      ? '🏆 ¡Eres un Brujo Experto!'
+      : '🎉 ¡Harry recuperó su varita!';
+    $('winMsg').textContent = `Puntuación actual: ${score} puntos ✨`;
+    $('winBtn').textContent = isLast ? '🔮 Jugar de nuevo' : '⚡ Siguiente nivel';
+    $('winOverlay').classList.add('show');
+  }
+
+  function nextLevel() {
+    if (levelIdx < LEVELS.length - 1) {
+      levelIdx++;
+      sessionStorage.setItem('mat7_level', levelIdx);
+    }
+    $('winOverlay').classList.remove('show');
+    resetLevel();
+    updateHUD();
+    newNumber();
+  }
+
+  // ── Game Over ─────────────────────────────────────
+  function showGameOver() {
+    $('gameOverOverlay').classList.add('show');
+  }
+
+  function restartLevel() {
+    $('gameOverOverlay').classList.remove('show');
+    resetLevel();
+    updateHUD();
+    newNumber();
+  }
+
+  // ── Reset ─────────────────────────────────────────
+  function resetLevel() {
+    position = 0;
+    lives    = 3;
+    streak   = 0;
+    moveHarry();
+    buildSteps();
+  }
+
+  // ── Start ─────────────────────────────────────────
+  function startGame() {
+    $('readyOverlay').classList.remove('show');
+    resetLevel();
+    updateHUD();
+    newNumber();
+  }
+
+  // ── Init ──────────────────────────────────────────
+  buildSteps();
+  harryEl.style.left   = posToX(0) + 'px';
+  harryEl.style.bottom = '62px';
+  updateHUD();
+  </script>
+</body>
+</html>
