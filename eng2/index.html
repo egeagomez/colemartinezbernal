@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>👗 Clothes – Learn &amp; Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a 0%,#1b2a3b 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 0 32px}
+    .top-bar{width:100%;max-width:620px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+    .back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+    .back-btn:hover{background:#2979ff}
+    .title-badge{font-size:1.1rem;color:#FFD700}
+    .score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+    .phase-bar{display:flex;gap:6px;margin:8px 0 16px}
+    .p-tab{padding:6px 18px;border-radius:20px;font-family:inherit;font-size:.9rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+    .p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+    .p-tab.done{background:#1b8a4e;border-color:#4CAF50;color:#fff}
+    .phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:620px;padding:0 12px}
+    .phase.active{display:flex}
+
+    /* PHASE 1 */
+    .flashcard-wrap{width:270px;height:290px;margin:8px auto 14px;cursor:pointer}
+    .flashcard{width:100%;height:100%;background:linear-gradient(145deg,#1a3a5c,#0d2540);border:3px solid #2979ff;border-radius:24px;box-shadow:0 8px 32px rgba(41,121,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:transform .25s}
+    .flashcard:hover{transform:scale(1.03)}
+    .card-emoji{font-size:5.5rem;line-height:1;user-select:none}
+    .card-word{font-size:2.4rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.5);text-align:center}
+    .card-trans{font-size:1.2rem;color:#90caf9}
+    .speak-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+    .speak-btn:hover{background:#1976d2}
+    .card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+    .nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .nav-btn:hover{background:#2979ff}
+    .nav-btn:disabled{opacity:.35;cursor:default}
+    .prog-dots{display:flex;gap:8px}
+    .pdot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff;transition:background .2s}
+    .pdot.seen{background:#42a5f5}
+    .pdot.active{background:#FFD700;border-color:#f9a825}
+    .seen-count{color:#90caf9;font-size:.9rem;margin-bottom:10px}
+    .btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+    .btn-phase:hover{background:#4CAF50;color:#fff}
+    .btn-phase:disabled{opacity:.35;cursor:default}
+
+    /* PHASE 2 */
+    .match-instructions{font-size:1rem;color:#90caf9;text-align:center;margin-bottom:10px;line-height:1.5}
+    .match-score-row{font-size:.9rem;color:#90caf9;margin-bottom:10px;text-align:center}
+    .matching-area{position:relative;width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:0}
+    .match-col{display:flex;flex-direction:column;gap:6px;width:45%}
+    .match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+    .match-item{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:14px;padding:8px 10px;cursor:pointer;transition:border-color .15s,box-shadow .15s,opacity .3s;position:relative;height:52px}
+    .match-item:hover:not(.matched):not(.selected){border-color:#90caf9;box-shadow:0 0 10px rgba(144,202,249,.4)}
+    .match-item.selected{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6);background:linear-gradient(135deg,#2a3a1a,#1a2a0a)}
+    .match-item.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+    .match-item.wrong{border-color:#f44336;box-shadow:0 0 12px rgba(244,67,54,.5);animation:wrongShake .3s}
+    @keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .item-emoji{font-size:1.8rem}
+    .item-word{font-size:1.1rem;font-weight:bold;color:#FFD700}
+    .dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+    .dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+    .match-feedback{min-height:2rem;font-size:1.1rem;text-align:center;margin:6px 0}
+    .match-feedback.correct{color:#69f0ae}
+    .match-feedback.wrong{color:#ff5252}
+    .flash-overlay{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+    .flash-overlay.green{background:rgba(76,175,80,.2);opacity:1}
+    .flash-overlay.red{background:rgba(244,67,54,.2);opacity:1}
+    .finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  </style>
+</head>
+<body>
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span class="title-badge">👗 Clothes in English</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Learn</div>
+  <div class="p-tab"        id="tab2">🧵 Match</div>
+</div>
+
+<!-- PHASE 1: FLASHCARDS -->
+<div class="phase active" id="phase1">
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard">
+      <div class="card-emoji" id="cardEmoji">👔</div>
+      <div class="card-word"  id="cardWord">shirt</div>
+      <div class="card-trans" id="cardTrans">camisa</div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Say it!</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount">1 / 8 — tap card or 🔊 to hear it</div>
+  <button class="btn-phase" id="phase1Btn" onclick="startPhase2()" disabled>
+    ✅ I know them! → Match them
+  </button>
+</div>
+
+<!-- PHASE 2: MATCHING -->
+<div class="phase" id="phase2">
+  <p class="match-instructions">
+    Click a picture on the left 🖼️, then the matching word on the right 🔤<br>
+    Connect all 8 pairs!
+  </p>
+  <div class="match-score-row">
+    Matched: <span id="matchCount">0</span> / 8
+  </div>
+  <div class="matching-area" id="matchArea">
+    <div class="match-col" id="leftCol"></div>
+    <svg class="match-svg" id="matchSvg"></svg>
+    <div class="match-col" id="rightCol"></div>
+  </div>
+  <div class="match-feedback" id="matchFeedback"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-phase" onclick="window.location.href='../eng1/index.html'">
+      ✏️ Now play the Crossword!
+    </button>
+    <a class="back-btn" href="../index.html" style="padding:10px 20px;font-size:1rem">← Home</a>
+  </div>
+</div>
+
+<script>
+const CLOTHES=[
+  {word:'shirt',   emoji:'👔',es:'camisa'},
+  {word:'hat',     emoji:'🎩',es:'sombrero'},
+  {word:'t-shirt', emoji:'👕',es:'camiseta'},
+  {word:'jeans',   emoji:'👖',es:'vaqueros'},
+  {word:'dress',   emoji:'👗',es:'vestido'},
+  {word:'jacket',  emoji:'🧥',es:'chaqueta'},
+  {word:'jumper',  emoji:'🧣',es:'jersey'},
+  {word:'trainers',emoji:'👟',es:'zapatillas'},
+];
+
+function speak(txt){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-GB';u.rate=0.82;u.pitch=1.1;
+  speechSynthesis.speak(u);
+}
+
+/* --- Phase 1 --- */
+let cardIdx=0;
+const seen=new Set([0]);
+
+function buildDots(){
+  document.getElementById('progDots').innerHTML=
+    CLOTHES.map((_,i)=>`<div class="pdot ${i===cardIdx?'active':seen.has(i)?'seen':''}" ></div>`).join('');
+}
+
+function showCard(i){
+  cardIdx=i; seen.add(i);
+  document.getElementById('cardEmoji').textContent=CLOTHES[i].emoji;
+  document.getElementById('cardWord').textContent=CLOTHES[i].word;
+  document.getElementById('cardTrans').textContent=CLOTHES[i].es;
+  document.getElementById('prevBtn').disabled=(i===0);
+  document.getElementById('nextBtn').disabled=(i===CLOTHES.length-1);
+  document.getElementById('seenCount').textContent=`${i+1} / ${CLOTHES.length} — tap card or 🔊 to hear it`;
+  document.getElementById('phase1Btn').disabled=(seen.size<CLOTHES.length);
+  buildDots();
+  speak(CLOTHES[i].word);
+}
+
+function prevCard(){if(cardIdx>0)showCard(cardIdx-1);}
+function nextCard(){if(cardIdx<CLOTHES.length-1)showCard(cardIdx+1);}
+function speakCurrent(){speak(CLOTHES[cardIdx].word);}
+
+buildDots();
+setTimeout(()=>speak(CLOTHES[0].word),600);
+
+/* --- Phase 2 --- */
+let selLeft=null, matched=0, score=0, rightOrder=[];
+
+function shuffle(a){
+  const r=[...a];
+  for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}
+  return r;
+}
+
+function startPhase2(){
+  document.getElementById('phase1').classList.remove('active');
+  document.getElementById('phase2').classList.add('active');
+  document.getElementById('tab1').classList.remove('active');
+  document.getElementById('tab1').classList.add('done');
+  document.getElementById('tab2').classList.add('active');
+  rightOrder=shuffle(CLOTHES.map((_,i)=>i));
+  buildCols();
+}
+
+function buildCols(){
+  document.getElementById('leftCol').innerHTML=
+    CLOTHES.map((c,i)=>`<div class="match-item" id="li${i}" onclick="clickLeft(${i})">
+      <span class="item-emoji">${c.emoji}</span>
+      <div class="dot-r" id="ldr${i}"></div></div>`).join('');
+  document.getElementById('rightCol').innerHTML=
+    rightOrder.map((ci,pos)=>`<div class="match-item" id="ri${pos}" data-ci="${ci}" onclick="clickRight(${pos})">
+      <div class="dot-l" id="rdl${pos}"></div>
+      <span class="item-word">${CLOTHES[ci].word}</span></div>`).join('');
+}
+
+function clickLeft(i){
+  const el=document.getElementById('li'+i);
+  if(el.classList.contains('matched'))return;
+  if(selLeft)document.getElementById('li'+selLeft).classList.remove('selected');
+  selLeft=i; el.classList.add('selected');
+  speak(CLOTHES[i].word);
+  document.getElementById('matchFeedback').textContent='';
+}
+
+function clickRight(pos){
+  const rEl=document.getElementById('ri'+pos);
+  if(rEl.classList.contains('matched'))return;
+  if(selLeft===null){
+    document.getElementById('matchFeedback').className='match-feedback wrong';
+    document.getElementById('matchFeedback').textContent='⬅️ First click a picture!';return;
+  }
+  const ci=parseInt(rEl.dataset.ci);
+  if(ci===selLeft){
+    flash('green'); score+=15;
+    document.getElementById('scoreDisp').textContent=score;
+    matched++;
+    document.getElementById('matchCount').textContent=matched;
+    document.getElementById('li'+selLeft).classList.remove('selected');
+    document.getElementById('li'+selLeft).classList.add('matched');
+    rEl.classList.add('matched');
+    drawLine(selLeft,pos,'#4CAF50');
+    document.getElementById('matchFeedback').className='match-feedback correct';
+    document.getElementById('matchFeedback').textContent='✅ '+CLOTHES[selLeft].word+' = '+CLOTHES[selLeft].es;
+    speak(CLOTHES[selLeft].word);
+    selLeft=null;
+    if(matched===CLOTHES.length){
+      setTimeout(()=>{
+        document.getElementById('matchFeedback').textContent='🎉 Perfect! All matched!';
+        document.getElementById('finishRow').style.display='flex';
+      },600);
+    }
+  } else {
+    flash('red');
+    rEl.classList.add('wrong');
+    setTimeout(()=>rEl.classList.remove('wrong'),400);
+    document.getElementById('matchFeedback').className='match-feedback wrong';
+    document.getElementById('matchFeedback').textContent='❌ Try again!';
+  }
+}
+
+function drawLine(li,ri,color){
+  const svg=document.getElementById('matchSvg');
+  const aR=document.getElementById('matchArea').getBoundingClientRect();
+  const lR=document.getElementById('ldr'+li).getBoundingClientRect();
+  const rR=document.getElementById('rdl'+ri).getBoundingClientRect();
+  const x1=lR.left+lR.width/2-aR.left, y1=lR.top+lR.height/2-aR.top;
+  const x2=rR.left+rR.width/2-aR.left, y2=rR.top+rR.height/2-aR.top;
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+  line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+  line.setAttribute('stroke',color);line.setAttribute('stroke-width','3');
+  line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.85');
+  svg.appendChild(line);
+}
+
+function flash(cls){
+  const el=document.getElementById('flashOverlay');
+  el.className='flash-overlay '+cls;
+  setTimeout(()=>el.className='flash-overlay',280);
+}
+</script>
+</body>
+</html>
