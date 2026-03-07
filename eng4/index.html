@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌤️ Adjectives &amp; Seasons</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:pointer}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff;cursor:pointer}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ── Phase 1: pair match ── */
+.pairs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-bottom:10px}
+.pair-card{background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:14px;padding:10px;text-align:center;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative}
+.pair-card .big{font-size:2rem}.pair-card .wd{font-size:1rem;font-weight:bold;color:#FFD700;margin-top:3px}
+.pair-card:hover:not(.matched):not(.sel){border-color:#90caf9;box-shadow:0 0 10px rgba(144,202,249,.4)}
+.pair-card.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.pair-card.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+.pair-card.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.pair-card .spk{position:absolute;top:4px;right:6px;font-size:.8rem;cursor:pointer;opacity:.6}
+.pair-card .spk:hover{opacity:1}
+
+/* ── Phase 2: drag sentences ── */
+.sent-section{width:100%;margin-bottom:10px}
+.s-title{font-size:.95rem;color:#FFD700;font-weight:bold;margin:8px 0 5px;text-align:center}
+.sentence-list{display:flex;flex-direction:column;gap:7px;width:100%}
+.sentence{display:flex;align-items:center;gap:6px;background:#0d2540;border:2px solid #2979ff;border-radius:12px;padding:7px 10px;font-size:.95rem;flex-wrap:wrap}
+.sentence .sim{font-size:1.5rem}
+.drop-zone{display:inline-flex;align-items:center;justify-content:center;min-width:80px;height:32px;border:2px dashed #42a5f5;border-radius:10px;background:#0a1a2c;padding:0 8px;font-weight:bold;color:#FFD700;font-size:.9rem;cursor:pointer;transition:border-color .15s}
+.drop-zone.over{border-color:#FFD700;background:#1a2a3c}
+.drop-zone.filled{border-style:solid;border-color:#4CAF50;background:#0a2510;color:#69f0ae}
+.drop-zone.wrong-fill{border-color:#f44336}
+.word-bank{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:10px;background:#071020;border:2px solid #2979ff;border-radius:14px;margin:4px 0 8px;width:100%}
+.drag-word{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:12px;padding:5px 12px;font-size:.9rem;font-weight:bold;color:#FFD700;cursor:grab;user-select:none;touch-action:none;transition:opacity .2s}
+.drag-word.used{opacity:.25;pointer-events:none}
+.drag-word:active{opacity:.5}
+
+/* ── Phase 3: sort winter/summer ── */
+.sort-wrap{display:flex;gap:12px;width:100%;justify-content:center;flex-wrap:wrap}
+.season-col{flex:1;min-width:140px;max-width:210px;display:flex;flex-direction:column;gap:6px}
+.season-hd{text-align:center;font-size:1.2rem;font-weight:bold;padding:8px;border-radius:14px 14px 0 0}
+.season-hd.winter{background:linear-gradient(135deg,#0d47a1,#0288d1);color:#fff}
+.season-hd.summer{background:linear-gradient(135deg,#f57f17,#ff6f00);color:#fff}
+.season-drop{flex:1;min-height:180px;border:2px dashed #7c43bd;border-radius:0 0 14px 14px;background:rgba(30,0,60,.5);padding:8px;display:flex;flex-direction:column;gap:5px;transition:border-color .2s,background .2s}
+.season-drop.over{border-color:#FFD700;background:rgba(255,215,0,.1)}
+.placed-cl{background:#0a1a2c;border:2px solid #4CAF50;border-radius:10px;padding:4px 10px;font-size:.88rem;color:#69f0ae;font-weight:bold;text-align:center}
+.placed-cl.wrong-place{border-color:#f44336;color:#ff5252}
+.cloth-pool{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%;padding:8px;background:#071020;border:2px solid #2979ff;border-radius:14px;margin-bottom:10px}
+.drag-cl{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:11px;padding:5px 11px;font-size:.88rem;font-weight:bold;color:#FFD700;cursor:grab;user-select:none;touch-action:none;transition:opacity .2s}
+.drag-cl.used{opacity:.2;pointer-events:none}
+.drag-cl:active{opacity:.5}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🌤️ Adjectives &amp; Seasons</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<img src="wearing2.jpg" alt="" style="width:100%;max-width:660px;height:80px;object-fit:cover;border-radius:12px;opacity:.5;margin:4px 0;border:2px solid #2979ff">
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🔗 Match Adjectives</div>
+  <div class="p-tab"        id="tab2">✍️ Fill Sentences</div>
+  <div class="p-tab"        id="tab3">❄️☀️ Sort Clothes</div>
+</div>
+
+<!-- ═══ PHASE 1 ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Find the pairs! Click two cards that go together.</p>
+  <div class="pairs-grid" id="pairsGrid"></div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>✅ Next → Fill Sentences</button>
+</div>
+
+<!-- ═══ PHASE 2 ═══ -->
+<div class="phase" id="phase2">
+  <div class="sent-section">
+    <div class="s-title">🧺 Is it clean or dirty?</div>
+    <div class="sentence-list" id="cdSents"></div>
+    <div class="s-title">✨ Is it new or old?</div>
+    <div class="sentence-list" id="noSents"></div>
+    <div class="s-title">📏 Is it big or small? Long or short?</div>
+    <div class="sentence-list" id="bsSents"></div>
+  </div>
+  <div class="word-bank" id="wordBank2"></div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Sort Clothes</button>
+</div>
+
+<!-- ═══ PHASE 3 ═══ -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Is it WINTER ❄️ or SUMMER ☀️ clothing? Drag each item!</p>
+  <div class="cloth-pool" id="clothPool"></div>
+  <div class="sort-wrap">
+    <div class="season-col">
+      <div class="season-hd winter">❄️ WINTER</div>
+      <div class="season-drop" id="dropWinter" data-season="winter" ondragover="ev(event)" ondrop="sdrop(event)" ondragenter="sent(event)" ondragleave="sleave(event)"></div>
+    </div>
+    <div class="season-col">
+      <div class="season-hd summer">☀️ SUMMER</div>
+      <div class="season-drop" id="dropSummer" data-season="summer" ondragover="ev(event)" ondrop="sdrop(event)" ondragenter="sent(event)" ondragleave="sleave(event)"></div>
+    </div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" style="display:none" onclick="window.location.href='../index.html'">🏠 Home</button>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildP2();if(n===3)buildP3();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+/* ══ PHASE 1: PAIR MATCH ══ */
+const PAIRS=[
+  {a:{big:'🧺',wd:'clean'},b:{big:'🤢',wd:'dirty'}},
+  {a:{big:'✨',wd:'new'},   b:{big:'📦',wd:'old'}},
+  {a:{big:'🐘',wd:'big'},   b:{big:'🐭',wd:'small'}},
+  {a:{big:'📏',wd:'long'},  b:{big:'📐',wd:'short'}},
+];
+let selCard=null,matched1=0;
+function buildP1(){
+  const all=shuffle(PAIRS.flatMap((p,pi)=>[{...p.a,pair:pi,side:'a'},{...p.b,pair:pi,side:'b'}]));
+  $('pairsGrid').innerHTML=all.map((c,i)=>`
+    <div class="pair-card" id="pc${i}" data-pi="${c.pair}" data-wd="${c.wd}" onclick="pClick(${i})">
+      <div class="big">${c.big}</div>
+      <div class="wd">${c.wd}</div>
+      <span class="spk" onclick="event.stopPropagation();speak('${c.wd}')">🔊</span>
+    </div>`).join('');
+}
+function pClick(i){
+  const el=$('pc'+i);if(el.classList.contains('matched'))return;
+  if(selCard===null){selCard=i;el.classList.add('sel');speak(el.dataset.wd);return;}
+  if(selCard===i){el.classList.remove('sel');selCard=null;return;}
+  const prev=$('pc'+selCard);
+  if(prev.dataset.pi===el.dataset.pi){
+    flash('g');addScore(12);matched1++;
+    prev.classList.remove('sel');prev.classList.add('matched');el.classList.add('matched');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ '+prev.dataset.wd+' ↔ '+el.dataset.wd;
+    speak(prev.dataset.wd+' and '+el.dataset.wd);selCard=null;
+    if(matched1===PAIRS.length){$('fb1').textContent='🎉 All pairs found!';$('btn1').disabled=false;markDone(1);}
+  } else {
+    flash('r');[prev,el].forEach(e=>{e.classList.add('wrong');setTimeout(()=>e.classList.remove('wrong'),400);});
+    prev.classList.remove('sel');selCard=null;
+    $('fb1').className='fb no';$('fb1').textContent='❌ Not a pair – try again!';
+  }
+}
+buildP1();
+
+/* ══ PHASE 2 ══ */
+const SENTS=[
+  {cat:'cd',img:'🧺',before:'The shirt is',word:'clean',after:''},
+  {cat:'cd',img:'🤢',before:'The jeans are',word:'dirty',after:''},
+  {cat:'cd',img:'🧺',before:'The dress is',word:'clean',after:'— I just washed it!'},
+  {cat:'cd',img:'🤢',before:'The jumper is',word:'dirty',after:'— yuck!'},
+  {cat:'no',img:'✨',before:'The trainers are',word:'new',after:''},
+  {cat:'no',img:'📦',before:'The hat is',word:'old',after:''},
+  {cat:'no',img:'✨',before:'The jacket is',word:'new',after:'— I love it!'},
+  {cat:'no',img:'📦',before:'The t-shirt is',word:'old',after:''},
+  {cat:'bs',img:'🐘',before:'The elephant is',word:'big',after:''},
+  {cat:'bs',img:'🐭',before:'The mouse is',word:'small',after:''},
+  {cat:'bs',img:'📏',before:'The snake is',word:'long',after:''},
+  {cat:'bs',img:'📐',before:'The pencil is',word:'short',after:''},
+];
+let p2Built=false,filled2=0;
+function buildP2(){
+  if(p2Built)return;p2Built=true;
+  function makeSL(arr,cid){
+    $(cid).innerHTML=arr.map((s,i)=>`
+      <div class="sentence">
+        <span class="sim">${s.img}</span>
+        <span>${s.before}</span>
+        <div class="drop-zone" id="dz${s._i}" data-idx="${s._i}" data-word="${s.word}"
+          ondragover="dzO(event)" ondrop="dzD(event)" ondragenter="dzE(event)" ondragleave="dzL(event)">___</div>
+        <span>${s.after}</span>
+      </div>`).join('');
+  }
+  const g={cd:[],no:[],bs:[]};
+  SENTS.forEach((s,i)=>{s._i=i;g[s.cat].push(s);});
+  makeSL(g.cd,'cdSents');makeSL(g.no,'noSents');makeSL(g.bs,'bsSents');
+  const wb=$('wordBank2');
+  wb.innerHTML=shuffle(SENTS.map((s,i)=>({w:s.word,i}))).map(x=>`
+    <div class="drag-word" id="dw${x.i}" draggable="true" data-idx="${x.i}"
+      ondragstart="dwS(event)" ontouchstart="tw2S(event)" ontouchmove="tw2M(event)" ontouchend="tw2E(event)">
+      ${SENTS[x.i].word}</div>`).join('');
+}
+let dragI2=null;
+function dwS(e){dragI2=parseInt(e.target.dataset.idx);e.dataTransfer.setData('text',dragI2);}
+function dzO(e){e.preventDefault();}function dzE(e){e.currentTarget.classList.add('over');}function dzL(e){e.currentTarget.classList.remove('over');}
+function dzD(e){e.preventDefault();e.currentTarget.classList.remove('over');dropOnDZ(e.currentTarget,parseInt(e.dataTransfer.getData('text')));}
+function dropOnDZ(z,idx){
+  if(SENTS[idx].word===z.dataset.word){
+    flash('g');addScore(8);filled2++;
+    z.textContent=SENTS[idx].word;z.classList.add('filled');$('dw'+idx).classList.add('used');speak(SENTS[idx].word);
+    if(filled2===SENTS.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 Well done!';$('btn2').disabled=false;markDone(2);}
+  } else {
+    flash('r');z.classList.add('wrong-fill');setTimeout(()=>z.classList.remove('wrong-fill'),400);
+    $('fb2').className='fb no';$('fb2').textContent='❌ Try again!';
+  }
+}
+let t2El=null,t2Cl=null,t2I=null;
+function tw2S(e){t2El=e.currentTarget;t2I=parseInt(t2El.dataset.idx);t2Cl=t2El.cloneNode(true);t2Cl.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:99;background:#1a3a5c;border:2px solid #FFD700;border-radius:12px;padding:5px 12px;color:#FFD700;font-family:Patrick Hand,cursive;font-weight:bold';document.body.appendChild(t2Cl);}
+function tw2M(e){if(!t2Cl)return;e.preventDefault();const t=e.touches[0];t2Cl.style.left=(t.clientX-40)+'px';t2Cl.style.top=(t.clientY-18)+'px';}
+function tw2E(e){if(t2Cl){t2Cl.remove();t2Cl=null;}if(t2I===null)return;const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const z=el?.closest('.drop-zone');if(z)dropOnDZ(z,t2I);t2I=null;}
+
+/* ══ PHASE 3: SORT ══ */
+const SEASON_ITEMS=[
+  {e:'🧥',w:'coat',s:'winter'},{e:'🧣',w:'scarf',s:'winter'},{e:'🧤',w:'gloves',s:'winter'},
+  {e:'👢',w:'boots',s:'winter'},{e:'🎿',w:'woolly hat',s:'winter'},{e:'🧶',w:'jumper',s:'winter'},
+  {e:'🩳',w:'shorts',s:'summer'},{e:'👕',w:'t-shirt',s:'summer'},{e:'👡',w:'sandals',s:'summer'},
+  {e:'🧢',w:'cap',s:'summer'}, {e:'👗',w:'dress',s:'summer'}, {e:'🕶️',w:'sunglasses',s:'summer'},
+];
+let p3Built=false,sorted=0,sortDragI=null;
+function buildP3(){
+  if(p3Built)return;p3Built=true;
+  $('clothPool').innerHTML=shuffle(SEASON_ITEMS).map((c,i)=>`
+    <div class="drag-cl" id="si${i}" draggable="true" data-i="${i}" data-s="${c.s}"
+      ondragstart="siS(event)" ontouchstart="siTS(event)" ontouchmove="siTM(event)" ontouchend="siTE(event)">
+      ${c.e} ${c.w}</div>`).join('');
+  window._siOrder=SEASON_ITEMS.map((_,i)=>i);
+}
+function siS(e){sortDragI=parseInt(e.currentTarget.dataset.i);e.dataTransfer.setData('text',sortDragI);}
+function ev(e){e.preventDefault();}
+function sent(e){e.currentTarget.classList.add('over');}function sleave(e){e.currentTarget.classList.remove('over');}
+function sdrop(e){
+  e.preventDefault();e.currentTarget.classList.remove('over');
+  const ci=parseInt(e.dataTransfer.getData('text'));
+  doSort(e.currentTarget,ci);
+}
+function doSort(col,ci){
+  const item=SEASON_ITEMS[ci];
+  if(item.s===col.dataset.season){
+    flash('g');addScore(10);sorted++;
+    const d=document.createElement('div');d.className='placed-cl';d.textContent=item.e+' '+item.w;
+    col.appendChild(d);$('si'+ci).classList.add('used');speak(item.w);
+    if(sorted===SEASON_ITEMS.length){$('fb3').className='fb ok';$('fb3').textContent='🎉 Perfect! All sorted! Score: '+score+' ⭐';$('btn3').style.display='inline-block';markDone(3);}
+  } else {
+    flash('r');const d=document.createElement('div');d.className='placed-cl wrong-place';d.textContent=item.e+' '+item.w+'?';
+    col.appendChild(d);setTimeout(()=>d.remove(),1200);
+    $('fb3').className='fb no';$('fb3').textContent='❌ '+item.w+' is '+item.s+' clothing!';
+  }
+}
+let siTC=null,siTI=null;
+function siTS(e){siTI=parseInt(e.currentTarget.dataset.i);siTC=e.currentTarget.cloneNode(true);siTC.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:99;background:#1a3a5c;border:2px solid #FFD700;border-radius:11px;padding:5px 11px;color:#FFD700;font-family:Patrick Hand,cursive;font-weight:bold';document.body.appendChild(siTC);}
+function siTM(e){if(!siTC)return;e.preventDefault();const t=e.touches[0];siTC.style.left=(t.clientX-50)+'px';siTC.style.top=(t.clientY-18)+'px';}
+function siTE(e){if(siTC){siTC.remove();siTC=null;}if(siTI===null)return;const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const z=el?.closest('.season-drop');if(z)doSort(z,siTI);siTI=null;}
+</script>
+</body></html>

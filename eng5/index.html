@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏷️ Label the Objects</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:pointer}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff;cursor:pointer}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* PHASE 1: match */
+.match-area{position:relative;width:100%;display:flex;justify-content:space-between}
+.match-col{display:flex;flex-direction:column;gap:6px;width:44%}
+.match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.mi{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:12px;padding:7px 10px;cursor:pointer;position:relative;min-height:48px;transition:border-color .15s,box-shadow .15s}
+.mi:hover:not(.matched){border-color:#90caf9;box-shadow:0 0 8px rgba(144,202,249,.4)}
+.mi.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.mi.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+.mi.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mi .em{font-size:1.7rem}.mi .wd{font-size:.9rem;font-weight:bold;color:#FFD700}
+.dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+.dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+
+/* PHASE 2: label game */
+.label-wrap{display:flex;gap:10px;width:100%;flex-direction:column;align-items:center}
+.pic-panel{position:relative;width:100%;max-width:400px}
+.pic-panel img{width:100%;border-radius:12px;border:2px solid #2979ff;display:block}
+.num-badge{position:absolute;width:30px;height:30px;border-radius:50%;background:#FFD700;color:#0d1b2a;font-weight:bold;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:default;border:2px solid #fff;z-index:5}
+.label-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%}
+.lbl-slot{display:flex;align-items:center;gap:6px;background:#0d2540;border:2px solid #2979ff;border-radius:12px;padding:6px 10px;font-size:.9rem}
+.lbl-num{min-width:24px;height:24px;border-radius:50%;background:#FFD700;color:#0d1b2a;font-weight:bold;font-size:.82rem;display:inline-flex;align-items:center;justify-content:center}
+.drop-zone{display:inline-flex;align-items:center;justify-content:center;min-width:90px;height:30px;border:2px dashed #42a5f5;border-radius:10px;background:#0a1a2c;padding:0 8px;font-weight:bold;color:#FFD700;font-size:.85rem;cursor:pointer;transition:border-color .15s}
+.drop-zone.over{border-color:#FFD700;background:#1a2a3c}
+.drop-zone.filled{border-style:solid;border-color:#4CAF50;background:#0a2510;color:#69f0ae}
+.drop-zone.wrong-fill{border-color:#f44336}
+.word-bank{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:8px;background:#071020;border:2px solid #2979ff;border-radius:14px;margin:8px 0;width:100%}
+.drag-word{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:12px;padding:5px 12px;font-size:.87rem;font-weight:bold;color:#FFD700;cursor:grab;user-select:none;touch-action:none;transition:opacity .2s}
+.drag-word.used{opacity:.2;pointer-events:none}
+.drag-word:active{opacity:.5}
+
+/* PHASE 3: scramble */
+.scramble-card{width:100%;background:#0d2540;border:2px solid #7c43bd;border-radius:16px;padding:14px;margin-bottom:10px;text-align:center}
+.sc-progress{color:#90caf9;font-size:.9rem;margin-bottom:6px}
+.sc-emoji{font-size:3rem;margin:6px 0}
+.sc-hint{font-size:.88rem;color:#90caf9;margin-bottom:8px}
+.sc-scrambled{font-size:1.3rem;letter-spacing:4px;color:#FFD700;font-weight:bold;margin-bottom:10px;text-transform:uppercase}
+.letter-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px}
+.l-btn{width:38px;height:38px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:9px;color:#FFD700;font-family:inherit;font-size:1.1rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.l-btn:hover:not(:disabled){background:#2979ff;color:#fff}
+.l-btn:disabled{opacity:.25;cursor:default}
+.answer-row{display:flex;justify-content:center;gap:6px;min-height:44px;margin-bottom:8px;flex-wrap:wrap}
+.ans-slot{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-bottom:3px solid #42a5f5;font-weight:bold;font-size:1.1rem;color:#69f0ae;text-transform:uppercase}
+.sc-btns{display:flex;gap:8px;justify-content:center}
+.sc-btn{padding:7px 18px;border-radius:14px;font-family:inherit;font-size:.9rem;cursor:pointer;border:2px solid}
+.sc-btn.del{background:#2d0020;border-color:#f44336;color:#ff5252}
+.sc-btn.del:hover{background:#f44336;color:#fff}
+.sc-btn.check{background:#1b5e20;border-color:#4CAF50;color:#69f0ae}
+.sc-btn.check:hover{background:#4CAF50;color:#fff}
+.sc-btn.skip{background:#1a1a40;border-color:#7c43bd;color:#ce93d8}
+.sc-btn.skip:hover{background:#7c43bd;color:#fff}
+.sc-done{background:#0a2510;border:2px solid #4CAF50;border-radius:12px;padding:10px 18px;color:#69f0ae;text-align:center;margin-top:8px;width:100%}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🏷️ Label the Objects</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<img src="label objets.jpg" alt="" style="width:100%;max-width:660px;height:80px;object-fit:cover;border-radius:12px;opacity:.5;margin:4px 0;border:2px solid #2979ff">
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🔗 Match</div>
+  <div class="p-tab"        id="tab2">🏷️ Label</div>
+  <div class="p-tab"        id="tab3">✏️ Spell</div>
+</div>
+
+<!-- ═══ PHASE 1: MATCH ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Connect each picture to the correct word!</p>
+  <div class="match-area" id="ma1">
+    <div class="match-col" id="lc1"></div>
+    <svg class="match-svg" id="ms1"></svg>
+    <div class="match-col" id="rc1"></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>✅ Next → Label</button>
+</div>
+
+<!-- ═══ PHASE 2: LABEL ═══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Look at the picture. Drag the word to the right number!</p>
+  <div class="label-wrap">
+    <div class="pic-panel" id="picPanel">
+      <img src="label objets.jpg" alt="objects" id="picImg">
+    </div>
+    <div class="label-row" id="labelRow"></div>
+    <div class="word-bank" id="wb2"></div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Spell</button>
+</div>
+
+<!-- ═══ PHASE 3: SCRAMBLE ═══ -->
+<div class="phase" id="phase3">
+  <div class="scramble-card" id="scCard">
+    <div class="sc-progress" id="scProg"></div>
+    <div class="sc-emoji" id="scEmoji"></div>
+    <div class="sc-hint" id="scHint"></div>
+    <div class="sc-scrambled" id="scScrambled"></div>
+    <div class="answer-row" id="ansRow"></div>
+    <div class="letter-row" id="letterRow"></div>
+    <div class="sc-btns">
+      <button class="sc-btn del" onclick="scDel()">⌫ Delete</button>
+      <button class="sc-btn check" onclick="scCheck()">✓ Check</button>
+      <button class="sc-btn skip" onclick="scSkip()">↷ Skip</button>
+    </div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="sc-done" id="scDone" style="display:none"></div>
+  <button class="btn-next" id="btn3" style="display:none" onclick="window.location.href='../index.html'">🏠 Home</button>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildP2();if(n===3)buildP3();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+const OBJECTS=[
+  {emoji:'🛏️',word:'bed'},
+  {emoji:'🪑',word:'chair'},
+  {emoji:'🪟',word:'window'},
+  {emoji:'🚪',word:'door'},
+  {emoji:'💡',word:'lamp'},
+  {emoji:'📚',word:'bookshelf'},
+  {emoji:'🕐',word:'clock'},
+  {emoji:'🪞',word:'mirror'},
+  {emoji:'🖊️',word:'pen'},
+  {emoji:'✏️',word:'pencil'},
+];
+
+/* ══ P1 MATCH ══ */
+let selL=null,matched1=0;
+function buildP1(){
+  const shuf=shuffle(OBJECTS.map((_,i)=>i));
+  $('lc1').innerHTML=OBJECTS.map((o,i)=>`<div class="mi" id="l${i}" onclick="clL(${i})"><span class="em">${o.emoji}</span><div class="dot-r" id="dr${i}"></div></div>`).join('');
+  $('rc1').innerHTML=shuf.map((ci,p)=>`<div class="mi" id="r${p}" data-ci="${ci}" onclick="clR(${p})"><div class="dot-l" id="dl${p}"></div><span class="wd">${OBJECTS[ci].word}</span></div>`).join('');
+}
+function clL(i){const el=$('l'+i);if(el.classList.contains('matched'))return;if(selL!==null)$('l'+selL).classList.remove('sel');selL=i;el.classList.add('sel');speak(OBJECTS[i].word);}
+function clR(p){
+  const re=$('r'+p);if(re.classList.contains('matched'))return;
+  if(selL===null){$('fb1').className='fb no';$('fb1').textContent='⬅️ Click an emoji first!';return;}
+  const ci=parseInt(re.dataset.ci);
+  if(ci===selL){
+    flash('g');addScore(10);matched1++;
+    $('l'+selL).classList.remove('sel');$('l'+selL).classList.add('matched');re.classList.add('matched');
+    drawLine($('dr'+selL),$('dl'+p),'#4CAF50');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ '+OBJECTS[selL].word;speak(OBJECTS[selL].word);selL=null;
+    if(matched1===OBJECTS.length){$('fb1').textContent='🎉 Excellent!';$('btn1').disabled=false;markDone(1);}
+  } else {
+    flash('r');re.classList.add('wrong');setTimeout(()=>re.classList.remove('wrong'),400);
+    $('fb1').className='fb no';$('fb1').textContent='❌ Try again!';
+  }
+}
+function drawLine(a,b,col){
+  const svg=$('ms1'),ar=$('ma1').getBoundingClientRect();
+  const ar1=a.getBoundingClientRect(),ar2=b.getBoundingClientRect();
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',ar1.left+7-ar.left);ln.setAttribute('y1',ar1.top+7-ar.top);
+  ln.setAttribute('x2',ar2.left+7-ar.left);ln.setAttribute('y2',ar2.top+7-ar.top);
+  ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','3');ln.setAttribute('stroke-linecap','round');ln.setAttribute('opacity','.85');
+  svg.appendChild(ln);
+}
+buildP1();
+
+/* ══ P2 LABEL ══ */
+// place numbered badges at approximate positions (% based) for a generic room image
+const LABEL_POS=[
+  {pct:[15,20]},{pct:[45,15]},{pct:[75,20]},
+  {pct:[20,55]},{pct:[50,50]},{pct:[80,55]},
+  {pct:[10,80]},{pct:[40,78]},{pct:[65,80]},{pct:[85,82]},
+];
+let p2Built=false,filled2=0;
+const P2_ITEMS=shuffle([...OBJECTS]);
+function buildP2(){
+  if(p2Built)return;p2Built=true;
+  const img=$('picImg');
+  // add number badges after image loads
+  function addBadges(){
+    const pp=$('picPanel');
+    const w=img.offsetWidth,h=img.offsetHeight;
+    P2_ITEMS.forEach((o,i)=>{
+      const badge=document.createElement('div');badge.className='num-badge';badge.textContent=i+1;
+      badge.style.left=Math.round(LABEL_POS[i].pct[0]/100*w-15)+'px';
+      badge.style.top=Math.round(LABEL_POS[i].pct[1]/100*h-15)+'px';
+      pp.appendChild(badge);
+    });
+  }
+  if(img.complete)addBadges();else img.onload=addBadges;
+  $('labelRow').innerHTML=P2_ITEMS.map((o,i)=>`
+    <div class="lbl-slot">
+      <div class="lbl-num">${i+1}</div>
+      <div class="drop-zone" id="lz${i}" data-i="${i}" data-word="${o.word}"
+        ondragover="lo(event)" ondrop="ld(event)" ondragenter="le(event)" ondragleave="ll(event)">___</div>
+    </div>`).join('');
+  $('wb2').innerHTML=shuffle(P2_ITEMS.map((o,i)=>({o,i}))).map(({o,i})=>`
+    <div class="drag-word" id="ldw${i}" draggable="true" data-i="${i}"
+      ondragstart="ls(event)" ontouchstart="lt2S(event)" ontouchmove="lt2M(event)" ontouchend="lt2E(event)">
+      ${o.emoji} ${o.word}</div>`).join('');
+}
+let ldI=null;
+function ls(e){ldI=parseInt(e.currentTarget.dataset.i);e.dataTransfer.setData('text',ldI);}
+function lo(e){e.preventDefault();}function le(e){e.currentTarget.classList.add('over');}function ll(e){e.currentTarget.classList.remove('over');}
+function ld(e){e.preventDefault();e.currentTarget.classList.remove('over');ldrop(e.currentTarget,parseInt(e.dataTransfer.getData('text')));}
+function ldrop(z,i){
+  if(P2_ITEMS[i].word===z.dataset.word){
+    flash('g');addScore(8);filled2++;
+    z.textContent=P2_ITEMS[i].emoji+' '+P2_ITEMS[i].word;z.classList.add('filled');
+    $('ldw'+i).classList.add('used');speak(P2_ITEMS[i].word);
+    if(filled2===OBJECTS.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 All labelled!';$('btn2').disabled=false;markDone(2);}
+  } else {
+    flash('r');z.classList.add('wrong-fill');setTimeout(()=>z.classList.remove('wrong-fill'),400);
+    $('fb2').className='fb no';$('fb2').textContent='❌ Wrong – try again!';
+  }
+}
+let lt2C=null,lt2I=null;
+function lt2S(e){lt2I=parseInt(e.currentTarget.dataset.i);lt2C=e.currentTarget.cloneNode(true);lt2C.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:99;background:#1a3a5c;border:2px solid #FFD700;border-radius:12px;padding:5px 12px;color:#FFD700;font-family:Patrick Hand,cursive;font-weight:bold';document.body.appendChild(lt2C);}
+function lt2M(e){if(!lt2C)return;e.preventDefault();const t=e.touches[0];lt2C.style.left=(t.clientX-50)+'px';lt2C.style.top=(t.clientY-18)+'px';}
+function lt2E(e){if(lt2C){lt2C.remove();lt2C=null;}if(lt2I===null)return;const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const z=el?.closest('.drop-zone');if(z)ldrop(z,lt2I);lt2I=null;}
+
+/* ══ P3 SCRAMBLE ══ */
+let scItems,scIdx,scAnswer,scLetters;
+function buildP3(){
+  scItems=shuffle([...OBJECTS]);scIdx=0;scAnswer=[];scLetters=[];loadScItem();
+}
+function loadScItem(){
+  if(scIdx>=scItems.length){
+    $('scCard').style.display='none';
+    $('scDone').style.display='block';$('scDone').textContent='🎉 Amazing! You spelled all '+scItems.length+' words! Final score: '+score+' ⭐';
+    $('btn3').style.display='inline-block';markDone(3);return;
+  }
+  const obj=scItems[scIdx];
+  $('scProg').textContent=`Word ${scIdx+1} of ${scItems.length}`;
+  $('scEmoji').textContent=obj.emoji;
+  $('scHint').textContent='What is it in English? Click the letters to spell it!';
+  const scrambled=scramble(obj.word);
+  $('scScrambled').textContent=scrambled.toUpperCase();
+  scAnswer=[];
+  scLetters=scrambled.split('').map((l,i)=>({l,i,used:false}));
+  renderAns();renderLetters();
+  $('fb3').textContent='';
+  speak(obj.word);
+}
+function scramble(w){const a=w.split('');for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a.join('')===w?scramble(w):a.join('');}
+function renderAns(){
+  const target=scItems[scIdx].word;
+  $('ansRow').innerHTML=target.split('').map((_,i)=>`<div class="ans-slot">${scAnswer[i]?scAnswer[i].toUpperCase():''}</div>`).join('');
+}
+function renderLetters(){
+  $('letterRow').innerHTML=scLetters.map((l,i)=>`<button class="l-btn" id="lb${i}" ${l.used?'disabled':''} onclick="scPick(${i})">${l.l.toUpperCase()}</button>`).join('');
+}
+function scPick(i){scAnswer.push(scLetters[i].l);scLetters[i].used=true;renderAns();renderLetters();}
+function scDel(){if(!scAnswer.length)return;const last=scAnswer.pop();const idx=scLetters.slice().reverse().findIndex(l=>l.used&&l.l===last);if(idx!==-1){const ri=scLetters.length-1-idx;scLetters[ri].used=false;}renderAns();renderLetters();}
+function scCheck(){
+  const ans=scAnswer.join('').toLowerCase();const target=scItems[scIdx].word.toLowerCase();
+  if(ans===target){flash('g');addScore(15);$('fb3').className='fb ok';$('fb3').textContent='✅ '+target+' — perfect!';speak(target);scIdx++;setTimeout(loadScItem,900);}
+  else if(scAnswer.length===target.length){flash('r');$('fb3').className='fb no';$('fb3').textContent='❌ Not quite! Try again.';}
+  else{$('fb3').className='fb no';$('fb3').textContent='⬆️ Fill in all letters first!';}
+}
+function scSkip(){speak(scItems[scIdx].word);scIdx++;loadScItem();}
+</script>
+</body></html>

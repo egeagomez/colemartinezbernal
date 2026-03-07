@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>👗 Wearing – Clothes, Colours & Pets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+/* phase bar */
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:pointer}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff;cursor:pointer}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#90caf9;text-align:center;margin-bottom:12px}
+
+/* --- PHASE 1: MATCH --- */
+.match-hint-img{width:100%;max-width:660px;height:80px;object-fit:cover;border-radius:12px;opacity:.5;margin:0 0 10px;border:2px solid #2979ff}
+.match-area{position:relative;width:100%;display:flex;justify-content:space-between;align-items:flex-start}
+.match-col{display:flex;flex-direction:column;gap:7px;width:44%}
+.match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.mi{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:14px;padding:8px 10px;cursor:pointer;position:relative;height:52px;transition:border-color .15s,box-shadow .15s}
+.mi:hover:not(.matched){border-color:#90caf9;box-shadow:0 0 10px rgba(144,202,249,.4)}
+.mi.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.mi.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+.mi.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mi .em{font-size:1.8rem}.mi .wd{font-size:1rem;font-weight:bold;color:#FFD700}
+.dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+.dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50;color:#fff}.btn-next:disabled{opacity:.35;cursor:default}
+
+/* --- PHASE 2: DRAG SENTENCES --- */
+.section-title{font-size:1.1rem;color:#FFD700;font-weight:bold;margin:10px 0 6px;text-align:center}
+.sentence-list{width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.sentence{display:flex;align-items:center;gap:8px;background:#0d2540;border:2px solid #2979ff;border-radius:14px;padding:8px 12px;font-size:1rem;flex-wrap:wrap}
+.sentence .simg{font-size:1.6rem}
+.drop-zone{display:inline-flex;align-items:center;justify-content:center;min-width:90px;height:34px;border:2px dashed #42a5f5;border-radius:10px;background:#0a1a2c;padding:0 8px;font-weight:bold;color:#FFD700;font-size:.95rem;cursor:pointer;transition:border-color .15s,background .15s}
+.drop-zone.over{border-color:#FFD700;background:#1a2a3c}
+.drop-zone.filled{border-style:solid;border-color:#4CAF50;background:#0a2510;color:#69f0ae}
+.drop-zone.wrong-fill{border-color:#f44336}
+.word-bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px;background:#071020;border:2px solid #2979ff;border-radius:14px;margin-bottom:10px;width:100%}
+.drag-word{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:12px;padding:6px 14px;font-size:.95rem;font-weight:bold;color:#FFD700;cursor:grab;user-select:none;transition:opacity .2s;touch-action:none}
+.drag-word:active{opacity:.5;cursor:grabbing}
+.drag-word.used{opacity:.25;pointer-events:none}
+
+/* --- PHASE 3: DRESS UP --- */
+.dressup-wrap{display:flex;gap:20px;width:100%;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.body-figure{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:180px}
+.zone{width:160px;min-height:60px;border:2px dashed #7c43bd;border-radius:14px;background:rgba(30,0,60,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;gap:4px;transition:border-color .2s,background .2s}
+.zone-label{font-size:.78rem;color:#ce93d8;text-align:center;margin-bottom:2px}
+.zone.over{border-color:#FFD700;background:rgba(255,215,0,.12)}
+.zone.correct-z{border-color:#4CAF50}
+.placed-word{background:#1a0533;border:2px solid #4CAF50;border-radius:10px;padding:3px 10px;font-size:.9rem;color:#69f0ae;font-weight:bold}
+.head-circle{width:60px;height:60px;border-radius:50%;background:rgba(255,215,0,.15);border:2px solid #FFD700;display:flex;align-items:center;justify-content:center;font-size:2rem}
+.clothes-bank{display:flex;flex-wrap:wrap;gap:7px;max-width:220px;align-content:flex-start}
+.drag-cloth{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#2d004a,#4a0072);border:2px solid #7c43bd;border-radius:12px;padding:7px 12px;font-size:.95rem;font-weight:bold;color:#FFD700;cursor:grab;user-select:none;touch-action:none;transition:opacity .2s}
+.drag-cloth.used{opacity:.25;pointer-events:none}
+.drag-cloth:active{opacity:.5}
+.score-box-big{background:#1a0533;border:2px solid #4CAF50;border-radius:12px;padding:8px 16px;color:#69f0ae;font-size:.95rem;text-align:center;margin-top:10px}
+
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">👗 Wearing, Colours &amp; Pets</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<img src="wearingintro.jpg" alt="" style="width:100%;max-width:660px;height:85px;object-fit:cover;border-radius:12px;opacity:.55;margin:4px 0;border:2px solid #2979ff">
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🔗 Match</div>
+  <div class="p-tab"        id="tab2">✍️ Drag &amp; Complete</div>
+  <div class="p-tab"        id="tab3">🧍 Dress Up!</div>
+</div>
+
+<!-- ═══ PHASE 1: MATCH ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Connect each picture to the correct word!</p>
+  <div class="match-area" id="matchArea1">
+    <div class="match-col" id="lc1"></div>
+    <svg class="match-svg" id="ms1"></svg>
+    <div class="match-col" id="rc1"></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>✅ Next → Drag &amp; Complete</button>
+</div>
+
+<!-- ═══ PHASE 2: DRAG SENTENCES ═══ -->
+<div class="phase" id="phase2">
+  <div class="section-title">🎨 Colours — drag the word to complete each sentence</div>
+  <div class="sentence-list" id="colSents"></div>
+  <div class="section-title">🐾 Pets — what animal is it?</div>
+  <div class="sentence-list" id="petSents"></div>
+  <div class="section-title">🍕 Foods — what food do you like?</div>
+  <div class="sentence-list" id="foodSents"></div>
+  <div class="word-bank" id="wordBank2"></div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Dress Up!</button>
+</div>
+
+<!-- ═══ PHASE 3: DRESS UP ═══ -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Drag each clothing word to the correct part of the body!</p>
+  <div class="dressup-wrap">
+    <div class="body-figure">
+      <div class="head-circle">🙂</div>
+      <div class="zone" id="zHead"   data-zone="head"   ondragover="ev(event)" ondrop="drop(event)"><div class="zone-label">HEAD</div></div>
+      <div class="zone" id="zTop"    data-zone="top"    ondragover="ev(event)" ondrop="drop(event)"><div class="zone-label">TOP (upper body)</div></div>
+      <div class="zone" id="zBottom" data-zone="bottom" ondragover="ev(event)" ondrop="drop(event)"><div class="zone-label">BOTTOM (lower body)</div></div>
+      <div class="zone" id="zFeet"   data-zone="feet"   ondragover="ev(event)" ondrop="drop(event)"><div class="zone-label">FEET</div></div>
+    </div>
+    <div class="clothes-bank" id="clothesBank"></div>
+  </div>
+  <div class="score-box-big" id="dressScore" style="display:none"></div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" style="display:none" onclick="window.location.href='../index.html'">🏠 Home</button>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function goTab(n){
+  [1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)buildPhase2(); if(n===3)buildPhase3();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+/* ══ PHASE 1 ══ */
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+const CLOTHES=[
+  {emoji:'👔',word:'shirt'},{emoji:'🎩',word:'hat'},{emoji:'👕',word:'t-shirt'},
+  {emoji:'👖',word:'jeans'},{emoji:'👗',word:'dress'},{emoji:'🧥',word:'jacket'},
+  {emoji:'🧣',word:'jumper'},{emoji:'👟',word:'trainers'}
+];
+let selL=null,matched1=0,rightOrd=[];
+function buildMatch1(){
+  rightOrd=shuffle(CLOTHES.map((_,i)=>i));
+  $('lc1').innerHTML=CLOTHES.map((c,i)=>`<div class="mi" id="l${i}" onclick="clL(${i})"><span class="em">${c.emoji}</span><div class="dot-r" id="ldr${i}"></div></div>`).join('');
+  $('rc1').innerHTML=rightOrd.map((ci,p)=>`<div class="mi" id="r${p}" data-ci="${ci}" onclick="clR(${p})"><div class="dot-l" id="rdl${p}"></div><span class="wd">${CLOTHES[ci].word}</span></div>`).join('');
+}
+function clL(i){
+  const el=$('l'+i);if(el.classList.contains('matched'))return;
+  if(selL!==null)$('l'+selL).classList.remove('sel');
+  selL=i;el.classList.add('sel');speak(CLOTHES[i].word);$('fb1').textContent='';
+}
+function clR(p){
+  const re=$('r'+p);if(re.classList.contains('matched'))return;
+  if(selL===null){$('fb1').className='fb no';$('fb1').textContent='⬅️ First click an emoji!';return;}
+  const ci=parseInt(re.dataset.ci);
+  if(ci===selL){
+    flash('g');addScore(10);matched1++;
+    $('l'+selL).classList.remove('sel');$('l'+selL).classList.add('matched');
+    re.classList.add('matched');drawLine1(selL,p,'#4CAF50');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ '+CLOTHES[selL].word+'!';
+    speak(CLOTHES[selL].word);selL=null;
+    if(matched1===CLOTHES.length){$('fb1').textContent='🎉 All matched!';$('btn1').disabled=false;markDone(1);}
+  } else {
+    flash('r');re.classList.add('wrong');setTimeout(()=>re.classList.remove('wrong'),400);
+    $('fb1').className='fb no';$('fb1').textContent='❌ Try again!';
+  }
+}
+function drawLine1(li,ri,col){
+  const svg=$('ms1'),aR=$('matchArea1').getBoundingClientRect();
+  const lR=$('ldr'+li).getBoundingClientRect(),rR=$('rdl'+ri).getBoundingClientRect();
+  const x1=lR.left+7-aR.left,y1=lR.top+7-aR.top,x2=rR.left+7-aR.left,y2=rR.top+7-aR.top;
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ['x1','y1','x2','y2'].forEach((a,i)=>ln.setAttribute(a,[x1,y1,x2,y2][i]));
+  ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','3');ln.setAttribute('stroke-linecap','round');ln.setAttribute('opacity','.85');
+  svg.appendChild(ln);
+}
+buildMatch1();
+
+/* ══ PHASE 2 ══ */
+const SENT_DATA=[
+  {cat:'col',img:'🔴',before:'An apple is',word:'red',after:''},
+  {cat:'col',img:'🔵',before:'The sea is',word:'blue',after:''},
+  {cat:'col',img:'🟢',before:'Leaves are',word:'green',after:''},
+  {cat:'col',img:'🟡',before:'A lemon is',word:'yellow',after:''},
+  {cat:'col',img:'🟠',before:'A carrot is',word:'orange',after:''},
+  {cat:'col',img:'🩷',before:'A flamingo is',word:'pink',after:''},
+  {cat:'pet',img:'🐶',before:'A',word:'dog',after:'says woof!'},
+  {cat:'pet',img:'🐱',before:'A',word:'cat',after:'says meow!'},
+  {cat:'pet',img:'🐟',before:'A',word:'fish',after:'lives in water'},
+  {cat:'pet',img:'🐰',before:'A',word:'rabbit',after:'has long ears'},
+  {cat:'food',img:'🍕',before:'I love',word:'pizza',after:''},
+  {cat:'food',img:'🍝',before:'I like',word:'pasta',after:''},
+  {cat:'food',img:'🍦',before:'I enjoy',word:'ice cream',after:''},
+  {cat:'food',img:'🍗',before:'I like',word:'chicken',after:''},
+];
+let p2Built=false,filled2=0;
+function buildPhase2(){
+  if(p2Built)return;p2Built=true;
+  const groups={col:[],pet:[],food:[]};
+  SENT_DATA.forEach((s,i)=>groups[s.cat].push({...s,idx:i}));
+  function makeSents(arr,contId){
+    const cont=$(contId);
+    cont.innerHTML=arr.map(s=>`
+      <div class="sentence">
+        <span class="simg">${s.img}</span>
+        <span>${s.before}</span>
+        <div class="drop-zone" id="dz${s.idx}" data-idx="${s.idx}" data-word="${s.word}"
+          ondragover="dzOver(event)" ondrop="dzDrop(event)" ondragenter="dzEnter(event)" ondragleave="dzLeave(event)">
+          ___
+        </div>
+        <span>${s.after}</span>
+      </div>`).join('');
+  }
+  makeSents(groups.col,'colSents');
+  makeSents(groups.pet,'petSents');
+  makeSents(groups.food,'foodSents');
+  const bank=$('wordBank2');
+  const allWords=shuffle(SENT_DATA.map((s,i)=>({word:s.word,idx:i})));
+  bank.innerHTML=allWords.map(w=>`<div class="drag-word" id="dw${w.idx}" draggable="true" data-idx="${w.idx}"
+    ondragstart="dwStart(event)" ontouchstart="twStart(event)" ontouchmove="twMove(event)" ontouchend="twEnd(event)">
+    ${w.word}</div>`).join('');
+}
+let dragIdx=null;
+function dwStart(e){dragIdx=parseInt(e.target.dataset.idx);e.dataTransfer.setData('text',dragIdx);}
+function dzOver(e){e.preventDefault();}
+function dzEnter(e){e.currentTarget.classList.add('over');}
+function dzLeave(e){e.currentTarget.classList.remove('over');}
+function dzDrop(e){
+  e.preventDefault();e.currentTarget.classList.remove('over');
+  const idx=parseInt(e.dataTransfer.getData('text'));
+  dropOnZone(e.currentTarget,idx);
+}
+function dropOnZone(zone,idx){
+  const expected=zone.dataset.word;
+  const given=SENT_DATA[idx].word;
+  if(given===expected){
+    flash('g');addScore(8);filled2++;
+    zone.textContent=given;zone.classList.add('filled');
+    $('dw'+idx).classList.add('used');
+    speak(given);
+    if(filled2===SENT_DATA.length){$('fb2').className='fb ok';$('fb2').textContent='🎉 All done!';$('btn2').disabled=false;markDone(2);}
+  } else {
+    flash('r');zone.classList.add('wrong-fill');setTimeout(()=>zone.classList.remove('wrong-fill'),400);
+    $('fb2').className='fb no';$('fb2').textContent='❌ Not quite!';
+  }
+}
+// Touch drag
+let touchEl=null,clone=null,touchDragIdx=null;
+function twStart(e){
+  touchEl=e.currentTarget;touchDragIdx=parseInt(touchEl.dataset.idx);
+  clone=touchEl.cloneNode(true);clone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:99;padding:6px 12px;background:#1a3a5c;border:2px solid #FFD700;border-radius:12px;color:#FFD700;font-family:Patrick Hand,cursive;font-size:.95rem;font-weight:bold';
+  document.body.appendChild(clone);
+}
+function twMove(e){
+  if(!clone)return;e.preventDefault();
+  const t=e.touches[0];clone.style.left=(t.clientX-40)+'px';clone.style.top=(t.clientY-20)+'px';
+}
+function twEnd(e){
+  if(clone){clone.remove();clone=null;}
+  if(touchDragIdx===null)return;
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const dz=el?.closest('.drop-zone');
+  if(dz)dropOnZone(dz,touchDragIdx);
+  touchDragIdx=null;
+}
+
+/* ══ PHASE 3: DRESS UP ══ */
+const CLOTH_ITEMS=[
+  {emoji:'🎩',word:'hat',zone:'head'},
+  {emoji:'👔',word:'shirt',zone:'top'},
+  {emoji:'👕',word:'t-shirt',zone:'top'},
+  {emoji:'🧥',word:'jacket',zone:'top'},
+  {emoji:'🧣',word:'jumper',zone:'top'},
+  {emoji:'👗',word:'dress',zone:'bottom'},
+  {emoji:'👖',word:'jeans',zone:'bottom'},
+  {emoji:'👟',word:'trainers',zone:'feet'},
+];
+let p3Built=false,correct3=0;
+function buildPhase3(){
+  if(p3Built)return;p3Built=true;
+  $('clothesBank').innerHTML=shuffle(CLOTH_ITEMS).map((c,i)=>`
+    <div class="drag-cloth" id="dc${i}" draggable="true" data-i="${i}" data-zone="${c.zone}"
+      ondragstart="dcStart(event)" ontouchstart="tc3Start(event)" ontouchmove="tc3Move(event)" ontouchend="tc3End(event)">
+      <span>${c.emoji}</span><span>${c.word}</span>
+    </div>`).join('');
+  // store shuffled order
+  window._clothOrder=shuffle(CLOTH_ITEMS.map((_,i)=>i));
+  // rebuild with correct indices
+  $('clothesBank').innerHTML=CLOTH_ITEMS.map((c,i)=>`
+    <div class="drag-cloth" id="dc${i}" draggable="true" data-i="${i}" data-zone="${c.zone}"
+      ondragstart="dcStart(event)" ontouchstart="tc3Start(event)" ontouchmove="tc3Move(event)" ontouchend="tc3End(event)">
+      <span>${c.emoji}</span><span>${c.word}</span>
+    </div>`).join('');
+}
+let dcIdx=null;
+function dcStart(e){dcIdx=parseInt(e.currentTarget.dataset.i);e.dataTransfer.setData('text',dcIdx);}
+function ev(e){e.preventDefault();}
+function drop(e){
+  e.preventDefault();
+  const ci=parseInt(e.dataTransfer.getData('text'));
+  dropCloth(e.currentTarget,ci);
+}
+function dropCloth(zone,ci){
+  const c=CLOTH_ITEMS[ci];
+  if(c.zone===zone.dataset.zone){
+    flash('g');addScore(12);correct3++;
+    const pw=document.createElement('div');pw.className='placed-word';pw.textContent=c.emoji+' '+c.word;
+    zone.appendChild(pw);zone.classList.add('correct-z');
+    $('dc'+ci).classList.add('used');speak(c.word);
+    $('fb3').className='fb ok';$('fb3').textContent='✅ '+c.word+' — perfect!';
+    if(correct3===CLOTH_ITEMS.length){
+      $('dressScore').style.display='block';
+      $('dressScore').textContent='🎉 Amazing! All clothes in the right place! Final score: '+score+' ⭐';
+      $('btn3').style.display='inline-block';markDone(3);
+    }
+  } else {
+    flash('r');zone.classList.add('wrong');setTimeout(()=>zone.classList.remove('wrong'),350);
+    $('fb3').className='fb no';
+    const hints={head:'HEAD (on your head)',top:'TOP (on your upper body)',bottom:'BOTTOM (on your legs)',feet:'FEET (on your feet)'};
+    $('fb3').textContent='❌ '+c.word+' goes on → '+hints[c.zone];
+  }
+}
+let dc3El=null,dc3Clone=null,dc3Idx=null;
+function tc3Start(e){dc3El=e.currentTarget;dc3Idx=parseInt(dc3El.dataset.i);dc3Clone=dc3El.cloneNode(true);dc3Clone.style.cssText='position:fixed;opacity:.7;pointer-events:none;z-index:99;background:#2d004a;border:2px solid #FFD700;border-radius:12px;padding:7px 12px;color:#FFD700;font-family:Patrick Hand,cursive;font-weight:bold';document.body.appendChild(dc3Clone);}
+function tc3Move(e){if(!dc3Clone)return;e.preventDefault();const t=e.touches[0];dc3Clone.style.left=(t.clientX-50)+'px';dc3Clone.style.top=(t.clientY-20)+'px';}
+function tc3End(e){if(dc3Clone){dc3Clone.remove();dc3Clone=null;}if(dc3Idx===null)return;const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const z=el?.closest('.zone');if(z)dropCloth(z,dc3Idx);dc3Idx=null;}
+</script>
+</body></html>
