@@ -1,0 +1,5 @@
+.dockerignore
+Dockerfile
+DEPLOY.md
+*.md
+.git

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 5 – CA, QUE, QUI, CO, CU</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .ex-emoji { font-size:4.5rem; display:block; text-align:center; margin:8px auto; }
+    .word-display { font-size:2.6rem; margin:12px 0; text-align:center; }
+    .tiles-bank .tile { min-width:72px; text-align:center; font-size:1.3rem; }
+    .round-badge {
+      display:inline-block; background:var(--purple); color:#fff;
+      border-radius:20px; padding:4px 14px; font-size:.95rem; margin-bottom:10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🏠 Juego 5 — CA, QUE, QUI, CO, CU</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Arrastra la sílaba con el sonido K correcto 👇</p>
+    <div id="exerciseZone"></div>
+    <div class="tiles-bank" id="tilesBank"></div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { pre:'',  suf:'sa',    answer:'ca',  ops:['ca','que','co'],  emoji:'🏠', full:'casa', hint:'lugar donde vivimos' },
+    { pre:'',  suf:'so',    answer:'que', ops:['ca','que','qui'], emoji:'🧀', full:'queso', hint:'alimento hecho de leche' },
+    { pre:'',  suf:'nto',   answer:'qui', ops:['que','qui','cu'], emoji:'5️⃣', full:'quinto', hint:'posición número cinco' },
+    { pre:'',  suf:'che',   answer:'co',  ops:['ca','co','cu'],   emoji:'🚗', full:'coche', hint:'vehículo de cuatro ruedas' },
+    { pre:'',  suf:'bo',    answer:'cu',  ops:['co','cu','ca'],   emoji:'📦', full:'cubo' ,hint:'objeto para guardar cosas' },
+    { pre:'',  suf:'mión',  answer:'ca',  ops:['ca','que','co'],  emoji:'🚛', full:'camión' ,hint:'vehículo grande para transportar mercancías' },
+    { pre:'',  suf:'ja',    answer:'que', ops:['ca','que','qui'], emoji:'😤', full:'queja', hint:'expresión de descontento' },
+    { pre:'',  suf:'ejo',   answer:'co',  ops:['ca','co','que'],  emoji:'🐰', full:'conejo' ,hint:'animal con largas orejas' },
+    { pre:'ban',  suf:'',   answer:'ca',  ops:['ca','co','cu'],   emoji:'🏦', full:'banco', hint:'para sacar dinero' },
+    { pre:'',  suf:'mbre',  answer:'cu',  ops:['ca','co','cu'],   emoji:'🏔️', full:'cumbre' ,hint:'parte más alta de una montaña' },
+    { pre:'',  suf:'na',    answer:'cu',  ops:['co','cu','ca'],   emoji:'🌊', full:'cuna',   hint:'donde duerme el bebé' },
+    { pre:'',  suf:'brir',  answer:'cu',  ops:['co','cu','que'],  emoji:'🙈', full:'cubrir',   hint:'poner algo por encima para taparlo' },
+  ];
+
+  const shuffled=[...exercises].sort(()=>Math.random()-.5).slice(0,10);
+  let current=0, score=0, answered=false;
+
+  function showEx(){
+    answered=false;
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('progressBar').style.width=(current/shuffled.length*100)+'%';
+    const ex=shuffled[current];
+
+    document.getElementById('exerciseZone').innerHTML=`
+      <span class="ex-emoji">${ex.emoji}</span>
+      <div class="word-display">
+        <span class="blank" id="blank" data-drop="true" data-answer="${ex.answer}">&nbsp;&nbsp;&nbsp;</span>${ex.suf}
+      </div>`;
+
+    const opts=ex.ops.sort(()=>Math.random()-.5);
+    document.getElementById('tilesBank').innerHTML=opts.map((o,i)=>
+      `<div class="tile" id="t${i}" data-value="${o}" draggable="true">${o}</div>`
+    ).join('');
+    opts.forEach((_,i)=>makeDraggable(document.getElementById('t'+i)));
+
+    const blank=document.getElementById('blank');
+    makeDropZone(blank,(val,srcId,zone)=>{
+      if(answered) return;
+      answered=true;
+      const correct=val===ex.answer;
+      zone.textContent=val;
+      zone.classList.add(correct?'correct':'wrong');
+      if(correct){score+=10;document.getElementById('score').textContent=score;}
+      showFeedback(correct,correct?`¡Sí! → <strong>${ex.full}</strong>`:`Era <strong>${ex.answer}</strong> → <strong>${ex.full}</strong>`);
+      document.getElementById('nextBtn').style.display='inline-block';
+    });
+  }
+
+  function nextEx(){
+    current++;
+    if(current>=shuffled.length) maybePodio(5,score,shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

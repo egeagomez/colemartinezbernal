@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>☔ Lluvia de Números</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { display:flex; flex-direction:column; align-items:center;
+           padding-bottom:30px; min-height:100vh; }
+
+    /* ── Header ─────────────────────────────────── */
+    .game-header {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:720px; padding:10px 16px; gap:10px;
+    }
+    .score-box {
+      background:#fff; border-radius:30px; padding:4px 18px;
+      font-weight:bold; font-size:1rem; color:#333;
+      box-shadow:0 2px 8px rgba(0,0,0,.12);
+    }
+
+    /* ── HUD ─────────────────────────────────────── */
+    .hud {
+      display:flex; gap:16px; align-items:center;
+      font-family:'Patrick Hand',cursive; font-size:1.05rem;
+      margin:6px 0 10px;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:5px 18px; border-radius:20px;
+      font-size:1rem; font-weight:bold;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:20px; height:20px; border-radius:50%;
+      background:#b0bec5; border:2px solid #90a4ae;
+      transition:background .2s, border-color .2s;
+    }
+    .streak-dot.on { background:#FFD700; border-color:#F9A825; }
+
+    /* ── Prompt ──────────────────────────────────── */
+    .prompt-box {
+      background:linear-gradient(90deg,#6a1b9a,#4a0072);
+      color:#FFD700; font-size:1.15rem;
+      font-family:'Patrick Hand',cursive;
+      padding:10px 28px; border-radius:30px;
+      margin-bottom:14px; text-align:center;
+      box-shadow:0 3px 12px rgba(100,0,200,.3);
+      min-height:44px; display:flex; align-items:center;
+    }
+
+    /* ── Layout ──────────────────────────────────── */
+    .game-wrap {
+      display:flex; gap:22px; align-items:flex-start;
+      flex-wrap:wrap; justify-content:center;
+    }
+
+    /* ── Sum panel ───────────────────────────────── */
+    .sum-panel {
+      background:#fff; border-radius:18px;
+      padding:18px 22px;
+      box-shadow:0 4px 18px rgba(0,0,0,.14);
+      min-width:170px;
+    }
+    .sum-panel h3 {
+      font-family:'Patrick Hand',cursive; text-align:center;
+      margin:0 0 12px; font-size:1rem; color:#7c43bd;
+    }
+    .sum-table { border-collapse:collapse; font-family:'Patrick Hand',cursive; }
+    .sum-table td {
+      font-size:2.2rem; padding:3px 11px;
+      text-align:center; min-width:44px;
+    }
+    .sum-table td.active {
+      background:#FFF9C4; border-radius:8px; color:#e65100;
+    }
+    .sum-table td.hl-carry {
+      background:#EDE7F6; border-radius:8px;
+    }
+    .sum-table td.sep { border-top:3px solid #333; padding-top:4px; }
+    .carry-small { font-size:1.1rem; color:#7c43bd; font-weight:bold; }
+    .filled-ok   { color:#388E3C; font-weight:bold; }
+    .slot-empty  { color:#ccc; }
+
+    /* ── Arena ───────────────────────────────────── */
+    .arena {
+      position:relative; overflow:hidden;
+      width:360px; height:500px;
+      background:linear-gradient(180deg,#0a0e2a 0%,#1a237e 55%,#283593 100%);
+      border-radius:18px;
+      box-shadow:0 8px 32px rgba(0,0,0,.45);
+      border:2px solid #3949ab;
+      touch-action:none; cursor:crosshair;
+      user-select:none;
+    }
+    /* Stars overlay */
+    .arena::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(circle, rgba(255,255,255,.55) 1px, transparent 1px) 18px 22px / 70px 70px,
+        radial-gradient(circle, rgba(255,255,255,.4)  1px, transparent 1px) 55px 55px / 90px 90px,
+        radial-gradient(circle, rgba(255,255,255,.35) 1px, transparent 1px) 90px 10px / 120px 120px;
+    }
+    /* Ground line */
+    .arena::after {
+      content:''; position:absolute; bottom:78px; left:0; right:0;
+      height:2px; background:rgba(255,255,255,.15);
+      pointer-events:none;
+    }
+
+    /* ── Falling numbers ─────────────────────────── */
+    .falling-num {
+      position:absolute;
+      width:54px; height:54px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.85rem; font-weight:bold;
+      font-family:'Patrick Hand',cursive;
+      box-shadow:0 4px 14px rgba(0,0,0,.45);
+      pointer-events:none; user-select:none;
+      border:3px solid rgba(255,255,255,.25);
+      transition:box-shadow .1s;
+    }
+
+    /* ── Bucket ──────────────────────────────────── */
+    .bucket {
+      position:absolute;
+      bottom:14px;
+      width:76px; height:56px;
+      text-align:center; line-height:56px;
+      font-size:3rem;
+      pointer-events:none; user-select:none;
+      filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));
+      transition:left .04s linear;
+      z-index:10;
+    }
+    .bucket.shake { animation:shk .3s; }
+    @keyframes shk {
+      0%,100%{transform:translateX(0)}
+      25%{transform:translateX(-10px)}
+      75%{transform:translateX(10px)}
+    }
+
+    /* ── Flash overlay ───────────────────────────── */
+    .catch-flash {
+      position:absolute; inset:0;
+      border-radius:16px; pointer-events:none;
+      opacity:0; transition:opacity .15s;
+    }
+    .catch-flash.green { background:rgba(76,175,80,.3); opacity:1; }
+    .catch-flash.red   { background:rgba(244,67,54,.3); opacity:1; }
+
+    /* ── Instruction hint ────────────────────────── */
+    .hint-box {
+      margin-top:14px; background:#f3e5f5;
+      border-radius:12px; padding:10px 18px;
+      font-family:'Patrick Hand',cursive; font-size:.95rem;
+      color:#4a0072; max-width:360px; text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="game-header">
+    <a href="../index.html" class="btn btn-gray" style="font-size:.9rem">← Inicio</a>
+    <h2 style="margin:0;font-size:1.35rem;font-family:'Patrick Hand',cursive">☔ Lluvia de Números</h2>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar">
+      <div class="streak-dot" id="sd0"></div>
+      <div class="streak-dot" id="sd1"></div>
+      <div class="streak-dot" id="sd2"></div>
+    </div>
+  </div>
+
+  <!-- Prompt -->
+  <div class="prompt-box" id="prompt">¡Prepárate para la lluvia!</div>
+
+  <!-- Game area -->
+  <div class="game-wrap">
+
+    <!-- Sum panel -->
+    <div class="sum-panel">
+      <h3>📐 La suma</h3>
+      <table class="sum-table">
+        <tbody id="sumBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Arena -->
+    <div class="arena" id="arena">
+      <div class="catch-flash" id="catchFlash"></div>
+      <div class="bucket" id="bucket">🪣</div>
+    </div>
+
+  </div>
+
+  <!-- Hint -->
+  <div class="hint-box">
+    🖱️ Mueve el ratón dentro del área azul para mover el cubo
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+    // ════════════════════════════════════════════════
+    //  CONFIG
+    // ════════════════════════════════════════════════
+    const ARENA_W   = 360;
+    const ARENA_H   = 500;
+    const BUCKET_W  = 76;
+    const BUCKET_H  = 56;
+    const NUM_SIZE  = 54;
+    const BUCKET_Y  = ARENA_H - BUCKET_H - 14;   // top of bucket
+    const STREAK_GOAL = 3;
+
+    // Speed (px/frame) and spawn interval (ms) per level
+    const CFG = [
+      { name:'🎓 Aprendiz',     type:'1+1',  speed:1.4, interval:1400 },
+      { name:'⚡ Mago',         type:'2+1',  speed:1.8, interval:1200 },
+      { name:'🌟 Archimago',    type:'2+2',  speed:2.2, interval:1050 },
+      { name:'🧙 Brujo Experto',type:'2+2b', speed:2.7, interval: 900 },
+    ];
+
+    // ════════════════════════════════════════════════
+    //  STATE
+    // ════════════════════════════════════════════════
+    let level   = Math.min(parseInt(sessionStorage.getItem('mat5_level')||'0'), 3);
+    let streak  = 0;
+    let score   = 0;
+    let problem = null;
+    let steps   = [];
+    let stepIdx = 0;
+    let filled  = {};           // {units, carry, tens, hundreds} → digit value
+
+    let fallers       = [];     // [{el, val, x, y, speed}]
+    let running       = false;
+    let rafId         = null;
+    let lastSpawnTime = -99999;
+    let bucketX       = ARENA_W / 2 - BUCKET_W / 2;
+
+    // ════════════════════════════════════════════════
+    //  DOM REFS
+    // ════════════════════════════════════════════════
+    const arenaEl    = document.getElementById('arena');
+    const bucketEl   = document.getElementById('bucket');
+    const promptEl   = document.getElementById('prompt');
+    const sumBodyEl  = document.getElementById('sumBody');
+    const levelBadge = document.getElementById('levelBadge');
+    const scoreDisp  = document.getElementById('scoreDisp');
+    const flashEl    = document.getElementById('catchFlash');
+
+    // ════════════════════════════════════════════════
+    //  HELPERS
+    // ════════════════════════════════════════════════
+    const rand  = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    // ════════════════════════════════════════════════
+    //  PROBLEM GENERATOR
+    // ════════════════════════════════════════════════
+    function genProblem() {
+      const type = CFG[level].type;
+      for (let attempt = 0; attempt < 300; attempt++) {
+        let a, b;
+        if (type === '1+1') {
+          // 1-digit + 1-digit, always carry  (sum >= 10)
+          a = rand(2, 9);
+          b = rand(2, 9);
+          if (a + b < 10) continue;
+
+        } else if (type === '2+1') {
+          // 2-digit + 1-digit, units must carry
+          a = rand(12, 59);
+          b = rand(1, 9);
+          if ((a % 10) + b < 10) continue;
+
+        } else if (type === '2+2') {
+          // 2-digit + 2-digit, units carry, NO tens carry (result stays 2-digit)
+          a = rand(11, 59);
+          b = rand(11, 59);
+          const uCarry = ((a % 10) + (b % 10) >= 10) ? 1 : 0;
+          if (!uCarry) continue;
+          const tSum = Math.floor(a / 10) + Math.floor(b / 10) + uCarry;
+          if (tSum >= 10) continue;   // would produce 3-digit → skip
+
+        } else {
+          // '2+2b': 2-digit + 2-digit, BOTH carries (3-digit result)
+          a = rand(19, 95);
+          b = rand(15, 95);
+          if (a + b > 199) continue;
+          const uCarry = ((a % 10) + (b % 10) >= 10) ? 1 : 0;
+          if (!uCarry) continue;
+          const tSum = Math.floor(a / 10) + Math.floor(b / 10) + uCarry;
+          if (tSum < 10) continue;    // needs tens carry too
+        }
+        return { a, b, sum: a + b };
+      }
+      return { a: 7, b: 5, sum: 12 }; // safe fallback
+    }
+
+    // ════════════════════════════════════════════════
+    //  BUILD STEP SEQUENCE
+    //  Each step: { target (digit to catch), col (result column filled), label }
+    // ════════════════════════════════════════════════
+    function buildSteps(p) {
+      const { a, b }   = p;
+      const au = a % 10,  at = Math.floor(a / 10);
+      const bu = b % 10,  bt = Math.floor(b / 10);
+      const uSum   = au + bu;
+      const uDigit = uSum % 10;
+      const uCarry = Math.floor(uSum / 10);   // always 1 for these problems
+      const tSum   = at + bt + uCarry;
+      const tDigit = tSum % 10;
+      const tCarry = Math.floor(tSum / 10);   // 1 only for '2+2b'
+
+      const s = [];
+
+      if (a < 10 && b < 10) {
+        // --- Level 0: 1+1 ---
+        // Result is 2-digit (e.g. 7+6=13): catch units first, then tens
+        s.push({ target: uDigit, col: 'units',
+                 label: `🎯 Caza las unidades del resultado` });
+        s.push({ target: uCarry, col: 'tens',
+                 label: `🎯 Caza las decenas del resultado` });
+      } else {
+        // --- Levels 1-3: multi-digit ---
+        s.push({ target: uDigit, col: 'units',
+                 label: `🎯 Caza las unidades del resultado` });
+        s.push({ target: uCarry, col: 'carry',
+                 label: `🎯 ¡Caza el acarreo! (lo que nos llevamos a las decenas)` });
+        s.push({ target: tDigit, col: 'tens',
+                 label: `🎯 Caza las decenas del resultado` });
+        if (tCarry > 0) {
+          // Level 3: tens also carries → hundreds digit = tCarry (always 1)
+          s.push({ target: tCarry, col: 'hundreds',
+                   label: `🎯 ¡Caza las centenas!` });
+        }
+      }
+      return s;
+    }
+
+    // ════════════════════════════════════════════════
+    //  RENDER SUM TABLE
+    // ════════════════════════════════════════════════
+    //  Fixed 4-column layout: [sign | hundreds | tens | units]
+    //  Carry row shown above tens column when relevant.
+    function renderSum() {
+      const { a, b } = problem;
+      const au = a % 10,  at = Math.floor(a / 10);
+      const bu = b % 10,  bt = Math.floor(b / 10);
+      const uSum   = au + bu;
+      const uCarry = Math.floor(uSum / 10);
+      const tSum   = at + bt + uCarry;
+      const tCarry = Math.floor(tSum / 10);
+      const is2d   = (a >= 10 || b >= 10);
+
+      const step      = steps[stepIdx];
+      const activeCol = step ? step.col : null;
+
+      // Helper: build a result slot
+      const slot = (col) => {
+        const val  = filled[col];
+        const act  = activeCol === col;
+        const cls  = act ? ' class="active"' : '';
+        const inner = val !== undefined
+          ? `<span class="filled-ok">${val}</span>`
+          : (act ? '<span class="slot-empty">?</span>' : '');
+        return `<td${cls}>${inner}</td>`;
+      };
+
+      // Helper: plain input digit cell
+      const dc = (n, col) => {
+        const act = activeCol === col;
+        return `<td${act ? ' class="active"' : ''}>${n !== 0 ? n : (a < 10 && b < 10 ? n : '')}</td>`;
+      };
+
+      let html = '';
+
+      // ── Carry row (only for multi-digit) ──────────
+      if (is2d) {
+        const carryVisible = filled.carry !== undefined || activeCol === 'carry';
+        const carryHL      = activeCol === 'carry' ? ' class="hl-carry"' : '';
+        const carryTxt     = carryVisible
+          ? `<span class="carry-small">${uCarry}</span>` : '&nbsp;';
+        // carry sits above the tens column (col-index 2 of 4)
+        html += `<tr>
+          <td></td>
+          <td></td>
+          <td${carryHL}>${carryTxt}</td>
+          <td></td>
+        </tr>`;
+      }
+
+      // ── Row A ──────────────────────────────────────
+      html += `<tr>
+        <td></td>
+        <td></td>
+        <td>${at > 0 ? at : ''}</td>
+        <td>${au}</td>
+      </tr>`;
+
+      // ── Row B ──────────────────────────────────────
+      html += `<tr>
+        <td style="font-size:1.6rem;color:#555">+</td>
+        <td></td>
+        <td>${bt > 0 ? bt : ''}</td>
+        <td>${bu}</td>
+      </tr>`;
+
+      // ── Separator ─────────────────────────────────
+      html += `<tr>
+        <td class="sep"></td>
+        <td class="sep"></td>
+        <td class="sep"></td>
+        <td class="sep"></td>
+      </tr>`;
+
+      // ── Result row ────────────────────────────────
+      html += `<tr>
+        <td></td>
+        ${slot('hundreds')}
+        ${slot('tens')}
+        ${slot('units')}
+      </tr>`;
+
+      sumBodyEl.innerHTML = html;
+    }
+
+    // ════════════════════════════════════════════════
+    //  SPAWNING FALLING NUMBERS
+    // ════════════════════════════════════════════════
+    const FALLER_COLORS = [
+      ['#3949ab','#7986cb'],['#0277bd','#4fc3f7'],['#00695c','#4db6ac'],
+      ['#558b2f','#aed581'],['#e65100','#ffb74d'],['#6a1b9a','#ce93d8'],
+      ['#37474f','#90a4ae'],['#880e4f','#f48fb1'],
+    ];
+
+    function spawnWave() {
+      if (!running) return;
+      const target = steps[stepIdx].target;
+      const count  = rand(3, 5);
+
+      // Non-overlapping x positions
+      const xs = [];
+      for (let i = 0; i < count; i++) {
+        let x, tries = 0;
+        do { x = rand(8, ARENA_W - NUM_SIZE - 8); tries++; }
+        while (xs.some(px => Math.abs(px - x) < NUM_SIZE + 6) && tries < 30);
+        xs.push(x);
+      }
+
+      // One position gets the correct number, rest get distractors 0-9
+      const correctPos = rand(0, count - 1);
+      const distractors = [...Array(10).keys()]
+        .filter(d => d !== target)
+        .sort(() => Math.random() - 0.5);
+
+      xs.forEach((x, i) => {
+        const val = (i === correctPos) ? target : distractors[i < correctPos ? i : i - 1];
+        const [bg, border] = FALLER_COLORS[rand(0, FALLER_COLORS.length - 1)];
+
+        const el = document.createElement('div');
+        el.className = 'falling-num';
+        el.style.cssText =
+          `left:${x}px; top:-60px;` +
+          `background:linear-gradient(145deg,${bg},${border});` +
+          `border-color:${border};`;
+        el.textContent = val;
+        arenaEl.appendChild(el);
+
+        fallers.push({ el, val, x, y: -60,
+                       speed: CFG[level].speed + Math.random() * 0.7 });
+      });
+    }
+
+    // ════════════════════════════════════════════════
+    //  GAME LOOP
+    // ════════════════════════════════════════════════
+    function gameLoop(ts) {
+      if (!running) return;
+
+      // Spawn new wave?
+      if (ts - lastSpawnTime > CFG[level].interval && fallers.length < 6) {
+        spawnWave();
+        lastSpawnTime = ts;
+      }
+
+      // Update positions + collision
+      const toRemove = [];
+
+      for (const f of fallers) {
+        f.y += f.speed;
+        f.el.style.top = f.y + 'px';
+
+        // Off screen?
+        if (f.y > ARENA_H + 10) { toRemove.push(f); continue; }
+
+        // Collision with bucket
+        const fRight  = f.x + NUM_SIZE;
+        const bRight  = bucketX + BUCKET_W;
+        const fBottom = f.y + NUM_SIZE;
+        const overlap = fRight > bucketX + 8 && f.x < bRight - 8 &&
+                        fBottom >= BUCKET_Y  && f.y <= BUCKET_Y + BUCKET_H;
+        if (overlap) { toRemove.push(f); onCatch(f.val); }
+      }
+
+      for (const f of toRemove) {
+        f.el.remove();
+        fallers.splice(fallers.indexOf(f), 1);
+      }
+
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    // ════════════════════════════════════════════════
+    //  CATCH HANDLER
+    // ════════════════════════════════════════════════
+    function onCatch(val) {
+      const target = steps[stepIdx].target;
+
+      if (val === target) {
+        // ✅ Correct
+        flashArena('green');
+        Sound.correct();
+        filled[steps[stepIdx].col] = val;
+        stepIdx++;
+
+        if (stepIdx >= steps.length) {
+          // Problem complete!
+          renderSum();
+          setTimeout(onProblemSolved, 500);
+        } else {
+          renderSum();
+          promptEl.textContent = steps[stepIdx].label;
+          clearFallers();
+          lastSpawnTime = -99999;
+        }
+      } else {
+        // ❌ Wrong
+        flashArena('red');
+        Sound.wrong();
+        bucketEl.classList.remove('shake');
+        // Force reflow to restart animation
+        void bucketEl.offsetWidth;
+        bucketEl.classList.add('shake');
+        setTimeout(() => bucketEl.classList.remove('shake'), 350);
+      }
+    }
+
+    // ════════════════════════════════════════════════
+    //  PROBLEM SOLVED
+    // ════════════════════════════════════════════════
+    function onProblemSolved() {
+      running = false;
+      cancelAnimationFrame(rafId);
+      clearFallers();
+
+      score += 10;
+      scoreDisp.textContent = score;
+
+      streak++;
+      updateStreak();
+
+      if (streak >= STREAK_GOAL && level < 3) {
+        level++;
+        streak = 0;
+        sessionStorage.setItem('mat5_level', level);
+        updateLevelBadge();
+        promptEl.textContent = `🎉 ¡Subiste a ${CFG[level].name}!`;
+        Sound.fanfare();
+        setTimeout(newProblem, 2000);
+      } else {
+        promptEl.textContent = `✨ ¡Perfecto! ${problem.a} + ${problem.b} = ${problem.sum}`;
+        setTimeout(newProblem, 1800);
+      }
+    }
+
+    // ════════════════════════════════════════════════
+    //  NEW PROBLEM
+    // ════════════════════════════════════════════════
+    function newProblem() {
+      filled  = {};
+      fallers.forEach(f => f.el.remove());
+      fallers = [];
+      lastSpawnTime = -99999;
+
+      problem = genProblem();
+      steps   = buildSteps(problem);
+      stepIdx = 0;
+
+      renderSum();
+      updateLevelBadge();
+      updateStreak();
+      promptEl.textContent = steps[0].label;
+
+      running = true;
+      rafId   = requestAnimationFrame(gameLoop);
+    }
+
+    // ════════════════════════════════════════════════
+    //  UTILS
+    // ════════════════════════════════════════════════
+    function clearFallers() {
+      fallers.forEach(f => f.el.remove());
+      fallers = [];
+    }
+
+    function flashArena(color) {
+      flashEl.className = 'catch-flash';
+      flashEl.classList.add(color);
+      setTimeout(() => (flashEl.className = 'catch-flash'), 450);
+    }
+
+    function updateStreak() {
+      for (let i = 0; i < 3; i++)
+        document.getElementById('sd' + i).classList.toggle('on', i < streak);
+    }
+
+    function updateLevelBadge() {
+      levelBadge.textContent = CFG[level].name;
+    }
+
+    // ════════════════════════════════════════════════
+    //  BUCKET MOVEMENT  (mouse + touch)
+    // ════════════════════════════════════════════════
+    arenaEl.addEventListener('pointermove', e => {
+      const rect = arenaEl.getBoundingClientRect();
+      bucketX = clamp(e.clientX - rect.left - BUCKET_W / 2, 0, ARENA_W - BUCKET_W);
+      bucketEl.style.left = bucketX + 'px';
+    });
+
+    // Also allow keyboard (← →) for accessibility
+    document.addEventListener('keydown', e => {
+      const step = 20;
+      if (e.key === 'ArrowLeft')  bucketX = clamp(bucketX - step, 0, ARENA_W - BUCKET_W);
+      if (e.key === 'ArrowRight') bucketX = clamp(bucketX + step, 0, ARENA_W - BUCKET_W);
+      bucketEl.style.left = bucketX + 'px';
+    });
+
+    // ════════════════════════════════════════════════
+    //  INIT
+    // ════════════════════════════════════════════════
+    bucketEl.style.left = bucketX + 'px';
+    updateLevelBadge();
+    updateStreak();
+    promptEl.textContent = '🖱️ Mueve el ratón al área azul para empezar';
+    setTimeout(newProblem, 1200);
+  </script>
+</body>
+</html>

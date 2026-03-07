@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 4 – CE, SE o ZE / CI, SI o ZI</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .ex-emoji { font-size:4.5rem; display:block; text-align:center; margin:8px auto; }
+    .word-display { font-size:2.4rem; margin:12px 0; text-align:center; }
+    .tiles-bank .tile { min-width:68px; text-align:center; font-size:1.4rem; }
+    .speak-btn {
+      background: var(--blue); color:#fff; border:none; border-radius:30px;
+      padding:8px 20px; font-family:var(--font); font-size:1rem; cursor:pointer;
+      margin:8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🦓 Juego 4 — CE, SE / CI, SI, ZI</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Arrastra la sílaba correcta 👇 <button class="speak-btn" id="speakBtn" onclick="speakWord()">🔊 Escucha</button></p>
+    <div id="exerciseZone"></div>
+    <div class="tiles-bank" id="tilesBank"></div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { prefix:'', suffix:'bra',   answer:'ce', options:['ce','se','ze'], emoji:'🦓', fullWord:'cebra' },
+    { prefix:'', suffix:'rio',   answer:'se', options:['ce','se','ze'], emoji:'🏞', fullWord:'serio' },
+    { prefix:'', suffix:'na',    answer:'ce', options:['ce','se','ze'], emoji:'🍽', fullWord:'cena' },
+    { prefix:'', suffix:'ta',    answer:'se', options:['ce','se','ze'], emoji:'🦆', fullWord:'seta' },
+    { prefix:'', suffix:'ro',    answer:'ce', options:['ce','se','ze'], emoji:'0️⃣', fullWord:'cero' },
+    { prefix:'', suffix:'da',    answer:'se', options:['ce','se','ze'], emoji:'🌿', fullWord:'seda' },
+    // CI / SI / ZI
+    { prefix:'', suffix:'rco',   answer:'ci', options:['ci','si','zi'], emoji:'🎪', fullWord:'circo' },
+    { prefix:'', suffix:'lla',   answer:'si', options:['ci','si','zi'], emoji:'🪑', fullWord:'silla' },
+    { prefix:'', suffix:'udad',  answer:'ci', options:['ci','si','zi'], emoji:'🏙', fullWord:'ciudad' },
+    { prefix:'', suffix:'ete',   answer:'si', options:['ci','si','zi'], emoji:'7️⃣', fullWord:'siete' },
+    { prefix:'', suffix:'elo',   answer:'ci', options:['ci','si','zi'], emoji:'☁️', fullWord:'cielo' },
+    { prefix:'', suffix:'rena',  answer:'si', options:['ci','si','zi'], emoji:'🧜', fullWord:'sirena' },
+  ];
+
+  const shuffled=[...exercises].sort(()=>Math.random()-.5).slice(0,10);
+  let current=0, score=0, answered=false;
+  let currentWord='';
+
+  function speakWord(){
+    if(!currentWord) return;
+    const u=new SpeechSynthesisUtterance(currentWord);
+    u.lang='es-ES'; u.rate=.85;
+    window.speechSynthesis.speak(u);
+  }
+
+  function showEx(){
+    answered=false;
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('progressBar').style.width=(current/shuffled.length*100)+'%';
+    const ex=shuffled[current];
+    currentWord=ex.fullWord;
+
+    document.getElementById('exerciseZone').innerHTML=`
+      <span class="ex-emoji">${ex.emoji}</span>
+      <div class="word-display">
+        <span class="blank" id="blank" data-drop="true" data-answer="${ex.answer}">&nbsp;&nbsp;&nbsp;</span>${ex.suffix}
+      </div>`;
+
+    const opts=ex.options.sort(()=>Math.random()-.5);
+    document.getElementById('tilesBank').innerHTML=opts.map((o,i)=>
+      `<div class="tile" id="t${i}" data-value="${o}" draggable="true">${o}</div>`
+    ).join('');
+    opts.forEach((_,i)=>makeDraggable(document.getElementById('t'+i)));
+
+    const blank=document.getElementById('blank');
+    makeDropZone(blank,(val,srcId,zone)=>{
+      if(answered) return;
+      answered=true;
+      const correct=val===ex.answer;
+      zone.textContent=val;
+      zone.classList.add(correct?'correct':'wrong');
+      if(correct){score+=10;document.getElementById('score').textContent=score;}
+      showFeedback(correct,correct?`¡Correcto! La palabra es <strong>${ex.fullWord}</strong>`:`Era <strong>${ex.answer}</strong> → <strong>${ex.fullWord}</strong>`);
+      document.getElementById('nextBtn').style.display='inline-block';
+    });
+
+    speakWord();
+  }
+
+  function nextEx(){
+    current++;
+    if(current>=shuffled.length) maybePodio(4,score,shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

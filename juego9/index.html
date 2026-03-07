@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 9 – Ordena la frase</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .word-pool {
+      display:flex; flex-wrap:wrap; gap:12px;
+      justify-content:center; margin:18px 0;
+      min-height:64px;
+      background:#F1F8E9; border-radius:14px; padding:14px;
+      border:2px dashed #9CCC65;
+    }
+    .sentence-slots {
+      display:flex; flex-wrap:wrap; gap:10px;
+      justify-content:center; align-items:center;
+      min-height:70px;
+      background:#E3F2FD; border-radius:14px; padding:14px;
+      border:2px dashed var(--blue);
+      margin-bottom:14px;
+    }
+    .word-tile {
+      background:var(--coral); color:#fff;
+      border-radius:12px; padding:12px 18px;
+      font-size:1.35rem; cursor:grab;
+      box-shadow:var(--shadow); user-select:none; touch-action:none;
+      transition:transform .14s;
+    }
+    .word-tile:hover { transform:scale(1.05); }
+    .word-tile.placed { background:var(--green); }
+    .slot {
+      background:#fff; border:2px dashed var(--blue-dk);
+      border-radius:10px; min-width:80px; min-height:48px;
+      line-height:48px; text-align:center; font-size:1.3rem;
+      padding:0 8px; transition:background .2s;
+    }
+    .slot.over    { background:var(--yellow); }
+    .slot.correct { background:#C8E6C9; border-color:var(--green); }
+    .slot.wrong   { background:#FFCDD2; border-color:var(--red); }
+    .hint-row { display:flex; gap:12px; justify-content:center; margin-bottom:8px; }
+    .progress-msg { font-size:.95rem; color:#888; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🧩 Juego 9 — Ordena la frase</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Arrastra las palabras en el orden correcto 🧩</p>
+    <p id="exNum" style="color:var(--blue-dk);font-size:1rem;margin-bottom:6px"></p>
+
+    <div class="sentence-slots" id="sentenceSlots"></div>
+    <div class="word-pool"      id="wordPool"></div>
+
+    <div class="hint-row">
+      <button class="btn btn-yellow" onclick="giveHint()" id="hintBtn">💡 Pista (-3 pts)</button>
+      <button class="btn btn-green"  id="checkBtn" onclick="checkSentence()">✔ Comprobar</button>
+    </div>
+    <p class="progress-msg" id="progressMsg"></p>
+    <div style="text-align:center">
+      <button class="btn btn-blue" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const sentences = [
+    { words:['El','gato','bebe','leche','fría.'],         emoji:'🐱' },
+    { words:['La','niña','corre','en','el','parque.'],     emoji:'🏃‍♀️' },
+    { words:['Mi','mamá','cocina','una','sopa','rica.'],   emoji:'🍲' },
+    { words:['El','perro','grande','duerme','en','casa.'], emoji:'🐶' },
+    { words:['Los','pájaros','cantan','por','la','mañana.'],emoji:'🐦' },
+    { words:['Ana','dibuja','un','árbol','verde.'],        emoji:'🎨' },
+    { words:['El','sol','brilla','mucho','hoy.'],          emoji:'☀️' },
+    { words:['Pedro','lee','un','libro','muy','grande.'],  emoji:'📚' },
+    { words:['La','mariposa','vuela','sobre','las','flores.'],emoji:'🦋' },
+    { words:['Hoy','es','martes','y','llueve','mucho.'],   emoji:'🌧' },
+  ];
+
+  const shuffled=[...sentences].sort(()=>Math.random()-.5);
+  let current=0, score=0, hintUsed=0;
+  let order=[], placed=[];
+
+  function showEx(){
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('progressMsg').textContent='';
+    document.getElementById('hintBtn').disabled=false;
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('progressBar').style.width=(current/shuffled.length*100)+'%';
+    hintUsed=0;
+    const ex=shuffled[current];
+    document.getElementById('exNum').textContent=`Frase ${current+1} de ${shuffled.length} — ${ex.emoji}`;
+
+    // Shuffle words into pool
+    order=[...ex.words].sort(()=>Math.random()-.5);
+    placed=new Array(ex.words.length).fill(null);
+
+    renderSlots(ex);
+    renderPool(order);
+  }
+
+  function renderSlots(ex){
+    const slots=document.getElementById('sentenceSlots');
+    slots.innerHTML=ex.words.map((_,i)=>
+      `<div class="slot" id="slot${i}" data-drop="true" data-idx="${i}"></div>`
+    ).join('');
+    ex.words.forEach((_,i)=>{
+      const slot=document.getElementById('slot'+i);
+      makeDropZone(slot,(val,srcId,z)=>{
+        // Move tile into slot
+        const idx=parseInt(z.dataset.idx);
+        // Return previous tile if slot occupied
+        if(placed[idx]){
+          returnToPool(placed[idx]);
+        }
+        placed[idx]=val;
+        z.textContent=val;
+        z.classList.add('placed');
+        // Remove from pool
+        const poolTile=document.getElementById(srcId);
+        if(poolTile) poolTile.remove();
+        updateMsg();
+      });
+    });
+  }
+
+  function renderPool(words){
+    const pool=document.getElementById('wordPool');
+    pool.innerHTML=words.map((w,i)=>
+      `<div class="word-tile" id="wt_${i}" data-value="${w}" draggable="true">${w}</div>`
+    ).join('');
+    words.forEach((_,i)=>makeDraggable(document.getElementById('wt_'+i)));
+  }
+
+  function returnToPool(word){
+    const pool=document.getElementById('wordPool');
+    const tile=document.createElement('div');
+    const id='wt_'+Date.now();
+    tile.className='word-tile';
+    tile.id=id;
+    tile.dataset.value=word;
+    tile.draggable=true;
+    tile.textContent=word;
+    pool.appendChild(tile);
+    makeDraggable(tile);
+  }
+
+  function updateMsg(){
+    const filled=placed.filter(Boolean).length;
+    document.getElementById('progressMsg').textContent=`${filled} de ${placed.length} palabras colocadas`;
+  }
+
+  function checkSentence(){
+    const ex=shuffled[current];
+    let correct=true;
+    ex.words.forEach((w,i)=>{
+      const slot=document.getElementById('slot'+i);
+      if(placed[i]===w){
+        slot.classList.add('correct');
+      } else {
+        slot.classList.add('wrong');
+        correct=false;
+      }
+    });
+    const pts=correct?(hintUsed?7:10):0;
+    score+=pts; document.getElementById('score').textContent=score;
+    showFeedback(correct,correct?`¡Perfecto! ${ex.emoji} +${pts} puntos`:'Alguna palabra no está en su sitio. ¡Mira las rojas!');
+    document.getElementById('nextBtn').style.display='inline-block';
+    document.getElementById('checkBtn').disabled=true;
+  }
+
+  function giveHint(){
+    const ex=shuffled[current];
+    document.getElementById('hintBtn').disabled=true;
+    hintUsed=true;
+    // Place first unfilled word
+    for(let i=0;i<ex.words.length;i++){
+      if(!placed[i]){
+        placed[i]=ex.words[i];
+        const slot=document.getElementById('slot'+i);
+        slot.textContent=ex.words[i];
+        slot.style.background='#FFF9C4';
+        // Remove from pool if present
+        const tiles=document.querySelectorAll('.word-tile');
+        tiles.forEach(t=>{ if(t.dataset.value===ex.words[i] && !t.closest('.sentence-slots')){ t.remove(); return; } });
+        break;
+      }
+    }
+    updateMsg();
+  }
+
+  function nextEx(){
+    current++;
+    if(current>=shuffled.length) maybePodio(9,score,shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

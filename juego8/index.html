@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 8 – Corrige el dictado</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .sentence-wrap {
+      display: flex; flex-wrap: wrap; align-items: flex-end;
+      row-gap: 10px; column-gap: 0;
+      font-family: 'Patrick Hand', cursive;
+      margin: 20px auto; max-width: 820px;
+      background: #FFFDE7; border-radius: 14px; padding: 20px 24px;
+    }
+    .word-group {
+      display: inline-flex; white-space: nowrap;
+      align-items: flex-end; margin-right: .38em;
+    }
+    .char-btn {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.45rem; min-width: .9em; text-align: center;
+      background: #fff; border: 1.5px solid #ccc;
+      border-radius: 6px; cursor: pointer;
+      padding: 1px 3px; line-height: 1.35;
+      transition: background .12s, border-color .12s;
+      user-select: none; -webkit-user-select: none;
+    }
+    .char-btn:hover  { background: #FFF9C4; border-color: #999; }
+    .char-btn.errata { border-color: #FFAB40; background: #FFF3E0; }
+    .char-btn.ok     { border-color: var(--green) !important; background: #C8E6C9 !important;
+                       color: #2E7D32; pointer-events: none; }
+    .char-btn.fail   { border-color: var(--coral) !important; background: #FFCDD2 !important;
+                       color: #c62828; animation: shake .3s; }
+    .char-fixed { font-size: 1.45rem; padding: 1px 0; line-height: 1.35; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+    }
+    #pendingMsg { min-height:1.5em; text-align:center; font-size:1rem; color:#555; margin:8px 0; }
+    .btn-check  { background: var(--yellow); }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>✏️ Juego 8 — Corrige el dictado</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Toca las letras o signos para cambiarlos. Cuando creas que está bien, pulsa <strong>Comprobar</strong>.</p>
+    <div class="sentence-wrap" id="sentenceWrap"></div>
+    <p id="pendingMsg"></p>
+    <div style="text-align:center; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-check" id="checkBtn" onclick="checkAnswers()">✔ Comprobar</button>
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ── Cycling rules ─────────────────────────────────────────────────────────
+  const VOWEL_STATES = {
+    a:['a','A','á','Á'], e:['e','E','é','É'], i:['i','I','í','Í'],
+    o:['o','O','ó','Ó'], u:['u','U','ú','Ú']
+  };
+  const VOWEL_BASE = {
+    a:'a',á:'a',A:'a',Á:'a', e:'e',é:'e',E:'e',É:'e',
+    i:'i',í:'i',I:'i',Í:'i', o:'o',ó:'o',O:'o',Ó:'o',
+    u:'u',ú:'u',U:'u',Ú:'u'
+  };
+  const PUNCT_CYCLE = [',','.',';',':'];
+
+  function getStates(ch) {
+    if (VOWEL_BASE[ch] !== undefined) return VOWEL_STATES[VOWEL_BASE[ch]];
+    if (PUNCT_CYCLE.includes(ch))    return PUNCT_CYCLE;
+    if (/[a-zA-ZñÑüÜ]/.test(ch))    return [ch.toLowerCase(), ch.toUpperCase()];
+    return null; // space, !, ¡, ?, ¿, digits → fixed
+  }
+
+  // ── 25 exercises: [wrong, correct] — same length, char-by-char comparison ─
+  const exercises = [
+    ['habia una vez un niño que tenia miedo,',
+     'Había una vez un niño que tenía miedo.'],
+    ['mi mama se llama lucia.',
+     'Mi mamá se llama Lucía.'],
+    ['el arbol del jardin es muy alto.',
+     'El árbol del jardín es muy alto.'],
+    ['ana y pedro juegan en el parque,',
+     'Ana y Pedro juegan en el parque.'],
+    ['el medico curo al enfermo.',
+     'El médico curó al enfermo.'],
+    ['hoy hace mucho calor en sevilla.',
+     'Hoy hace mucho calor en Sevilla.'],
+    ['mi perro se llama rufo, es muy travieso.',
+     'Mi perro se llama Rufo. Es muy travieso.'],
+    ['la musica clasica es bonita.',
+     'La música clásica es bonita.'],
+    ['luisa tiene un lapiz amarillo,',
+     'Luisa tiene un lápiz amarillo.'],
+    ['el camion de bomberos es rojo,',
+     'El camión de bomberos es rojo.'],
+    ['ayer fue el cumpleaños de sofia,',
+     'Ayer fue el cumpleaños de Sofía.'],
+    ['el rapido tren llega a madrid,',
+     'El rápido tren llega a Madrid.'],
+    ['maria tiene un pajaro azul.',
+     'María tiene un pájaro azul.'],
+    ['en españa hace mucho sol,',
+     'En España hace mucho sol.'],
+    ['pablo y lucia fueron al zoo,',
+     'Pablo y Lucía fueron al zoo.'],
+    ['mi abuela se llama rosa, tiene ochenta años.',
+     'Mi abuela se llama Rosa. Tiene ochenta años.'],
+    ['el bebe llora mucho por la noche,',
+     'El bebé llora mucho por la noche.'],
+    ['hoy es sabado y no hay cole.',
+     'Hoy es sábado y no hay cole.'],
+    ['la musica del violin es preciosa,',
+     'La música del violín es preciosa.'],
+    ['el leon vive en africa,',
+     'El león vive en África.'],
+    ['sofia corre mas rapido que ana,',
+     'Sofía corre más rápido que Ana.'],
+    ['mi papa trabaja en un jardin,',
+     'Mi papá trabaja en un jardín.'],
+    ['el pajaro canta cerca del rio,',
+     'El pájaro canta cerca del río.'],
+    ['juan y carlos juegan al futbol,',
+     'Juan y Carlos juegan al fútbol.'],
+    ['es el primer dia de primavera,',
+     'Es el primer día de primavera.'],
+  ];
+
+  const shuffled = [...exercises].sort(()=>Math.random()-.5);
+  let current = 0, score = 0;
+  let charBtns = [];
+
+  // ── Build interactive sentence ────────────────────────────────────────────
+  function buildSentence(wrong, correct) {
+    charBtns = [];
+    const wrap = document.getElementById('sentenceWrap');
+    wrap.innerHTML = '';
+    let i = 0;
+    while (i < wrong.length) {
+      if (wrong[i] === ' ') {
+        const sp = document.createElement('span');
+        sp.style.cssText = 'display:inline-block;width:.4em';
+        wrap.appendChild(sp);
+        i++;
+      } else {
+        const wg = document.createElement('span');
+        wg.className = 'word-group';
+        while (i < wrong.length && wrong[i] !== ' ') {
+          const wCh = wrong[i], cCh = correct[i];
+          const states = getStates(wCh);
+          if (states) {
+            const btn = document.createElement('button');
+            btn.className = 'char-btn' + (wCh !== cCh ? ' errata' : '');
+            btn.textContent = wCh;
+            btn._states   = states;
+            btn._stateIdx = states.indexOf(wCh);
+            btn._correct  = cCh;
+            btn.addEventListener('click', onCharClick);
+            charBtns.push(btn);
+            wg.appendChild(btn);
+          } else {
+            const fx = document.createElement('span');
+            fx.className = 'char-fixed';
+            fx.textContent = wCh;
+            wg.appendChild(fx);
+          }
+          i++;
+        }
+        wrap.appendChild(wg);
+      }
+    }
+  }
+
+  function onCharClick(e) {
+    const btn = e.currentTarget;
+    if (btn.classList.contains('ok')) return;
+    btn._stateIdx = (btn._stateIdx + 1) % btn._states.length;
+    btn.textContent = btn._states[btn._stateIdx];
+    btn.classList.remove('fail');
+    // Orange hint only when sitting on the original (wrong) value
+    if (btn._stateIdx === 0) btn.classList.add('errata');
+    else btn.classList.remove('errata');
+  }
+
+  // ── Check ─────────────────────────────────────────────────────────────────
+  function checkAnswers() {
+    document.getElementById('checkBtn').disabled = true;
+    let fail = 0;
+    charBtns.forEach(btn => {
+      if (btn.classList.contains('ok')) return;
+      if (btn.textContent === btn._correct) {
+        btn.classList.add('ok');
+        btn.classList.remove('errata','fail');
+      } else {
+        btn.classList.add('fail');
+        fail++;
+      }
+    });
+
+    const pts = fail === 0 ? 10 : fail <= 1 ? 5 : 0;
+    score += pts;
+    document.getElementById('score').textContent = score;
+
+    if (fail === 0) {
+      Sound.fanfare();
+      document.getElementById('pendingMsg').textContent =
+        `🌟 ¡Perfecto! Todo correcto. +${pts} puntos`;
+    } else {
+      Sound.wrong();
+      document.getElementById('pendingMsg').textContent =
+        `${fail} error${fail>1?'es':''} todavía sin corregir (en rojo).` +
+        (pts > 0 ? ` +${pts} puntos` : ' ¡Sigue intentándolo!');
+      setTimeout(()=>{ document.getElementById('checkBtn').disabled = false; }, 700);
+    }
+    setTimeout(()=>document.getElementById('nextBtn').style.display='inline-block', 500);
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  function nextEx() {
+    current++;
+    if (current >= shuffled.length) maybePodio(8, score, shuffled.length * 10);
+    else showEx();
+  }
+
+  function showEx() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('checkBtn').disabled = false;
+    document.getElementById('pendingMsg').textContent =
+      'Las letras/signos en naranja pueden tener un error. ¡Encuéntralos y corrígelos!';
+    document.getElementById('progressBar').style.width =
+      (current / shuffled.length * 100) + '%';
+    const [wrong, correct] = shuffled[current];
+    buildSentence(wrong, correct);
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

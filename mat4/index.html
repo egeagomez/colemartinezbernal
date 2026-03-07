@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Problemas del Mago — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background:linear-gradient(135deg,#2d004a,#4a0072); border-bottom:3px solid #FFD700; color:#FFD700; text-shadow:0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Scroll / parchment ── */
+    @keyframes unroll { from{opacity:0;transform:scaleY(0.3) translateY(-30px)} to{opacity:1;transform:scaleY(1) translateY(0)} }
+    .scroll-card {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:3px solid #b8860b; border-radius:12px;
+      padding:24px 28px; margin:16px auto;
+      max-width:640px; box-shadow:0 6px 24px rgba(0,0,0,.35);
+      animation:unroll .4s ease;
+      transform-origin:top center;
+    }
+    .scroll-icon { font-size:2.5rem; margin-bottom:10px; display:block; text-align:center; }
+    .problem-text {
+      font-family:'Patrick Hand',cursive; font-size:1.25rem;
+      color:#3e2000; line-height:1.7; text-align:center;
+      margin-bottom:18px;
+    }
+    .problem-text strong { color:#6d1a00; font-size:1.35rem; }
+
+    /* ── Answers area ── */
+    .answers-area { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:8px; }
+    .answer-block { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .answer-label { font-size:.95rem; font-family:'Patrick Hand',cursive; color:#3e2000; font-weight:bold; }
+    .spin-wrap { display:flex; flex-direction:column; align-items:center; }
+    .spin-btn { width:56px; height:26px; background:#f0d060; border:1px solid #b8860b; cursor:pointer; font-size:1rem; border-radius:8px 8px 0 0; color:#3e2000; font-weight:bold; transition:background .1s; line-height:1; }
+    .spin-btn.down { border-radius:0 0 8px 8px; }
+    .spin-btn:hover { background:#ffe066; }
+    .spin-val { width:56px; height:56px; line-height:54px; text-align:center; font-size:2rem; font-family:'Patrick Hand',cursive; background:#fffde7; border:2px solid #b8860b; color:#3e2000; cursor:pointer; }
+    .spin-val.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; color:#2E7D32; }
+    .spin-val.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; color:#c62828; animation:shake .35s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+    /* ── After-answer reveal ── */
+    .solution { display:none; margin-top:10px; background:#E8F5E9; border:1px solid #4CAF50; border-radius:8px; padding:10px 16px; font-family:'Patrick Hand',cursive; font-size:1.05rem; color:#1b5e20; text-align:center; }
+    .solution.show { display:block; }
+
+    .btn-magic { background:linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; }
+    .btn-magic:hover { transform:scale(1.04); }
+    .btn-gold { background:#FFD700; color:#2d004a; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; box-shadow:0 4px 14px rgba(160,32,240,.3); transition:transform .1s; }
+    .btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    .progress-label { font-size:.9rem; color:#ce93d8; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>📜 Problemas del Mago</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Lee el enigma, gira las ruedas de números y pulsa Comprobar.</p>
+      <p class="progress-label" id="progressLabel"></p>
+    </div>
+
+    <div id="problemArea" style="max-width:680px;margin:0 auto"></div>
+
+    <p id="msgBox"></p>
+    <div style="text-align:center;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-magic" id="checkBtn" onclick="checkProblem()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn"  style="display:none" onclick="nextProblem()">📜 Siguiente enigma</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ── Problems ────────────────────────────────────────────────────────────────
+  // Each: { icon, text (HTML), answers:[{label,val}], solution, level }
+  const ALL_PROBLEMS = [
+    {
+      level:0, icon:'🍬',
+      text:'Ana tiene <strong>5</strong> caramelos. Luis le da <strong>3</strong> más.<br>¿Cuántos caramelos tiene Ana ahora?',
+      answers:[{label:'Caramelos de Ana',val:8}],
+      solution:'5 + 3 = 8 caramelos'
+    },
+    {
+      level:0, icon:'🐦',
+      text:'En el árbol hay <strong>12</strong> pájaros. Vuelan <strong>4</strong>.<br>¿Cuántos pájaros quedan?',
+      answers:[{label:'Pájaros',val:8}],
+      solution:'12 − 4 = 8 pájaros'
+    },
+    {
+      level:0, icon:'🏀',
+      text:'En clase hay <strong>20</strong> alumnos. <strong>8</strong> son niñas.<br>¿Cuántos son niños?',
+      answers:[{label:'Niños',val:12}],
+      solution:'20 − 8 = 12 niños'
+    },
+    {
+      level:0, icon:'🍎',
+      text:'María tiene <strong>7</strong> manzanas y su hermano <strong>5</strong>.<br>¿Cuántas tienen entre los dos?',
+      answers:[{label:'Manzanas',val:12}],
+      solution:'7 + 5 = 12 manzanas'
+    },
+    {
+      level:1, icon:'🪄',
+      text:'Carlos tiene <strong>14</strong> cromos.<br>Su amiga Lucía tiene <strong>7 más</strong> que él.<br>¿Cuántos cromos tiene Lucía?',
+      answers:[{label:'Cromos de Lucía',val:21}],
+      solution:'14 + 7 = 21 cromos'
+    },
+    {
+      level:1, icon:'🎒',
+      text:'En clase hay <strong>25</strong> alumnos.<br>Se van <strong>8</strong> al recreo antes.<br>¿Cuántos alumnos quedan todavía en clase?',
+      answers:[{label:'Alumnos en clase',val:17}],
+      solution:'25 − 8 = 17 alumnos'
+    },
+    {
+      level:1, icon:'💶',
+      text:'Marco tiene <strong>15 €</strong>. Gasta <strong>7 €</strong> en un libro.<br>¿Cuánto dinero le queda?',
+      answers:[{label:'Euros restantes',val:8}],
+      solution:'15 − 7 = 8 €'
+    },
+    {
+      level:1, icon:'👣',
+      text:'Marta tenía <strong>30</strong> pegatinas.<br>Ha regalado <strong>12</strong> a sus amigas.<br>¿Cuántas pegatinas le quedan a Marta?',
+      answers:[{label:'Pegatinas de Marta',val:18}],
+      solution:'30 − 12 = 18 pegatinas'
+    },
+    {
+      level:2, icon:'👨‍👩‍👧‍👦',
+      text:'Ana, Luis y Andrés son hermanos.<br>Andrés tiene <strong>5</strong> años.<br>Ana tiene <strong>3 más</strong> que Andrés.<br>Luis tiene <strong>2 más</strong> que Andrés.<br>¿Cuántos años tienen Ana y Luis?',
+      answers:[{label:'Años de Ana',val:8},{label:'Años de Luis',val:7}],
+      solution:'Ana: 5+3=8 años. Luis: 5+2=7 años'
+    },
+    {
+      level:2, icon:'🚂',
+      text:'El tren sale a las <strong>8</strong> de la mañana.<br>El viaje dura <strong>3 horas</strong>.<br>¿A qué hora llega?',
+      answers:[{label:'Hora de llegada',val:11}],
+      solution:'8 + 3 = 11 (las 11 de la mañana)'
+    },
+    {
+      level:2, icon:'🌳',
+      text:'Sofía tiene <strong>17</strong> caramelos.<br>Le regalan <strong>8</strong> más y luego ella regala <strong>6</strong> a su hermana.<br>¿Cuántos tiene después de recibir los caramelos?<br>¿Y cuántos le quedan al final?',
+      answers:[{label:'Tras recibir',val:25},{label:'Al final',val:19}],
+      solution:'17 + 8 = 25. Luego 25 − 6 = 19 caramelos'
+    },
+    {
+      level:2, icon:'🏠',
+      text:'Ana tiene <strong>16</strong> cromos.<br>Su hermano Tomás tiene <strong>7 menos</strong> que Ana.<br>Su prima Clara tiene <strong>5 más</strong> que Tomás.<br>¿Cuántos cromos tienen Tomás y Clara?',
+      answers:[{label:'Cromos de Tomás',val:9},{label:'Cromos de Clara',val:14}],
+      solution:'Tomás: 16 − 7 = 9. Clara: 9 + 5 = 14 cromos'
+    },
+  ];
+
+  // Separate by level and shuffle within each level
+  const byLevel = [0,1,2].map(lv=>
+    ALL_PROBLEMS.filter(p=>p.level===lv).sort(()=>Math.random()-.5)
+  );
+  const problems = [...byLevel[0],...byLevel[1],...byLevel[2]];
+
+  const LEVELS = ['🎓 Aprendiz','⚡ Mago','🌟 Archimago','🧙 Brujo Experto'];
+  let levelIdx = parseInt(sessionStorage.getItem('mat4_level')||'0');
+  let current = 0, streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 2;
+  let answerCells = []; // {val:0} per answer
+
+  function adj(idx, delta) {
+    const el = document.getElementById('ans'+idx);
+    el.classList.remove('correct','wrong');
+    answerCells[idx].val = Math.max(0, Math.min(99, answerCells[idx].val+delta));
+    el.textContent = answerCells[idx].val;
+  }
+
+  function showProblem() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('msgBox').textContent='';
+    document.getElementById('progressLabel').textContent =
+      `Enigma ${current+1} de ${problems.length}`;
+    document.getElementById('progressBar').style.width =
+      (current/problems.length*100)+'%';
+    updateLevelBadge(); updateStreak();
+
+    const p = problems[current];
+    answerCells = p.answers.map(()=>({val:0}));
+
+    const answersHtml = p.answers.map((a,i)=>`
+      <div class="answer-block">
+        <span class="answer-label">${a.label}:</span>
+        <div class="spin-wrap">
+          <button class="spin-btn"      onclick="adj(${i},1)">▲</button>
+          <div class="spin-val" id="ans${i}" onclick="adj(${i},1)">0</div>
+          <button class="spin-btn down" onclick="adj(${i},-1)">▼</button>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('problemArea').innerHTML = `
+      <div class="scroll-card">
+        <span class="scroll-icon">${p.icon}</span>
+        <div class="problem-text">${p.text}</div>
+        <div class="answers-area">${answersHtml}</div>
+        <div class="solution" id="solutionBox">${p.solution}</div>
+      </div>`;
+  }
+
+  function checkProblem() {
+    document.getElementById('checkBtn').disabled = true;
+    const p = problems[current];
+    let allOk = true;
+    p.answers.forEach((a,i)=>{
+      const el = document.getElementById('ans'+i);
+      const ok = answerCells[i].val === a.val;
+      el.classList.toggle('correct',ok);
+      el.classList.toggle('wrong',!ok);
+      if(!ok) allOk = false;
+    });
+
+    if(allOk){
+      totalScore += 10;
+      streak++;
+      document.getElementById('score').textContent = totalScore;
+      showSplash();
+      updateStreak();
+      document.getElementById('solutionBox').classList.add('show');
+      // Level up based on current problem difficulty
+      const newLv = Math.min(Math.floor(current / (problems.length/3)), 3);
+      if(newLv > levelIdx){
+        levelIdx = newLv;
+        sessionStorage.setItem('mat4_level', levelIdx);
+      }
+      updateLevelBadge();
+      document.getElementById('msgBox').textContent =
+        ['¡Bien resuelto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Eres un mago! 🧙'][Math.min(levelIdx,3)];
+    } else {
+      streak = 0; Sound.wrong();
+      document.getElementById('msgBox').textContent =
+        '🐍 Alguna respuesta no es correcta. ¡Vuelve a intentarlo!';
+      setTimeout(()=>{ document.getElementById('checkBtn').disabled=false; }, 700);
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function nextProblem() {
+    current++;
+    if(current >= problems.length){
+      Sound.fanfare();
+      document.getElementById('problemArea').innerHTML =
+        `<div class="scroll-card" style="text-align:center">
+          <span class="scroll-icon">🏆</span>
+          <div class="problem-text"><strong>¡Has resuelto todos los enigmas del mago!</strong><br>Puntuación: ${totalScore} puntos ✨</div>
+        </div>`;
+      document.getElementById('checkBtn').style.display='none';
+      document.getElementById('nextBtn').style.display='none';
+      sessionStorage.setItem('mat4_level','3');
+    } else {
+      showProblem();
+    }
+  }
+
+  function showSplash(){
+    Sound.fanfare();
+    const h = document.createElement('div');
+    h.style.cssText='position:fixed;top:20%;left:50%;transform:translateX(-50%);font-size:5rem;z-index:999;pointer-events:none;animation:unroll .7s ease forwards';
+    h.textContent='📜';
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(), 900);
+  }
+  function updateLevelBadge(){ document.getElementById('levelBadge').textContent=LEVELS[Math.min(levelIdx,3)]; }
+  function updateStreak(){
+    document.getElementById('streakBar').innerHTML=
+      Array.from({length:STREAK_NEEDED},(_,i)=>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  showProblem();
+  </script>
+</body>
+</html>

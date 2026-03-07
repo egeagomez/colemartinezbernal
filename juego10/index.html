@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 10 – El Gran Dictado 🏆</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .grand-title {
+      font-size:1.8rem; color:var(--yellow-dk); text-align:center;
+      text-shadow:0 2px 6px rgba(0,0,0,.12); margin-bottom:4px;
+    }
+    .dictado-area {
+      font-size:1.5rem; line-height:3.2rem;
+      background:#FFFDE7; border-radius:14px; padding:20px 22px;
+      text-align:left; max-width:720px; margin:12px auto;
+    }
+    /* Shared error class from juego8 */
+    .err {
+      display:inline-block;
+      border-bottom:3px dashed var(--red);
+      border-radius:4px; padding:0 3px;
+      color:var(--red); cursor:default;
+      transition:background .18s, color .18s;
+    }
+    .err.over    { background:var(--yellow); }
+    .err.correct { border-color:var(--green); background:#C8E6C9; color:var(--green-dk); }
+    .err.wrong   { animation:shake .3s; background:#FFCDD2; }
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+    /* Blank for syllable/letter drop */
+    .blank {
+      display:inline-block; min-width:60px; min-height:40px;
+      border:3px dashed var(--blue); border-radius:10px;
+      vertical-align:middle; background:#E3F2FD;
+      line-height:40px; text-align:center; font-size:1.2rem;
+      padding:0 6px;
+      transition:background .2s;
+    }
+    .blank.over    { background:var(--yellow); }
+    .blank.correct { background:#C8E6C9; border-color:var(--green); color:var(--green-dk); }
+    .blank.wrong   { background:#FFCDD2; border-color:var(--red); }
+
+    .mega-bank {
+      display:flex; flex-wrap:wrap; gap:10px;
+      justify-content:center; margin:16px auto;
+      max-width:760px;
+    }
+    .mega-bank .tile { font-size:1.2rem; padding:10px 16px; }
+    .tile[data-type="h"]    { background:var(--green-dk); }
+    .tile[data-type="tilde"]{ background:var(--coral); }
+    .tile[data-type="may"]  { background:var(--purple); }
+    .tile[data-type="punt"] { background:var(--blue); }
+    .tile[data-type="rr"]   { background:#795548; }
+    .tile[data-type="sil"]  { background:#FF7043; }
+
+    .phase-banner {
+      background:var(--purple); color:#fff;
+      border-radius:30px; padding:6px 20px;
+      font-size:1rem; display:inline-block;
+      margin:6px 0 12px;
+    }
+    .results-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:14px; margin:18px 0;
+    }
+    .result-box {
+      background:#fff; border-radius:14px; padding:16px;
+      text-align:center; box-shadow:var(--shadow);
+    }
+    .result-box .rb-num  { font-size:2rem; font-weight:bold; }
+    .result-box .rb-lbl  { font-size:.9rem; color:#888; }
+  </style>
+</head>
+<body>
+  <div class="game-header" style="background:linear-gradient(90deg,var(--purple),var(--blue))">
+    <h1>🏆 Juego 10 — El Gran Dictado</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area" id="gameArea">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div id="phaseContent"></div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ============================================================
+  //  EL GRAN DICTADO — 4 fases, cada una con varios ejercicios
+  // ============================================================
+
+  // Each phase has a type and exercises
+  const phases = [
+    // Phase 1: R/RR
+    {
+      type:'fill', title:'Fase 1 — R o RR', icon:'🐶',
+      tip:'¿Una R o dos RR?',
+      exercises:[
+        {pre:'ca', suf:'eta',  ans:'rr', ops:['r','rr'], emoji:'🛒'},
+        {pre:'to',  suf:'e',   ans:'r',  ops:['r','rr'], emoji:'🏰'},
+        {pre:'ba',  suf:'il',  ans:'rr', ops:['r','rr'], emoji:'🛢'},
+        {pre:'pa',  suf:'aguas', ans:'r', ops:['r','rr'], emoji:'☂️'},
+      ]
+    },
+    // Phase 2: H
+    {
+      type:'classify', title:'Fase 2 — La H', icon:'🥚',
+      tip:'¿Lleva H?',
+      exercises:[
+        {word:'hierba',  ans:'H',   emoji:'🌿'},
+        {word:'ola',     ans:'noH', emoji:'🌊'},
+        {word:'humo',    ans:'H',   emoji:'💨'},
+        {word:'isla',    ans:'noH', emoji:'🏝'},
+      ]
+    },
+    // Phase 3: Tildes + Mayúsculas (dictado combinado)
+    {
+      type:'dictado', title:'Fase 3 — Tildes y Mayúsculas', icon:'📖',
+      tip:'Corrige todos los errores',
+      html:'<span class="err" id="d0" data-drop="true" data-correct="Ayer" data-type="may">ayer</span> <span class="err" id="d1" data-drop="true" data-correct="mamá" data-type="tilde">mama</span> y yo fuimos al <span class="err" id="d2" data-drop="true" data-correct="médico" data-type="tilde">medico</span><span class="err" id="d3" data-drop="true" data-correct="." data-type="punt">,</span> <span class="err" id="d4" data-drop="true" data-correct="Él" data-type="may">el</span> doctor se llama <span class="err" id="d5" data-drop="true" data-correct="Álvaro" data-type="tilde">Alvaro</span><span class="err" id="d6" data-drop="true" data-correct="." data-type="punt">;</span>',
+      fixes:[{val:'Ayer',type:'may'},{val:'mamá',type:'tilde'},{val:'médico',type:'tilde'},{val:'.',type:'punt'},{val:'Él',type:'may'},{val:'Álvaro',type:'tilde'},{val:'.',type:'punt'}]
+    },
+    // Phase 4: Ordena frase
+    {
+      type:'order', title:'Fase 4 — Ordena', icon:'🧩',
+      tip:'Pon las palabras en orden',
+      exercises:[
+        {words:['Mi','perro','se','llama','Rufo.',], emoji:'🐶'},
+        {words:['Hoy','hay','música','en','el','cole.',], emoji:'🎵'},
+      ]
+    },
+  ];
+
+  let totalScore=0, phase=0, phaseEx=0, pending=0, done=0, answered=false;
+  let orderPlaced=[];
+
+  function render(){
+    document.getElementById('progressBar').style.width=((phase/phases.length)*100)+'%';
+    if(phase>=phases.length){ showResults(); return; }
+    const p=phases[phase];
+    const div=document.getElementById('phaseContent');
+    div.innerHTML=`<div class="grand-title">${p.icon} ${p.title}</div>
+      <div class="phase-banner">💡 ${p.tip}</div>
+      <div id="phaseEx"></div>`;
+    renderPhaseEx();
+  }
+
+  function renderPhaseEx(){
+    const p=phases[phase];
+    answered=false;
+    document.getElementById('score').textContent=totalScore;
+    if(p.type==='fill')      renderFill(p);
+    else if(p.type==='classify') renderClassify(p);
+    else if(p.type==='dictado')  renderDictado(p);
+    else if(p.type==='order')    renderOrder(p);
+  }
+
+  // ——— FILL (R/RR) ———
+  function renderFill(p){
+    const ex=p.exercises[phaseEx];
+    const div=document.getElementById('phaseEx');
+    div.innerHTML=`
+      <div style="font-size:4rem;text-align:center">${ex.emoji}</div>
+      <div style="font-size:2.4rem;text-align:center;margin:12px 0">
+        ${ex.pre}<span class="blank" id="fillBlank" data-drop="true">&nbsp;</span>${ex.suf}
+      </div>
+      <div class="mega-bank" id="megaBank">
+        ${ex.ops.map((o,i)=>`<div class="tile" id="ft${i}" data-value="${o}" data-type="rr" draggable="true">${o.toUpperCase()}</div>`).join('')}
+      </div>
+      <div style="text-align:center"><button class="btn btn-green" id="nBtn" style="display:none" onclick="advancePhase()">Siguiente ▶</button></div>`;
+    ex.ops.forEach((_,i)=>makeDraggable(document.getElementById('ft'+i)));
+    makeDropZone(document.getElementById('fillBlank'),(val)=>{
+      if(answered) return; answered=true;
+      const correct=val===ex.ans;
+      const bl=document.getElementById('fillBlank');
+      bl.textContent=val.toUpperCase(); bl.classList.add(correct?'correct':'wrong');
+      if(correct){totalScore+=10;}
+      showFeedback(correct,correct?'¡Correcto! 🎉':'Era <strong>'+ex.ans.toUpperCase()+'</strong>');
+      document.getElementById('nBtn').style.display='inline-block';
+    });
+  }
+
+  // ——— CLASSIFY (H) ———
+  function renderClassify(p){
+    const ex=p.exercises[phaseEx];
+    const div=document.getElementById('phaseEx');
+    div.innerHTML=`
+      <div class="mega-bank">
+        <div class="tile" id="wordCardG" data-value="${ex.ans}" data-type="h" draggable="true" style="font-size:1.6rem;padding:14px 28px">
+          ${ex.emoji} ${ex.word}
+        </div>
+      </div>
+      <div style="display:flex;gap:24px;justify-content:center;margin:16px 0;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div class="drop-box-label">Lleva H 📦</div>
+          <div class="drop-box" id="cBoxH" data-drop="true" data-answer="H"><span style="color:#aaa">Suelta aquí</span></div>
+        </div>
+        <div style="text-align:center">
+          <div class="drop-box-label">Sin H 📭</div>
+          <div class="drop-box" id="cBoxNo" data-drop="true" data-answer="noH"><span style="color:#aaa">Suelta aquí</span></div>
+        </div>
+      </div>
+      <div style="text-align:center"><button class="btn btn-green" id="nBtn" style="display:none" onclick="advancePhase()">Siguiente ▶</button></div>`;
+    makeDraggable(document.getElementById('wordCardG'));
+    ['cBoxH','cBoxNo'].forEach(id=>{
+      makeDropZone(document.getElementById(id),(val,srcId,z)=>{
+        if(answered) return; answered=true;
+        const correct=val===z.dataset.answer;
+        z.classList.add(correct?'correct':'wrong');
+        z.innerHTML=`<strong>${ex.emoji} ${ex.word}</strong>`;
+        if(correct) totalScore+=10;
+        showFeedback(correct,correct?`¡Correcto! <strong>${ex.word}</strong> ${ex.ans==='H'?'lleva H':'no lleva H'}`:`Era ${ex.ans==='H'?'CON H':'SIN H'}`);
+        document.getElementById('nBtn').style.display='inline-block';
+      });
+    });
+  }
+
+  // ——— DICTADO ———
+  function renderDictado(p){
+    const div=document.getElementById('phaseEx');
+    done=0; pending=p.fixes.length;
+    div.innerHTML=`
+      <div class="dictado-area">${p.html}</div>
+      <div class="mega-bank" id="megaBank">
+        ${p.fixes.map((f,i)=>`<div class="tile" id="df${i}" data-value="${f.val}" data-type="${f.type}" draggable="true">${f.val}</div>`).join('')}
+      </div>
+      <p id="dictMsg" style="color:#888;font-size:.95rem;text-align:center">${done} de ${pending} corregidos</p>
+      <div style="text-align:center"><button class="btn btn-green" id="nBtn" style="display:none" onclick="advancePhase()">Siguiente ▶</button></div>`;
+    p.fixes.forEach((_,i)=>makeDraggable(document.getElementById('df'+i)));
+    document.querySelectorAll('.err').forEach(zone=>{
+      makeDropZone(zone,(val,srcId,z)=>{
+        if(z.classList.contains('correct')) return;
+        const correct=val.trim()===z.dataset.correct.trim();
+        z.classList.add(correct?'correct':'wrong');
+        if(correct){
+          z.textContent=val;
+          totalScore+=10; done++;
+          document.getElementById('dictMsg').textContent=`✅ ${done} de ${pending} corregidos`;
+          Sound.correct();
+          if(done===pending) setTimeout(()=>document.getElementById('nBtn').style.display='inline-block',500);
+        } else { Sound.wrong(); setTimeout(()=>z.classList.remove('wrong'),700); }
+        document.getElementById('score').textContent=totalScore;
+      });
+    });
+  }
+
+  // ——— ORDER ———
+  function renderOrder(p){
+    const ex=p.exercises[phaseEx];
+    const div=document.getElementById('phaseEx');
+    const shuffled=[...ex.words].sort(()=>Math.random()-.5);
+    orderPlaced=new Array(ex.words.length).fill(null);
+    div.innerHTML=`
+      <div style="font-size:3rem;text-align:center">${ex.emoji}</div>
+      <div class="sentence-slots" id="oSlots" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:60px;background:#E3F2FD;border-radius:14px;padding:14px;margin:12px 0;border:2px dashed var(--blue)">
+        ${ex.words.map((_,i)=>`<div class="slot" id="os${i}" data-drop="true" data-idx="${i}" style="min-width:80px;min-height:46px;line-height:46px;text-align:center;border:2px dashed var(--blue-dk);border-radius:10px;padding:0 8px;background:#fff;font-size:1.25rem"></div>`).join('')}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;background:#F1F8E9;border-radius:14px;padding:14px;min-height:60px;margin-bottom:12px" id="oPool">
+        ${shuffled.map((w,i)=>`<div class="tile" id="ow${i}" data-value="${w}" draggable="true" style="font-size:1.2rem">${w}</div>`).join('')}
+      </div>
+      <div style="text-align:center;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-yellow" onclick="checkOrder()" id="checkOrderBtn">✔ Comprobar</button>
+        <button class="btn btn-green"  id="nBtn" style="display:none" onclick="advancePhase()">Siguiente ▶</button>
+      </div>`;
+    shuffled.forEach((_,i)=>makeDraggable(document.getElementById('ow'+i)));
+    ex.words.forEach((_,i)=>{
+      const slot=document.getElementById('os'+i);
+      makeDropZone(slot,(val,srcId,z)=>{
+        const idx=parseInt(z.dataset.idx);
+        if(orderPlaced[idx]) returnToOrderPool(orderPlaced[idx]);
+        orderPlaced[idx]=val;
+        z.textContent=val;
+        const tile=document.getElementById(srcId);
+        if(tile) tile.remove();
+      });
+    });
+    window._orderEx=ex;
+  }
+
+  function returnToOrderPool(word){
+    const pool=document.getElementById('oPool');
+    if(!pool) return;
+    const t=document.createElement('div');
+    t.className='tile'; t.id='ow_'+Date.now();
+    t.dataset.value=word; t.draggable=true;
+    t.style.fontSize='1.2rem'; t.textContent=word;
+    pool.appendChild(t); makeDraggable(t);
+  }
+
+  function checkOrder(){
+    const ex=window._orderEx;
+    let correct=true;
+    ex.words.forEach((w,i)=>{
+      const slot=document.getElementById('os'+i);
+      if(!slot) return;
+      if(orderPlaced[i]===w){ slot.classList.add('correct'); }
+      else { slot.classList.add('wrong'); correct=false; }
+    });
+    if(correct) totalScore+=10;
+    document.getElementById('score').textContent=totalScore;
+    showFeedback(correct,correct?'¡Frase perfecta! 🎊':'Alguna palabra no está en su lugar');
+    document.getElementById('nBtn').style.display='inline-block';
+    document.getElementById('checkOrderBtn').disabled=true;
+  }
+
+  // ——— Advance phase/exercise ———
+  function advancePhase(){
+    const p=phases[phase];
+    if(p.type==='fill'||p.type==='classify'||p.type==='order'){
+      const total = (p.type==='order') ? p.exercises.length : p.exercises.length;
+      phaseEx++;
+      if(phaseEx<p.exercises.length){
+        answered=false;
+        renderPhaseEx();
+        return;
+      }
+    }
+    phase++; phaseEx=0; answered=false;
+    render();
+  }
+
+  // ——— Final results ———
+  function showResults(){
+    const allScores=ScoreManager.getAll();
+    const total=Object.values(allScores).reduce((s,v)=>s+v.score,0)+totalScore;
+    const div=document.getElementById('phaseContent');
+    div.innerHTML=`
+      <div style="text-align:center">
+        <div style="font-size:3.5rem">🏆</div>
+        <div class="grand-title" style="font-size:2rem;margin:8px 0">¡Has completado los 10 juegos!</div>
+        <p style="color:#888;margin-bottom:16px">Puntuación total acumulada</p>
+        <div class="results-grid">
+          <div class="result-box" style="border-top:4px solid var(--yellow)">
+            <div class="rb-num" style="color:var(--yellow-dk)">${totalScore}</div>
+            <div class="rb-lbl">Gran Dictado</div>
+          </div>
+          <div class="result-box" style="border-top:4px solid var(--green)">
+            <div class="rb-num" style="color:var(--green)">${total}</div>
+            <div class="rb-lbl">Total global</div>
+          </div>
+        </div>
+        <div style="font-size:2.5rem;margin:16px 0">${total>=500?'🌟🌟🌟':total>=250?'🌟🌟':'🌟'}</div>
+        <p style="font-size:1.2rem;color:var(--blue-dk);margin-bottom:20px">
+          ${total>=500?'¡Eres un campeón de la lengua! ¡Increíble!':total>=250?'¡Muy bien! Sigue practicando y llegarás a lo más alto':'¡Buen comienzo! Con práctica lo conseguirás'}
+        </p>
+        <a href="../index.html" class="btn btn-blue">🏠 Volver al menú</a>
+      </div>`;
+    ScoreManager.save(10, totalScore, phases.length*10);
+    Sound.fanfare();
+  }
+
+  // ——— Slot/pool styles for Order section ———
+  const slotStyle=`min-width:80px;min-height:46px;line-height:46px;text-align:center;border:2px dashed var(--blue-dk);border-radius:10px;padding:0 8px;background:#fff;font-size:1.25rem`;
+
+  // Kick off
+  render();
+  </script>
+</body>
+</html>

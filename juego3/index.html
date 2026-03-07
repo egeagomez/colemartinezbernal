@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 3 – GA, JA, GO, JO…</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .word-display { font-size:2.6rem; margin:14px 0; }
+    .ex-emoji { font-size:4.5rem; display:block; margin:4px auto; text-align:center; }
+    .tiles-bank .tile { font-size:1.5rem; min-width:70px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🐱 Juego 3 — GA, JA, GO, JO…</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Arrastra la sílaba correcta al hueco 👇</p>
+    <div id="exerciseZone"></div>
+    <div class="tiles-bank" id="tilesBank"></div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+    <p id="hintText" style="color:#888;font-size:.95rem;margin-top:8px;text-align:center"></p>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    // GA / JA
+    { prefix:'',    suffix:'to',    answer:'ga', options:['ga','ja'],        emoji:'🐱', hint:'animal que maúlla' },
+    { prefix:'',    suffix:'món',   answer:'ja', options:['ga','ja'],        emoji:'🍖', hint:'comida salada' },
+    { prefix:'pa',   suffix:'ro',  answer:'ja', options:['ga','ja'],        emoji:'🐦', hint:'pájaro que habla' },
+    { prefix:'naran',  suffix:'',     answer:'ja', options:['ga','ja'],        emoji:'🍊', hint:'fruta cítrica' },
+    // GO / JO
+    { prefix:'',    suffix:'rdo',  answer:'go', options:['go','jo'],        emoji:'🐷', hint:'animal rosa' },
+    { prefix:'',    suffix:'ven',  answer:'jo', options:['go','jo'],        emoji:'🧑', hint:'persona joven' },
+    { prefix:'',    suffix:'olf',   answer:'go', options:['go','jo'],        emoji:'⛳', hint:'deporte con palo' },
+    { prefix:'',    suffix:'ta',   answer:'go', options:['go','jo'],        emoji:'💧', hint:'caída de agua' },
+    // GU / JU
+    { prefix:'',    suffix:'sano', answer:'gu', options:['gu','ju'],        emoji:'🐛', hint:'insecto verde' },
+    { prefix:'',    suffix:'go',   answer:'ju', options:['gu','ju'],        emoji:'🧃', hint:'bebida de fruta' },
+    { prefix:'',    suffix:'ante', answer:'gu', options:['gu','ju'],        emoji:'🧤', hint:'ropa para la mano' },
+    // GUE / JE
+    { prefix:'',    suffix:'rra',  answer:'gue', options:['gue','je'],      emoji:'⚔️', hint:'conflicto' },
+    { prefix:'',    suffix:'fe',   answer:'je', options:['gue','je'],       emoji:'👨‍🍳', hint:'cocinero principal' },
+  ];
+
+  const shuffled = [...exercises].sort(()=>Math.random()-.5).slice(0,10);
+  let current=0, score=0, answered=false;
+
+  function showEx() {
+    answered=false;
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('hintText').textContent='';
+    document.getElementById('progressBar').style.width=(current/shuffled.length*100)+'%';
+
+    const ex = shuffled[current];
+    document.getElementById('exerciseZone').innerHTML=`
+      <span class="ex-emoji">${ex.emoji}</span>
+      <div class="word-display">
+        ${ex.prefix}<span class="blank" id="blank" data-drop="true" data-answer="${ex.answer}"></span>${ex.suffix}
+      </div>`;
+
+    // Build tiles from options + distractors
+    const opts = ex.options.sort(()=>Math.random()-.5);
+    document.getElementById('tilesBank').innerHTML = opts.map((o,i)=>
+      `<div class="tile" id="t${i}" data-value="${o}" draggable="true">${o}</div>`
+    ).join('');
+
+    opts.forEach((_,i)=>makeDraggable(document.getElementById('t'+i)));
+
+    const blank = document.getElementById('blank');
+    makeDropZone(blank,(val,srcId,zone)=>{
+      if(answered) return;
+      answered=true;
+      const correct = val===ex.answer;
+      zone.textContent=val;
+      zone.classList.add(correct?'correct':'wrong');
+      if(correct){score+=10;document.getElementById('score').textContent=score;}
+      showFeedback(correct, correct?'¡Correcto! 🎉':`Era <strong>${ex.answer}</strong> — ${ex.hint}`);
+      document.getElementById('nextBtn').style.display='inline-block';
+    });
+  }
+
+  function nextEx(){
+    current++;
+    if(current>=shuffled.length) maybePodio(3,score,shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

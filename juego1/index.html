@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 1 – R o RR</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .word-row { display:flex; align-items:center; justify-content:center; gap:4px; font-size:2.4rem; margin:16px 0; flex-wrap:wrap; }
+    .word-chunk { color: var(--blue-dk); }
+    .ex-icon { font-size:5rem; display:block; text-align:center; margin-bottom:4px; }
+    .hint { color:#888; font-size:.95rem; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🐶 Juego 1 — R o RR</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area" id="gameArea">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction" id="instruction">Arrastra <strong>R</strong> o <strong>RR</strong> al hueco correcto</p>
+
+    <div id="exerciseZone"></div>
+
+    <div class="tiles-bank" id="tilesBank">
+      <div class="tile" id="tileR"  data-value="R"  draggable="true">R</div>
+      <div class="tile" id="tileRR" data-value="RR" draggable="true" style="background:var(--purple)">RR</div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+    <p class="hint" id="hintText"></p>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { prefix:'ca', suffix:'o',  answer:'R',  emoji:'💰', label:'cacto/caro' },
+    { prefix:'ca', suffix:'o',  answer:'RR', emoji:'🚗', label:'carro' },
+    { prefix:'pe', suffix:'a',  answer:'R',  emoji:'🍐', label:'pero' },
+    { prefix:'pe', suffix:'o',  answer:'RR', emoji:'🐕', label:'perro' },
+    { prefix:'to', suffix:'o',  answer:'R',  emoji:'🐂', label:'tore' },
+    { prefix:'to', suffix:'e',  answer:'RR', emoji:'🗼', label:'torre' },
+    { prefix:'ba', suffix:'il', answer:'RR',  emoji:'🛢️', label:'baril' },
+    { prefix:'ba', suffix:'il', answer:'RR', emoji:'🛢', label:'barril' },
+    { prefix:'a',  suffix:'oz', answer:'RR',  emoji:'🍚', label:'arroz' },
+    { prefix:'co', suffix:'er', answer:'RR', emoji:'🏃', label:'correr' },
+    { prefix:'pa', suffix:'a',  answer:'R',  emoji:'🫸', label:'para' },
+    { prefix:'pa', suffix:'a',  answer:'RR', emoji:'🍇', label:'parra' },
+  ];
+
+  // Shuffle
+  const shuffled = [...exercises].sort(() => Math.random() - .5).slice(0, 10);
+  let current = 0, score = 0, answered = false;
+
+  function showEx() {
+    const ex = shuffled[current];
+    answered = false;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('hintText').textContent = '';
+    document.getElementById('progressBar').style.width = (current/shuffled.length*100)+'%';
+
+    document.getElementById('exerciseZone').innerHTML = `
+      <span class="ex-icon">${ex.emoji}</span>
+      <div class="word-row">
+        <span class="word-chunk">${ex.prefix}</span>
+        <span class="blank" id="blank" data-drop="true" data-answer="${ex.answer}"></span>
+        <span class="word-chunk">${ex.suffix}</span>
+      </div>`;
+
+    const blank = document.getElementById('blank');
+    makeDropZone(blank, (val, srcId, zone) => {
+      if (answered) return;
+      answered = true;
+      const correct = val === ex.answer;
+      zone.textContent = val;
+      zone.classList.add(correct ? 'correct' : 'wrong');
+      if (correct) { score += 10; document.getElementById('score').textContent = score; }
+      showFeedback(correct, correct ? '¡Correcto! 🎉' : `Era <strong>${ex.answer}</strong> — ${ex.label}`);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    });
+
+    [document.getElementById('tileR'), document.getElementById('tileRR')].forEach(makeDraggable);
+  }
+
+  function nextEx() {
+    current++;
+    if (current >= shuffled.length) {
+      maybePodio(1, score, shuffled.length * 10);
+    } else {
+      showEx();
+    }
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

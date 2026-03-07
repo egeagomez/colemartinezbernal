@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 7 – Mayúsculas al rescate</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .text-block {
+      font-size:1.55rem; line-height:2.6rem;
+      margin:16px auto; max-width:680px; text-align:left;
+      background:#F9FBE7; border-radius:12px; padding:18px 22px;
+    }
+    /* Las letras que necesitan mayúscula: sin subrayado, mismo aspecto que el texto */
+    u.u {
+      text-decoration: none;
+      display:inline;
+      border-radius:3px;
+      padding:0 1px;
+      transition:background .18s, color .15s;
+    }
+    u.u.over    { background:var(--yellow); }
+    u.u.correct { background:#C8E6C9; color:var(--green-dk); font-weight:bold; }
+    u.u.wrong   { background:#FFCDD2; color:var(--red);
+                  animation:mshake .3s; }
+    @keyframes mshake{0%,100%{transform:translateX(0)}30%{transform:translateX(-4px)}70%{transform:translateX(4px)}}
+    .upper-bank {
+      display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:14px 0;
+    }
+    .upper-chip {
+      background:var(--purple); color:#fff; border-radius:12px;
+      padding:10px 20px; font-size:1.6rem; cursor:grab;
+      box-shadow:var(--shadow); user-select:none; touch-action:none;
+    }
+    .explain { font-size:.95rem; color:#888; margin:4px 0; }
+    .letter {
+      display:inline-block; cursor:pointer;
+      border-radius:5px; padding:0 2px;
+      transition:background .15s;
+    }
+    .letter:hover   { background:#FFF9C4; }
+    .letter.toggled { background:#E1BEE7; font-weight:bold; }
+    .letter.correct { background:#C8E6C9; color:#2E7D32; font-weight:bold; pointer-events:none; }
+    .letter.missed  { background:#FFE0B2; color:#E65100; font-weight:bold; }
+    .letter.wrong   { background:#FFCDD2; color:#c62828; }
+    .btn-check { background: var(--yellow); }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🔠 Juego 7 — Mayúsculas al rescate</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Toca las letras que deban ir en MAYÚSCULA 🔠</p>
+    <p class="explain">Inicio de frase y nombres propios llevan mayúscula. Toca para alternar.</p>
+    <div class="text-block" id="textBlock"></div>
+    <div class="upper-bank" id="upperBank"></div>
+    <p id="pendingMsg" style="color:#888;font-size:.95rem;margin-top:6px;text-align:center"></p>
+    <div style="text-align:center;margin-top:14px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-check" id="checkBtn" onclick="checkAnswers()">✔ Comprobar</button>
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // Cada ejercicio: texto plano + índices de caracteres que deben ir en MAYÚSCULA
+  const exercises = [
+    {
+      text:'había una vez un dragón. el dragón se llamaba bruno.',
+      upper:[0, 25, 43]          // h→H, e→E, b→B
+    },
+    {
+      text:'ana y pedro viven en madrid.',
+      upper:[0, 6, 21]           // a→A, p→P, m→M
+    },
+    {
+      text:'el lunes lucía fue al cole. allí vio a carlos.',
+      upper:[0, 9, 29, 39]       // e→E, l→L, a→A, c→C
+    },
+    {
+      text:'mi perro se llama rufo. él es muy travieso.',
+      upper:[0, 18, 24]          // m→M, r→R, é→É
+    },
+    {
+      text:'en españa vive sofía con su amiga paula.',
+      upper:[0, 3, 15, 33]          // e→E, s→S, p→P
+    },
+    {
+      text:'hoy es jueves. tomás tiene clase de música.',
+      upper:[0, 15]              // h→H, t→T
+    },
+    {
+        text:'el río ebro es el más caudaloso de españa.',
+        upper:[0, 9, 12, 38]      // e→E, r→R, e→E, e→E 
+    },
+        {
+        text:'la mariposa vuela sobre las flores.',
+        upper:[0]                 // l→L
+        },
+        {
+        text:'pedro y ana van al parque el sábado.',
+        upper:[0, 6, 17]           // p→P, a→A, s→S
+        },
+        {
+        text:'el médico rápido cura al enfermo.',
+        upper:[0, 3]              // e→E, m→M
+        },
+    
+  ];
+
+  const shuffled=[...exercises].sort(()=>Math.random()-.5);
+  let current=0, score=0;
+
+  // Estado actual de cada letra: true=mayúscula, false=minúscula
+  let letterState=[];
+
+  function buildSentence(ex){
+    let html='';
+    for(let i=0;i<ex.text.length;i++){
+      const ch=ex.text[i];
+      if(ch===' '||ch==='.'){
+        html+=ch;
+      } else {
+        html+=`<span class="letter" data-idx="${i}">${ch}</span>`;
+      }
+    }
+    return html;
+  }
+
+  function showEx(){
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('pendingMsg').textContent='Toca las letras que deban ir en MAYÚSCULA, luego pulsa Comprobar.';
+    document.getElementById('progressBar').style.width=(current/shuffled.length*100)+'%';
+
+    const ex=shuffled[current];
+    // Inicializar estado: todas minúsculas
+    letterState=ex.text.split('').map(()=>false);
+
+    document.getElementById('textBlock').innerHTML=buildSentence(ex);
+    document.getElementById('upperBank').innerHTML=''; // no hay fichas
+
+    // Clic en cada letra → alternar mayúscula/minúscula
+    document.querySelectorAll('.letter').forEach(span=>{
+      span.addEventListener('click',()=>{
+        if(span.classList.contains('correct')||span.classList.contains('missed')) return;
+        span.classList.remove('wrong');
+        const idx=parseInt(span.dataset.idx);
+        letterState[idx]=!letterState[idx];
+        if(letterState[idx]){
+          span.textContent=span.textContent.toUpperCase();
+          span.classList.add('toggled');
+        } else {
+          span.textContent=span.textContent.toLowerCase();
+          span.classList.remove('toggled');
+        }
+      });
+    });
+  }
+
+  function checkAnswers(){
+    document.getElementById('checkBtn').disabled=true;
+    const ex=shuffled[current];
+    const correctSet=new Set(ex.upper);
+    let hits=0, errors=0, missed=0;
+
+    document.querySelectorAll('.letter').forEach(span=>{
+      const idx=parseInt(span.dataset.idx);
+      const shouldBeUpper=correctSet.has(idx);
+      const isUpper=letterState[idx];
+      span.classList.remove('toggled');
+      if(shouldBeUpper && isUpper){
+        span.classList.add('correct'); hits++;
+      } else if(!shouldBeUpper && isUpper){
+        span.classList.add('wrong'); errors++;
+      } else if(shouldBeUpper && !isUpper){
+        span.classList.add('missed'); missed++;
+      }
+    });
+
+    const perfect=(hits===ex.upper.length && errors===0);
+    const pts=perfect?10:0;
+    score+=pts;
+    document.getElementById('score').textContent=score;
+
+    if(perfect){
+      Sound.fanfare();
+      document.getElementById('pendingMsg').textContent=`🌟 ¡Perfecto! Todas las mayúsculas correctas. +${pts} puntos`;
+    } else {
+      Sound.wrong();
+      let msg='';
+      if(missed>0) msg+=`${missed} mayúscula${missed>1?'s':''} sin poner (marcada${missed>1?'s':''} en naranja). `;
+      if(errors>0) msg+=`${errors} letra${errors>1?'s':''} en mayúscula que no debían (marcada${errors>1?'s':''} en rojo).`;
+      document.getElementById('pendingMsg').textContent=msg.trim();
+    }
+    setTimeout(()=>document.getElementById('nextBtn').style.display='inline-block', 500);
+  }
+
+  function nextEx(){
+    current++;
+    if(current>=shuffled.length) maybePodio(7,score,shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

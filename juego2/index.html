@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 2 – La H misteriosa</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .boxes-row { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin:20px 0; }
+    .drop-box  { min-width:160px; min-height:120px; }
+    .word-card {
+      background: var(--yellow);
+      border-radius: 16px;
+      padding: 18px 30px;
+      font-size: 2.4rem;
+      text-align: center;
+      margin: 16px auto;
+      max-width: 300px;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .word-emoji { font-size: 3.5rem; display:block; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🥚 Juego 2 — La H misteriosa</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Arrastra la palabra a la caja correcta: ¿lleva <strong>H</strong> o <strong>no</strong>?</p>
+
+    <div id="wordZone"></div>
+
+    <div class="boxes-row">
+      <div style="text-align:center">
+        <div class="drop-box-label">Lleva H 📦</div>
+        <div class="drop-box" id="boxH" data-drop="true" data-answer="H">
+          <span style="font-size:1.8rem;color:#aaa">Suelta aquí</span>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <div class="drop-box-label">Sin H 📭</div>
+        <div class="drop-box" id="boxNoH" data-drop="true" data-answer="noH">
+          <span style="font-size:1.8rem;color:#aaa">Suelta aquí</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { word:'?uevo',  emoji:'🥚', answer:'H'  },
+    { word:'?ola',    emoji:'🌊', answer:'noH' },
+    { word:'?oja',   emoji:'🍃', answer:'H'  },
+    { word:'?uva',    emoji:'🍇', answer:'noH' },
+    { word:'?ilo',   emoji:'🧵', answer:'H'  },
+    { word:'?Oso',    emoji:'🐻', answer:'noH' },
+    { word:'_umo',   emoji:'💨', answer:'H'  },
+    { word:'?araña',  emoji:'🕷', answer:'noH' },
+    { word:'?ada',   emoji:'🧚', answer:'H'  },
+    { word:'?ora',   emoji:'⏰', answer:'H'  },
+    { word:'?isla',   emoji:'🏝', answer:'noH' },
+    { word:'?ierba', emoji:'🌿', answer:'H'  },
+  ];
+
+  const shuffled = [...exercises].sort(() => Math.random()-.5).slice(0,10);
+  let current=0, score=0, answered=false;
+
+  function showEx() {
+    answered = false;
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('progressBar').style.width = (current/shuffled.length*100)+'%';
+
+    // Reset boxes
+    ['boxH','boxNoH'].forEach(id => {
+      const b = document.getElementById(id);
+      b.className='drop-box';
+      b.innerHTML='<span style="font-size:1.8rem;color:#aaa">Suelta aquí</span>';
+    });
+
+    const ex = shuffled[current];
+    document.getElementById('wordZone').innerHTML = `
+      <div class="word-card" id="wordCard" data-value="${ex.answer}" draggable="true">
+        <span class="word-emoji">${ex.emoji}</span>
+        ${ex.word}
+      </div>`;
+
+    makeDraggable(document.getElementById('wordCard'));
+
+    ['boxH','boxNoH'].forEach(id => {
+      const box = document.getElementById(id);
+      makeDropZone(box, (val, srcId, zone) => {
+        if(answered) return;
+        answered = true;
+        const correct = val === box.dataset.answer;
+        box.classList.add(correct ? 'correct':'wrong');
+        box.innerHTML = `<span style="font-size:2rem">${ex.emoji}</span><br><strong>${ex.word}</strong>`;
+        if(correct){ score+=10; document.getElementById('score').textContent=score; }
+        const correctH = ex.answer==='H' ? '<strong>sí lleva H</strong>' : '<strong>no lleva H</strong>';
+        showFeedback(correct, correct ? `¡Correcto! ${ex.word} ${correctH}` : `¡Ojo! ${ex.word} ${correctH}`);
+        document.getElementById('nextBtn').style.display='inline-block';
+      });
+    });
+  }
+
+  function nextEx() {
+    current++;
+    if(current >= shuffled.length) maybePodio(2, score, shuffled.length*10);
+    else showEx();
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

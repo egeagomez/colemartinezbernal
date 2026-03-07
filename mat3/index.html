@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isla de los Números — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background:linear-gradient(135deg,#0d1b4b 0%,#1a3a6b 100%) fixed; }
+    .hp-header { background:linear-gradient(135deg,#0d1b4b,#1a3a6b); border-bottom:3px solid #FFD700; color:#FFD700; text-shadow:0 0 12px #4fc3f7; }
+    .hp-header .score-box { background:#0d1b4b; color:#FFD700; border:1px solid #4fc3f7; }
+    .level-badge { display:inline-block; background:#0d1b4b; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#0d1b4b; border:2px solid #4fc3f7; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+    .instruction { color:#b3e5fc !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #1a3a6b; }
+
+    /* ── Island chain ── */
+    .island-chain {
+      display:flex; align-items:center; justify-content:center;
+      flex-wrap:wrap; gap:0; margin:24px 0; padding:10px;
+      overflow-x:auto;
+    }
+    .island {
+      width:80px; height:80px; border-radius:50%;
+      background:linear-gradient(135deg,#0277bd,#01579b);
+      border:4px solid #4fc3f7;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; font-family:'Patrick Hand',cursive;
+      color:#fff; font-weight:bold;
+      box-shadow:0 4px 16px rgba(0,150,255,.4);
+      flex-shrink:0;
+    }
+    .island.start { background:linear-gradient(135deg,#1b5e20,#2e7d32); border-color:#66bb6a; }
+    .island.end   { background:linear-gradient(135deg,#4a0072,#7b1fa2); border-color:#FFD700; box-shadow:0 0 16px #FFD700; }
+
+    /* ── Bridge ── */
+    .bridge {
+      display:flex; flex-direction:column; align-items:center;
+      margin:0 6px; flex-shrink:0;
+    }
+    .bridge-line {
+      width:60px; height:6px;
+      background:linear-gradient(90deg,#4fc3f7,#0288d1);
+      border-radius:3px; margin:4px 0;
+    }
+    .bridge-ctrl {
+      display:flex; align-items:center; gap:4px;
+      background:#fff; border-radius:10px; padding:4px 8px;
+      box-shadow:0 2px 8px rgba(0,0,0,.3);
+      border:2px solid #4fc3f7;
+      transition:border-color .2s;
+    }
+    .bridge-ctrl.correct { border-color:#4CAF50 !important; background:#E8F5E9; }
+    .bridge-ctrl.wrong   { border-color:#EF5350 !important; background:#FFEBEE; animation:shake .35s; }
+
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+    @keyframes splash { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.4);opacity:1} 100%{transform:scale(1);opacity:1} }
+    .splash-anim { position:fixed; top:20%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:splash .8s ease forwards; }
+
+    .sign-btn {
+      background:linear-gradient(135deg,#0288d1,#01579b);
+      color:#fff; border:none; border-radius:8px;
+      width:32px; height:32px; font-size:1.3rem; cursor:pointer;
+      font-family:'Patrick Hand',cursive; font-weight:bold;
+      transition:background .1s; flex-shrink:0;
+    }
+    .sign-btn:hover { background:linear-gradient(135deg,#039be5,#0277bd); }
+
+    .num-spin { display:flex; flex-direction:column; align-items:center; }
+    .spin-sm-btn { width:32px; height:18px; background:#e3f2fd; border:none; cursor:pointer; font-size:.8rem; border-radius:4px 4px 0 0; color:#0277bd; font-weight:bold; line-height:1; }
+    .spin-sm-btn.down { border-radius:0 0 4px 4px; }
+    .spin-sm-btn:hover { background:#b3e5fc; }
+    .spin-sm-val { width:32px; height:34px; line-height:32px; text-align:center; font-size:1.25rem; font-family:'Patrick Hand',cursive; background:#fff; border:1.5px solid #0288d1; color:#0d1b4b; cursor:pointer; }
+
+    .btn-magic { background:linear-gradient(135deg,#0277bd,#01579b); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(0,100,200,.4); transition:transform .1s; }
+    .btn-magic:hover { transform:scale(1.04); }
+    .btn-gold { background:#FFD700; color:#0d1b4b; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; box-shadow:0 4px 14px rgba(0,100,200,.3); transition:transform .1s; }
+    .btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>🏝️ Isla de los Números</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Elige el signo (+/−) y el número que conecta cada isla con la siguiente. ¡Pulsa ✔ Comprobar cuando termines!</p>
+    </div>
+    <div class="island-chain" id="islandChain"></div>
+    <p id="msgBox"></p>
+    <div style="text-align:center;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-magic" id="checkBtn" onclick="checkChain()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn" style="display:none" onclick="newChain()">⛵ Nueva travesía</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      islands:4, maxDiff:9,  onlyAdd:true  },
+    { name:'⚡ Mago',          islands:4, maxDiff:9,  onlyAdd:false },
+    { name:'🌟 Archimago',     islands:5, maxDiff:20, onlyAdd:false },
+    { name:'🧙 Brujo Experto', islands:6, maxDiff:30, onlyAdd:false },
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat3_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+
+  // Generate chain: array of numbers
+  function genChain() {
+    const lv = LEVELS[levelIdx];
+    const n = lv.islands;
+    let nums = [rnd(10,60)];
+    for(let i=1;i<n;i++){
+      const diff = rnd(1,lv.maxDiff);
+      const add  = lv.onlyAdd ? true : Math.random()>.5;
+      let next = add ? nums[i-1]+diff : nums[i-1]-diff;
+      if(next<1) next = nums[i-1]+diff;
+      if(next>99) next = nums[i-1]-diff;
+      if(next<1) next = nums[i-1]+1;
+      nums.push(next);
+    }
+    return nums;
+  }
+
+  let chain = [];
+  // bridgeState[i] = {sign:'+'/'-', val:0}
+  let bridgeState = [];
+
+  function buildChain() {
+    bridgeState = [];
+    const wrap = document.getElementById('islandChain');
+    wrap.innerHTML = '';
+
+    chain.forEach((num, i) => {
+      const islandDiv = document.createElement('div');
+      islandDiv.className = 'island' + (i===0?' start':i===chain.length-1?' end':'');
+      islandDiv.textContent = num;
+      wrap.appendChild(islandDiv);
+
+      if (i < chain.length-1) {
+        bridgeState.push({sign:'+', val:1});
+        const bIdx = bridgeState.length-1;
+
+        const bridge = document.createElement('div');
+        bridge.className = 'bridge';
+        bridge.id = 'bridge'+bIdx;
+        bridge.innerHTML = `
+          <div class="bridge-line"></div>
+          <div class="bridge-ctrl" id="bctrl${bIdx}">
+            <button class="sign-btn" id="bsign${bIdx}" onclick="toggleSign(${bIdx})">+</button>
+            <div class="num-spin">
+              <button class="spin-sm-btn"      onclick="adjBridge(${bIdx},1)">▲</button>
+              <div class="spin-sm-val" id="bval${bIdx}" onclick="adjBridge(${bIdx},1)">1</div>
+              <button class="spin-sm-btn down" onclick="adjBridge(${bIdx},-1)">▼</button>
+            </div>
+          </div>
+          <div class="bridge-line"></div>`;
+        wrap.appendChild(bridge);
+      }
+    });
+  }
+
+  function toggleSign(bIdx) {
+    bridgeState[bIdx].sign = bridgeState[bIdx].sign==='+' ? '-' : '+';
+    const el = document.getElementById('bsign'+bIdx);
+    el.textContent = bridgeState[bIdx].sign;
+    document.getElementById('bctrl'+bIdx).classList.remove('correct','wrong');
+  }
+
+  function adjBridge(bIdx, delta) {
+    const maxV = LEVELS[levelIdx].maxDiff;
+    bridgeState[bIdx].val = Math.max(1, Math.min(maxV, bridgeState[bIdx].val+delta));
+    document.getElementById('bval'+bIdx).textContent = bridgeState[bIdx].val;
+    document.getElementById('bctrl'+bIdx).classList.remove('correct','wrong');
+  }
+
+  function checkChain() {
+    document.getElementById('checkBtn').disabled = true;
+    let allOk = true;
+
+    for(let i=0; i<bridgeState.length; i++){
+      const {sign, val} = bridgeState[i];
+      const applied = sign==='+' ? chain[i]+val : chain[i]-val;
+      const ok = applied === chain[i+1];
+      const ctrl = document.getElementById('bctrl'+i);
+      ctrl.classList.toggle('correct', ok);
+      ctrl.classList.toggle('wrong', !ok);
+      if(!ok) allOk = false;
+    }
+
+    if(allOk){
+      totalScore += (levelIdx+1)*10;
+      streak++;
+      document.getElementById('score').textContent = totalScore;
+      showSplash();
+      updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3){
+        levelIdx++;
+        streak=0;
+        sessionStorage.setItem('mat3_level',levelIdx);
+        document.getElementById('msgBox').textContent =
+          `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Perfecto! ⛵','¡Excelente! ⚡','¡Magnífico! 🌟','¡Legendario! 🧙'][levelIdx];
+      }
+    } else {
+      streak=0; Sound.wrong();
+      document.getElementById('msgBox').textContent =
+        '🌊 Algún puente no cuadra. Revisa los marcados en rojo.';
+      setTimeout(()=>{ document.getElementById('checkBtn').disabled=false; }, 600);
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function showSplash(){
+    Sound.fanfare();
+    const h = document.createElement('div');
+    h.className='splash-anim'; h.textContent='⛵';
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(), 900);
+  }
+  function updateLevelBadge(){ document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak(){
+    document.getElementById('streakBar').innerHTML=
+      Array.from({length:STREAK_NEEDED},(_,i)=>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+  function newChain(){
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('msgBox').textContent='';
+    chain=genChain(); buildChain();
+    updateLevelBadge(); updateStreak();
+  }
+
+  updateLevelBadge(); updateStreak();
+  chain=genChain(); buildChain();
+  </script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🚀 Galaxia Matemática</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { display:flex; flex-direction:column; align-items:center;
+           padding-bottom:20px; min-height:100vh;
+           background:linear-gradient(180deg,#0a0015 0%,#1a0533 100%) fixed; }
+
+    /* ── Header ─────────────────────────────── */
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:720px; padding:8px 14px; gap:10px;
+    }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:16px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+
+    /* ── HUD row ─────────────────────────────── */
+    .hud {
+      display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 6px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 16px; border-radius:20px; font-size:.95rem;
+    }
+    .lives { font-size:1.4rem; letter-spacing:4px; }
+    .mode-tag {
+      background:#1a0533; color:#ce93d8; border:1px solid #7c43bd;
+      border-radius:16px; padding:3px 12px; font-size:.85rem;
+    }
+
+    /* ── Target banner ───────────────────────── */
+    .target-banner {
+      width:100%; max-width:620px;
+      background:linear-gradient(90deg,#4a0072,#2d004a);
+      border:2px solid #FFD700;
+      border-radius:14px; padding:10px 20px;
+      text-align:center; margin-bottom:8px;
+      font-family:'Patrick Hand',cursive;
+      box-shadow:0 0 18px rgba(160,32,240,.45);
+    }
+    .target-label { font-size:.9rem; color:#ce93d8; margin-bottom:2px; }
+    .target-value {
+      font-size:2rem; color:#FFD700; font-weight:bold;
+      text-shadow:0 0 12px #FFD700;
+    }
+
+    /* ── Arena ───────────────────────────────── */
+    .arena {
+      position:relative; overflow:hidden;
+      width:620px; height:440px;
+      background:linear-gradient(180deg,#000018 0%,#0a001e 100%);
+      border:2px solid #3949ab; border-radius:14px;
+      box-shadow:0 0 30px rgba(100,0,200,.5);
+      touch-action:none; user-select:none;
+    }
+    /* Starfield */
+    .arena::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(circle,rgba(255,255,255,.6) 1px,transparent 1px) 20px 30px / 80px 80px,
+        radial-gradient(circle,rgba(255,255,255,.4) 1px,transparent 1px) 60px 55px / 110px 100px,
+        radial-gradient(circle,rgba(255,255,255,.3) 1px,transparent 1px) 10px 10px / 140px 130px,
+        radial-gradient(circle,rgba(255,255,255,.25)1px,transparent 1px) 90px 80px / 170px 160px;
+    }
+    /* Ground line */
+    .arena::after {
+      content:''; position:absolute; bottom:58px; left:0; right:0;
+      height:1px; background:rgba(100,100,255,.2); pointer-events:none;
+    }
+
+    /* ── Aliens ──────────────────────────────── */
+    .alien {
+      position:absolute;
+      font-family:'Patrick Hand',cursive;
+      font-size:1.1rem; font-weight:bold;
+      padding:7px 12px; border-radius:10px;
+      border:2px solid;
+      cursor:pointer;
+      transition:transform .08s;
+      pointer-events:none;
+      white-space:nowrap;
+      text-align:center;
+    }
+    .alien.correct {
+      background:rgba(76,0,120,.85); color:#FFD700; border-color:#FFD700;
+      box-shadow:0 0 10px rgba(255,215,0,.4);
+    }
+    .alien.wrong {
+      background:rgba(30,0,60,.85); color:#ce93d8; border-color:#7c43bd;
+    }
+    .alien.exploding { animation:explode .35s ease forwards; }
+    @keyframes explode {
+      0%  { transform:scale(1); opacity:1; }
+      50% { transform:scale(1.8); opacity:.7; }
+      100%{ transform:scale(0); opacity:0; }
+    }
+    .alien.hit-wrong { animation:wrongHit .3s ease forwards; }
+    @keyframes wrongHit {
+      0%  { background:rgba(200,0,0,.9); }
+      100%{ background:rgba(30,0,60,.85); }
+    }
+
+    /* ── Ship ────────────────────────────────── */
+    .ship {
+      position:absolute;
+      bottom:10px;
+      font-size:2.2rem;
+      text-align:center;
+      pointer-events:none;
+      filter:drop-shadow(0 0 8px #7c43bd);
+      transition:left .04s linear;
+      transform:translateX(-50%);
+      z-index:10;
+    }
+
+    /* ── Bullet ──────────────────────────────── */
+    .bullet {
+      position:absolute;
+      width:6px; height:22px;
+      background:linear-gradient(180deg,#fff,#FFD700);
+      border-radius:3px;
+      box-shadow:0 0 8px #FFD700, 0 0 18px rgba(255,215,0,.5);
+      pointer-events:none;
+    }
+
+    /* ── Flash ───────────────────────────────── */
+    .flash {
+      position:absolute; inset:0; border-radius:12px;
+      pointer-events:none; opacity:0; transition:opacity .12s;
+    }
+    .flash.green { background:rgba(76,175,80,.25); opacity:1; }
+    .flash.red   { background:rgba(244,67,54,.25); opacity:1; }
+
+    /* ── Overlays ────────────────────────────── */
+    .overlay {
+      position:absolute; inset:0; display:none;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:12px;
+      background:rgba(0,0,15,.82); border-radius:12px;
+      font-family:'Patrick Hand',cursive; color:#FFD700;
+      text-align:center; padding:20px; z-index:20;
+    }
+    .overlay.show { display:flex; }
+    .overlay h2 { font-size:1.9rem; margin:0; text-shadow:0 0 16px #FFD700; }
+    .overlay p  { font-size:1.1rem; color:#ce93d8; margin:0; }
+    .btn-play {
+      background:linear-gradient(135deg,#7c43bd,#4a0072);
+      color:#FFD700; border:2px solid #FFD700; border-radius:20px;
+      padding:10px 32px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+      box-shadow:0 0 14px rgba(255,215,0,.35);
+    }
+    .btn-play:hover { background:#7c43bd; }
+
+    /* ── Controls hint ───────────────────────── */
+    .hint {
+      font-family:'Patrick Hand',cursive; font-size:.9rem;
+      color:#9575cd; margin-top:8px; text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <a class="back-btn" href="../index.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.2rem">🚀 Galaxia Matemática</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="lives" id="livesDisp">❤️❤️❤️</div>
+    <div class="mode-tag" id="modeTag">Encuentra la operación</div>
+  </div>
+
+  <!-- Target -->
+  <div class="target-banner" id="targetBanner">
+    <div class="target-label" id="targetLabel">Busca la operación cuyo resultado es:</div>
+    <div class="target-value" id="targetValue">–</div>
+  </div>
+
+  <!-- Arena -->
+  <div class="arena" id="arena">
+    <div class="flash" id="flash"></div>
+    <div class="ship" id="ship">🚀</div>
+
+    <!-- Ready overlay -->
+    <div class="overlay show" id="readyOverlay">
+      <h2>🚀 Galaxia Matemática</h2>
+      <p>Dispara la operación correcta<br>con <kbd>Espacio</kbd> o <kbd>↑</kbd></p>
+      <p style="color:#FFD700">← → para mover la nave</p>
+      <button class="btn-play" onclick="startGame()">▶ ¡Jugar!</button>
+    </div>
+
+    <!-- Level-up overlay -->
+    <div class="overlay" id="levelOverlay">
+      <h2 id="levelMsg">⚡ ¡Subiste de nivel!</h2>
+      <p id="levelSub"></p>
+      <button class="btn-play" onclick="dismissLevel()">¡Seguir!</button>
+    </div>
+
+    <!-- Game over overlay -->
+    <div class="overlay" id="gameOverOverlay">
+      <h2>💀 Game Over</h2>
+      <p id="gameOverMsg"></p>
+      <button class="btn-play" onclick="restartGame()">🔄 Reintentar</button>
+      <a class="back-btn" href="../index.html">← Inicio</a>
+    </div>
+  </div>
+
+  <div class="hint">
+    ← → mover &nbsp;|&nbsp; Espacio / ↑ disparar &nbsp;|&nbsp; También puedes mover con el ratón
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ═══════════════════════════════════════════════════
+  //  CONFIG
+  // ═══════════════════════════════════════════════════
+  const ARENA_W   = 620;
+  const ARENA_H   = 440;
+  const SHIP_HALF = 18;          // half-width of ship sprite
+  const BULLET_W  = 6;
+  const BULLET_H  = 22;
+  const SHIP_Y    = ARENA_H - 52;
+  const ALIEN_ROWS         = 2;
+  const COLS_PER_ROW       = 4;
+  const ALIEN_ROW_GAP      = 60;  // px between alien rows
+  const ALIEN_START_Y      = 28;
+  const ALIEN_DESCEND_STEP = 24;
+  const ALIEN_WARNING_Y    = ARENA_H - 140;   // aliens this low = danger
+
+  // Levels: { name, maxNum, useMode (A/B/both), speed, streakGoal }
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      maxNum:10,  modes:['A'],    speed:0.55, streakGoal:4 },
+    { name:'⚡ Mago',          maxNum:20,  modes:['A','B'], speed:0.80, streakGoal:4 },
+    { name:'🌟 Archimago',     maxNum:30,  modes:['A','B'], speed:1.10, streakGoal:5 },
+    { name:'🧙 Brujo Experto', maxNum:50,  modes:['A','B'], speed:1.45, streakGoal:5 },
+  ];
+
+  // ═══════════════════════════════════════════════════
+  //  STATE
+  // ═══════════════════════════════════════════════════
+  let levelIdx   = Math.min(parseInt(sessionStorage.getItem('mat6_level')||'0'),3);
+  let score      = 0;
+  let lives      = 3;
+  let streak     = 0;
+  let waveMode   = 'A';       // 'A' = find equation, 'B' = find missing number
+  let waveTarget = 0;         // the answer the student must catch
+  let correctIdx = -1;        // which alien index is correct
+  let alienObjs  = [];        // { el, x, y, w, h, isCorrect }
+  let groupX     = 0;         // group left anchor
+  let groupY     = 0;         // group top anchor
+  let groupDirX  = 1;         // +1 right, -1 left
+  let bullets    = [];        // { el, x, y }
+  let shipX      = ARENA_W / 2;
+  let running    = false;
+  let rafId      = null;
+  let lastTime   = 0;
+  let keys       = {};
+  let shootCooldown = 0;
+  let wavePaused    = false;   // pause movement briefly on hit
+
+  // ═══════════════════════════════════════════════════
+  //  DOM
+  // ═══════════════════════════════════════════════════
+  const arenaEl        = document.getElementById('arena');
+  const shipEl         = document.getElementById('ship');
+  const flashEl        = document.getElementById('flash');
+  const scoreDisp      = document.getElementById('scoreDisp');
+  const livesDisp      = document.getElementById('livesDisp');
+  const levelBadge     = document.getElementById('levelBadge');
+  const modeTag        = document.getElementById('modeTag');
+  const targetLabel    = document.getElementById('targetLabel');
+  const targetValue    = document.getElementById('targetValue');
+  const readyOverlay   = document.getElementById('readyOverlay');
+  const levelOverlay   = document.getElementById('levelOverlay');
+  const gameOverOverlay= document.getElementById('gameOverOverlay');
+
+  // ═══════════════════════════════════════════════════
+  //  HELPERS
+  // ═══════════════════════════════════════════════════
+  const rand    = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+  const clamp   = (v,lo,hi) => Math.max(lo,Math.min(hi,v));
+
+  // ═══════════════════════════════════════════════════
+  //  WAVE GENERATION
+  // ═══════════════════════════════════════════════════
+  function pickMode() {
+    const m = LEVELS[levelIdx].modes;
+    return m[Math.floor(Math.random()*m.length)];
+  }
+
+  /* ── Mode A: show a number, aliens are equations ── */
+  function genWaveA(maxN) {
+    // Pick target first
+    const target = rand(1, maxN);
+    waveTarget = target;
+    waveMode   = 'A';
+
+    // Build correct equation
+    const useAdd = Math.random() > .5;
+    let label;
+    // avoid trivial a+0 or a-0 for the correct equation
+    if (useAdd) {
+      const a = rand(1, target - 1 > 0 ? target - 1 : 1);
+      label = `${a} + ${target - a}`;
+    } else {
+      const sub = rand(1, maxN);
+      label = `${target + sub} − ${sub}`;
+    }
+
+    // Build distractors (also non-trivial)
+    const total = ALIEN_ROWS * COLS_PER_ROW;
+    const labels = [label];
+    const used   = new Set([label]);
+    let safety = 0;
+    while (labels.length < total && safety++ < 400) {
+      const wrong = rand(1, maxN + 5);
+      if (wrong === target) continue;
+      const uAdd = Math.random() > .5;
+      let dl;
+      if (uAdd) {
+        if (wrong < 2) continue;
+        const a = rand(1, wrong - 1);
+        dl = `${a} + ${wrong - a}`;
+      } else {
+        const sub = rand(1, maxN);
+        dl = `${wrong + sub} − ${sub}`;
+      }
+      if (!used.has(dl)) { used.add(dl); labels.push(dl); }
+    }
+    // Shuffle
+    labels.sort(()=>Math.random()-.5);
+    const ci = labels.indexOf(label);
+
+    targetLabel.textContent = 'Dispara la operación cuyo resultado es:';
+    targetValue.textContent = target;
+    return { labels, correctIdx: ci };
+  }
+
+  /* ── Mode B: show incomplete equation, aliens are numbers ── */
+  function genWaveB(maxN) {
+    waveMode = 'B';
+
+    const useAdd = Math.random() > .5;
+    let aVal, bVal, missing, displayed;
+
+    if (useAdd) {
+      aVal    = rand(1, maxN);
+      bVal    = rand(1, maxN);
+      missing = Math.random() > .5 ? 'a' : 'b';
+      if (missing === 'a') {
+        displayed = `? + ${bVal} = ${aVal+bVal}`;
+        waveTarget = aVal;
+      } else {
+        displayed = `${aVal} + ? = ${aVal+bVal}`;
+        waveTarget = bVal;
+      }
+    } else {
+      aVal    = rand(maxN/2|0, maxN);
+      bVal    = rand(1, aVal);
+      missing = Math.random() > .5 ? 'a' : 'b';
+      if (missing === 'a') {
+        // ? − bVal = aVal−bVal  → answer = aVal
+        displayed = `? − ${bVal} = ${aVal-bVal}`;
+        waveTarget = aVal;
+      } else {
+        // aVal − ? = aVal − bVal → answer = bVal
+        displayed = `${aVal} − ? = ${aVal-bVal}`;
+        waveTarget = bVal;
+      }
+    }
+
+    const total = ALIEN_ROWS * COLS_PER_ROW;
+    const answer = waveTarget;
+    const nums = [answer];
+    const usedN = new Set([answer]);
+    while (nums.length < total) {
+      const d = rand(Math.max(0, answer-8), answer+8);
+      if (!usedN.has(d)) { usedN.add(d); nums.push(d); }
+    }
+    nums.sort(()=>Math.random()-.5);
+    const ci = nums.indexOf(answer);
+
+    targetLabel.textContent = 'Caza el número que falta:';
+    targetValue.textContent = displayed;
+    return { labels: nums.map(String), correctIdx: ci };
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  BUILD WAVE (create alien DOM elements)
+  // ═══════════════════════════════════════════════════
+  function buildWave() {
+    // Clear old aliens
+    alienObjs.forEach(a => a.el && a.el.remove());
+    alienObjs = [];
+    bullets.forEach(b => b.el.remove());
+    bullets = [];
+
+    const maxN = LEVELS[levelIdx].maxNum;
+    const mode = pickMode();
+    const { labels, correctIdx: ci } = (mode === 'A') ? genWaveA(maxN) : genWaveB(maxN);
+    correctIdx = ci;
+
+    // Layout aliens in a ALIEN_ROWS × COLS_PER_ROW grid
+    for (let row = 0; row < ALIEN_ROWS; row++) {
+      for (let col = 0; col < COLS_PER_ROW; col++) {
+        const idx = row * COLS_PER_ROW + col;
+        const isCorrect = (idx === correctIdx);
+        const el = document.createElement('div');
+        el.className = 'alien ' + (isCorrect ? 'correct' : 'wrong');
+        el.textContent = labels[idx];
+        el.style.position = 'absolute';
+        el.style.visibility = 'hidden';
+        arenaEl.appendChild(el);
+        alienObjs.push({ el, row, col, isCorrect, dead:false });
+      }
+    }
+
+    // Measure widths (need them in DOM) and position
+    // Use fixed cell width based on max observed
+    const CELL_W = 110;
+    const CELL_H = 44;
+    const groupW = COLS_PER_ROW * CELL_W;
+
+    groupX = (ARENA_W - groupW) / 2;
+    groupY = ALIEN_START_Y;
+    groupDirX = 1;
+
+    alienObjs.forEach(a => {
+      a.cellX = a.col * CELL_W;
+      a.cellY = a.row * ALIEN_ROW_GAP;
+      a.w = CELL_W - 6;
+      a.h = CELL_H;
+      a.el.style.visibility = 'visible';
+      positionAlien(a);
+    });
+    wavePaused = false;
+    modeTag.textContent = (waveMode==='A') ? 'Encuentra la operación' : 'Caza el número que falta';
+  }
+
+  function positionAlien(a) {
+    a.x = groupX + a.cellX;
+    a.y = groupY + a.cellY;
+    a.el.style.left  = a.x + 'px';
+    a.el.style.top   = a.y + 'px';
+    a.el.style.width = a.w + 'px';
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  MAIN GAME LOOP
+  // ═══════════════════════════════════════════════════
+  function gameLoop(ts) {
+    if (!running) return;
+    const dt = Math.min(ts - lastTime, 50);
+    lastTime = ts;
+
+    // ── Ship movement ──────────────────────────────
+    const spd = 5;
+    if (keys['ArrowLeft']  || keys['a']) shipX = clamp(shipX - spd, SHIP_HALF, ARENA_W - SHIP_HALF);
+    if (keys['ArrowRight'] || keys['d']) shipX = clamp(shipX + spd, SHIP_HALF, ARENA_W - SHIP_HALF);
+    shipEl.style.left = shipX + 'px';
+
+    // ── Shoot ─────────────────────────────────────
+    if (shootCooldown > 0) shootCooldown -= dt;
+    if ((keys[' '] || keys['ArrowUp']) && shootCooldown <= 0) {
+      spawnBullet();
+      shootCooldown = 350;
+    }
+
+    // ── Alien group movement ───────────────────────
+    if (!wavePaused) {
+      const speed = LEVELS[levelIdx].speed;
+      groupX += groupDirX * speed;
+
+      // Check edges — use first/last alive alien
+      const alive = alienObjs.filter(a=>!a.dead);
+      if (alive.length === 0) { nextWave(); return; }
+      const minX = Math.min(...alive.map(a=>groupX+a.cellX));
+      const maxX = Math.max(...alive.map(a=>groupX+a.cellX+a.w));
+      if (groupDirX > 0 && maxX >= ARENA_W - 4) {
+        groupDirX = -1;
+        groupY += ALIEN_DESCEND_STEP;
+      } else if (groupDirX < 0 && minX <= 4) {
+        groupDirX = 1;
+        groupY += ALIEN_DESCEND_STEP;
+      }
+      // Aliens reaching bottom = danger (lose a life and reset wave)
+      if (groupY + (ALIEN_ROWS-1)*ALIEN_ROW_GAP + 44 >= ALIEN_WARNING_Y) {
+        onAlienBreakthrough();
+        return;
+      }
+      alive.forEach(positionAlien);
+    }
+
+    // ── Bullet movement + collision ────────────────
+    const toRemove = [];
+    for (const b of bullets) {
+      b.y -= 9;
+      b.el.style.top = b.y + 'px';
+      if (b.y < -BULLET_H) { toRemove.push(b); continue; }
+
+      // Collision with aliens
+      for (const a of alienObjs) {
+        if (a.dead) continue;
+        const hit = b.x > a.x - 6 && b.x < a.x + a.w + 6 && b.y < a.y + a.h && b.y + BULLET_H > a.y;
+        if (hit) {
+          toRemove.push(b);
+          onAlienHit(a);
+          break;
+        }
+      }
+    }
+    for (const b of toRemove) {
+      b.el.remove();
+      bullets.splice(bullets.indexOf(b), 1);
+    }
+
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  HIT HANDLER
+  // ═══════════════════════════════════════════════════
+  function onAlienHit(a) {
+    if (a.isCorrect) {
+      // ✅ Correct!
+      a.dead = true;
+      a.el.classList.add('exploding');
+      setTimeout(() => a.el.remove(), 350);
+      Sound.correct();
+      flashArena('green');
+      score += (levelIdx+1) * 10;
+      scoreDisp.textContent = score;
+      streak++;
+      // Pause group briefly
+      wavePaused = true;
+      setTimeout(() => { wavePaused = false; }, 400);
+
+      // Check level up
+      if (streak >= LEVELS[levelIdx].streakGoal && levelIdx < 3) {
+        levelIdx++;
+        streak = 0;
+        sessionStorage.setItem('mat6_level', levelIdx);
+        running = false;
+        showLevelUp();
+      } else {
+        setTimeout(nextWave, 800);
+      }
+    } else {
+      // ❌ Wrong — alien explodes in red, is removed, streak penalty
+      a.dead = true;
+      a.el.style.background = 'rgba(200,0,40,.85)';
+      a.el.style.borderColor = '#ff5252';
+      a.el.classList.add('exploding');
+      setTimeout(() => a.el.remove(), 350);
+      Sound.wrong();
+      flashArena('red');
+      if (streak > 0) streak--;
+      // If all remaining aliens are destroyed (correct one still alive) → nothing,
+      // wave continues; if correct one was the last → no way to win → rebuild
+      wavePaused = true;
+      setTimeout(() => {
+        wavePaused = false;
+        const alive = alienObjs.filter(x => !x.dead);
+        if (alive.length === 0) { nextWave(); }
+      }, 400);
+    }
+  }
+
+  function onAlienBreakthrough() {
+    Sound.wrong();
+    flashArena('red');
+    lives = Math.max(0, lives - 1);
+    updateLives();
+    if (lives <= 0) {
+      gameOver();
+    } else {
+      // Rebuild wave at top
+      setTimeout(buildWave, 500);
+      setTimeout(() => { rafId = requestAnimationFrame(gameLoop); }, 600);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  NEXT WAVE
+  // ═══════════════════════════════════════════════════
+  function nextWave() {
+    buildWave();
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  BULLET
+  // ═══════════════════════════════════════════════════
+  function spawnBullet() {
+    const el = document.createElement('div');
+    el.className = 'bullet';
+    const bx = shipX - BULLET_W/2;
+    const by = SHIP_Y - 10;
+    el.style.left = bx + 'px';
+    el.style.top  = by + 'px';
+    arenaEl.appendChild(el);
+    bullets.push({ el, x: shipX, y: by });
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  OVERLAYS / UTILS
+  // ═══════════════════════════════════════════════════
+  function flashArena(color) {
+    flashEl.className = 'flash';
+    flashEl.classList.add(color);
+    setTimeout(() => (flashEl.className = 'flash'), 400);
+  }
+
+  function updateLives() {
+    livesDisp.textContent = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+  }
+
+  function updateLevelBadge() {
+    levelBadge.textContent = LEVELS[levelIdx].name;
+  }
+
+  function showLevelUp() {
+    cancelAnimationFrame(rafId);
+    document.getElementById('levelMsg').textContent =
+      `⚡ ¡Subiste a ${LEVELS[levelIdx].name}!`;
+    document.getElementById('levelSub').textContent =
+      `Puntuación: ${score} puntos`;
+    levelOverlay.classList.add('show');
+    Sound.fanfare();
+  }
+
+  function dismissLevel() {
+    levelOverlay.classList.remove('show');
+    updateLevelBadge();
+    buildWave();
+    running = true;
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  function gameOver() {
+    running = false;
+    cancelAnimationFrame(rafId);
+    document.getElementById('gameOverMsg').textContent =
+      `Puntuación final: ${score} puntos`;
+    gameOverOverlay.classList.add('show');
+  }
+
+  function restartGame() {
+    gameOverOverlay.classList.remove('show');
+    lives = 3;
+    score = 0;
+    streak = 0;
+    scoreDisp.textContent = '0';
+    updateLives();
+    updateLevelBadge();
+    buildWave();
+    running = true;
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  function startGame() {
+    readyOverlay.classList.remove('show');
+    updateLevelBadge();
+    updateLives();
+    buildWave();
+    running = true;
+    lastTime = performance.now();
+    rafId = requestAnimationFrame(gameLoop);
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  INPUT
+  // ═══════════════════════════════════════════════════
+  document.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if ([' ','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+  });
+  document.addEventListener('keyup',  e => { keys[e.key] = false; });
+
+  // Mouse / touch: move ship to pointer position inside arena
+  arenaEl.addEventListener('pointermove', e => {
+    if (!running) return;
+    const rect = arenaEl.getBoundingClientRect();
+    shipX = clamp(e.clientX - rect.left, SHIP_HALF, ARENA_W - SHIP_HALF);
+    shipEl.style.left = shipX + 'px';
+  });
+  // Click / tap to shoot
+  arenaEl.addEventListener('pointerdown', e => {
+    if (!running) return;
+    e.preventDefault();
+    const rect = arenaEl.getBoundingClientRect();
+    shipX = clamp(e.clientX - rect.left, SHIP_HALF, ARENA_W - SHIP_HALF);
+    if (shootCooldown <= 0) { spawnBullet(); shootCooldown = 350; }
+  });
+
+  // ═══════════════════════════════════════════════════
+  //  INIT
+  // ═══════════════════════════════════════════════════
+  shipEl.style.left = shipX + 'px';
+  updateLevelBadge();
+  updateLives();
+  </script>
+</body>
+</html>

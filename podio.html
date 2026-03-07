@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Podio! 🏆</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { justify-content: center;
+    background: linear-gradient(160deg,rgba(224,247,250,.88),rgba(232,234,246,.88)),
+    url('Portada.jpg') center/cover fixed no-repeat; }
+    .podio-title { font-size:2.2rem; color: var(--blue-dk); margin-bottom:6px; }
+    .podio-subtitle { font-size:1.1rem; color:#666; margin-bottom:30px; }
+    .medal-row { display:flex; gap:28px; justify-content:center; flex-wrap:wrap; margin:20px 0; }
+    .medal-card {
+      background:#fff; border-radius:18px; padding:22px 28px;
+      text-align:center; box-shadow:var(--shadow); min-width:160px;
+    }
+    .medal-icon  { font-size:3.5rem; }
+    .medal-label { font-size:1rem; color:#555; margin-top:6px; }
+    .medal-score { font-size:1.8rem; font-weight:bold; color:var(--blue-dk); }
+    .result-message {
+      font-size:1.4rem; margin:20px 0 10px;
+      padding:16px 24px;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:var(--shadow);
+      max-width:500px; width:100%;
+    }
+    .confetti { font-size:2.5rem; display:block; margin:10px 0; letter-spacing:8px; }
+    .btn-row { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px; }
+    .star-anim { display:inline-block; animation:starPop .5s ease both; }
+    @keyframes starPop {
+      0%   { transform:scale(0) rotate(-30deg); opacity:0; }
+      70%  { transform:scale(1.3) rotate(10deg); opacity:1; }
+      100% { transform:scale(1) rotate(0); opacity:1; }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align:center;width:100%;max-width:640px">
+    <div class="podio-title" id="mainEmoji">🏆</div>
+    <h2 class="podio-title" id="podioTitle">¡Muy bien!</h2>
+    <p  class="podio-subtitle" id="podioSub"></p>
+    <div class="confetti" id="confetti"></div>
+    <div class="result-message" id="resultMsg"></div>
+    <div class="medal-row" id="medalRow"></div>
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="nextGame()">Siguiente juego ▶</button>
+      <a href="../index.html" class="btn btn-blue">Menú principal 🏠</a>
+    </div>
+  </div>
+  <script src="assets/score.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const from   = parseInt(params.get('from')) || 1;
+    const scores = ScoreManager.getAll();
+    const current = scores[from];
+
+    function nextGame() {
+      const next = from + 1;
+      if (next <= 10) window.location.href = `../juego${next}/index.html`;
+      else window.location.href = '../index.html';
+    }
+
+    function renderMedal(gameId) {
+      const s = scores[gameId];
+      if (!s) return '';
+      const medals = ['🥇','🥈','🥉'];
+      const colors  = ['#FDD835','#CFD8DC','#FFAB91'];
+      const pct = s.percent;
+      const idx = pct >= 80 ? 0 : pct >= 50 ? 1 : 2;
+      return `<div class="medal-card" style="border-top:4px solid ${colors[idx]}">
+        <div class="medal-icon">${medals[idx]}</div>
+        <div class="medal-label">Juego ${gameId}</div>
+        <div class="medal-score">${pct}%</div>
+      </div>`;
+    }
+
+    // Mostrar resultados
+    if (current) {
+      const pct = current.percent;
+      let emoji, title, msg, stars;
+      if (pct >= 80) {
+        emoji='🌟'; title='¡Eres increíble!'; stars='⭐⭐⭐';
+        msg='¡Fantástico! ¡Lo has hecho genial! ¡Sigue así, campeón!';
+      } else if (pct >= 50) {
+        emoji='😊'; title='¡Buen trabajo!'; stars='⭐⭐';
+        msg='¡Muy bien! Casi perfecto. ¡Un poco más de práctica y lo logras!';
+      } else {
+        emoji='💪'; title='¡Tú puedes!'; stars='⭐';
+        msg='¡No te rindas! Cada vez que practicas aprendes más. ¡Inténtalo de nuevo!';
+      }
+      document.getElementById('mainEmoji').textContent = emoji;
+      document.getElementById('podioTitle').textContent = title;
+      document.getElementById('podioSub').textContent   = `Juego ${from}: ${current.score} de ${current.total} puntos`;
+      document.getElementById('confetti').innerHTML = [...stars].map((s,i)=>
+        `<span class="star-anim" style="animation-delay:${i*.15}s">${s}</span>`).join('');
+      document.getElementById('resultMsg').textContent = msg;
+    }
+
+    // Mostrar medallas de los últimos juegos jugados
+    const medalRow = document.getElementById('medalRow');
+    // Mostrar las 4 últimas o las que haya
+    const ids = Object.keys(scores).map(Number).sort((a,b)=>b-a).slice(0,4);
+    medalRow.innerHTML = ids.map(renderMedal).join('') || '<p style="color:#888">Aún no hay puntuaciones guardadas.</p>';
+
+    Sound.fanfare();
+  </script>
+</body>
+</html>
