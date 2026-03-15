@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔍 Property Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#002a22 0%,#004d40 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#26a69a;color:#fff}
+.score-box{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #26a69a;background:#002a22;color:#80cbc4;cursor:default}
+.p-tab.active{background:#26a69a;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#a7ffeb;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ══ PHASE 1: LEARN (flashcards) ══ */
+.flashcard-wrap{width:310px;min-height:290px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:290px;background:linear-gradient(145deg,#00332a,#004d40);border:3px solid #26a69a;border-radius:24px;box-shadow:0 8px 32px rgba(0,150,136,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.7rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.5);text-align:center}
+.card-opp{font-size:1rem;color:#ff8a80;margin:2px 0}
+.card-desc{font-size:.95rem;color:#a7ffeb;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#26a69a}.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pdot{width:12px;height:12px;border-radius:50%;background:#002a22;border:2px solid #26a69a;transition:background .2s}
+.pdot.seen{background:#26a69a}.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#80cbc4;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#00695c,#004d40);color:#fff;border:2px solid #26a69a;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#26a69a}
+
+/* ══ PHASE 2: SORT – true/false per material ══ */
+.sort-card{width:100%;max-width:460px;background:linear-gradient(145deg,#00332a,#004d40);border:2px solid #26a69a;border-radius:18px;padding:18px;text-align:center}
+.sort-emoji{font-size:3rem;margin-bottom:4px}
+.sort-name{font-size:1.4rem;font-weight:bold;color:#FFD700;margin-bottom:4px}
+.sort-prop{font-size:1.15rem;color:#a7ffeb;margin-bottom:10px}
+.sort-btns{display:flex;gap:14px;justify-content:center}
+.sort-btn{padding:10px 28px;border-radius:16px;font-family:inherit;font-size:1.05rem;cursor:pointer;border:2px solid;font-weight:bold;transition:transform .12s}
+.sort-btn:hover{transform:scale(1.05)}
+.sort-btn.yes{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#FFD700;border-color:#4CAF50}
+.sort-btn.no{background:linear-gradient(135deg,#b71c1c,#c62828);color:#FFD700;border-color:#ef5350}
+.sp-bar{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap;justify-content:center}
+.sp-dot{width:26px;height:26px;border-radius:50%;border:2px solid #26a69a;display:flex;align-items:center;justify-content:center;font-size:.7rem;background:#002a22;color:#80cbc4}
+.sp-dot.correct{background:#1b5e20;border-color:#4CAF50;color:#69f0ae}
+.sp-dot.wrong{background:#3a1010;border-color:#f44336;color:#ff5252}
+.sp-dot.current{border-color:#FFD700;background:#1a3a1a;color:#FFD700}
+
+/* ══ PHASE 3: QUIZ ══ */
+.quiz-card{width:100%;max-width:500px;background:#00332a;border:2px solid #26a69a;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#80cbc4;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:380px;background:linear-gradient(135deg,#004d40,#00332a);border:2px solid #26a69a;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#005a4a}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#00332a;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:500px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🔍 Property Lab</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Learn</div>
+  <div class="p-tab"        id="tab2">✅ True / False</div>
+  <div class="p-tab"        id="tab3">❓ Quiz</div>
+</div>
+
+<!-- ═══ PHASE 1: LEARN ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn the properties of materials! Tap or 🔊 to listen.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard" id="fc">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-opp" id="fcOpp"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Say it!</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ I know them! → True or False</button>
+</div>
+
+<!-- ═══ PHASE 2: TRUE/FALSE ═══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Is this property TRUE for the material shown?</p>
+  <div class="sp-bar" id="spBar"></div>
+  <div class="sort-card" id="sortCard">
+    <div class="sort-emoji" id="sEmoji"></div>
+    <div class="sort-name" id="sName"></div>
+    <div class="sort-prop" id="sProp"></div>
+    <div class="sort-btns" id="sBtns">
+      <button class="sort-btn yes" onclick="tfAnswer(true)">✅ TRUE</button>
+      <button class="sort-btn no"  onclick="tfAnswer(false)">❌ FALSE</button>
+    </div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" style="display:none">✅ Next → Quiz</button>
+</div>
+
+<!-- ═══ PHASE 3: QUIZ ═══ -->
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Play again</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+/* ── Helpers ── */
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildTF();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+/* ── Data: Flashcards ── */
+const CARDS=[
+  {emoji:'💧',title:'Waterproof',opp:'Opposite: absorbent',
+   desc:'A waterproof material does NOT let water pass through. Plastic, glass and metal are waterproof. Great for umbrellas and rain boots!'},
+  {emoji:'🧽',title:'Absorbent',opp:'Opposite: waterproof',
+   desc:'An absorbent material SOAKS UP water. Paper and cloth are absorbent. That is why we use paper towels to dry things!'},
+  {emoji:'✨',title:'Smooth',opp:'Opposite: rough',
+   desc:'A smooth material feels flat and even when you touch it. Glass, metal and plastic can be very smooth.'},
+  {emoji:'🪨',title:'Rough',opp:'Opposite: smooth',
+   desc:'A rough material feels bumpy and uneven. Brick, sandpaper and tree bark are rough.'},
+  {emoji:'🛟',title:'It can float',opp:'Opposite: it sinks',
+   desc:'Some materials float on water — they stay on top! Wood and plastic usually float because they are lighter than water.'},
+  {emoji:'⚓',title:'It can sink',opp:'Opposite: it floats',
+   desc:'Some materials sink in water — they go to the bottom! Metal, glass and brick usually sink because they are heavier than water.'},
+  {emoji:'💎',title:'Hard',opp:'Opposite: soft',
+   desc:'A hard material is difficult to bend or scratch. Metal, glass and brick are hard materials.'},
+  {emoji:'🧸',title:'Soft',opp:'Opposite: hard',
+   desc:'A soft material is easy to squeeze or bend. Cloth, sponge and rubber are soft materials.'},
+  {emoji:'🪟',title:'Transparent',opp:'Opposite: opaque',
+   desc:'A transparent material lets light pass through — you can see through it! Glass and some plastics are transparent.'},
+  {emoji:'🚪',title:'Opaque',opp:'Opposite: transparent',
+   desc:'An opaque material does NOT let light through — you cannot see through it! Wood, metal and brick are opaque.'},
+];
+
+/* ── Data: True/False statements ── */
+const TF_ITEMS=[
+  {emoji:'🥤',mat:'Plastic',prop:'Is waterproof',ans:true},
+  {emoji:'📄',mat:'Paper',prop:'Is absorbent',ans:true},
+  {emoji:'🪟',mat:'Glass',prop:'Is smooth',ans:true},
+  {emoji:'🧱',mat:'Brick',prop:'Is rough',ans:true},
+  {emoji:'🪵',mat:'Wood',prop:'Can float on water',ans:true},
+  {emoji:'🔩',mat:'Metal',prop:'Can sink in water',ans:true},
+  {emoji:'💎',mat:'Metal',prop:'Is hard',ans:true},
+  {emoji:'🪟',mat:'Glass',prop:'Is transparent',ans:true},
+  {emoji:'🪵',mat:'Wood',prop:'Is opaque',ans:true},
+  {emoji:'📄',mat:'Paper',prop:'Is waterproof',ans:false},
+  {emoji:'🪟',mat:'Glass',prop:'Is soft',ans:false},
+  {emoji:'🔩',mat:'Metal',prop:'Can float on water',ans:false},
+  {emoji:'🧱',mat:'Brick',prop:'Is transparent',ans:false},
+  {emoji:'🥤',mat:'Plastic',prop:'Is absorbent',ans:false},
+];
+
+const QUIZ=[
+  {q:'Which material is waterproof?',opts:['Paper','Plastic','Cloth'],ans:1,emoji:'💧'},
+  {q:'Which material is absorbent?',opts:['Glass','Metal','Paper'],ans:2,emoji:'🧽'},
+  {q:'Which material usually floats on water?',opts:['Metal','Brick','Wood'],ans:2,emoji:'🛟'},
+  {q:'Glass is transparent. What does that mean?',opts:['It is very heavy','You can see through it','It floats on water'],ans:1,emoji:'🪟'},
+  {q:'Brick is rough. What does rough mean?',opts:['It feels bumpy and uneven','It is very light','It lets light through'],ans:0,emoji:'🪨'},
+  {q:'Which of these materials sinks in water?',opts:['Wood','Plastic cup','Metal coin'],ans:2,emoji:'⚓'},
+  {q:'Which material is hard and transparent?',opts:['Wood','Glass','Paper'],ans:1,emoji:'💎'},
+  {q:'A sponge is…',opts:['Hard and opaque','Soft and absorbent','Smooth and waterproof'],ans:1,emoji:'🧽'},
+  {q:'What is the opposite of smooth?',opts:['Hard','Transparent','Rough'],ans:2,emoji:'✨'},
+  {q:'An opaque material…',opts:['Lets light through','Does NOT let light through','Floats on water'],ans:1,emoji:'🚪'},
+];
+
+/* ══ PHASE 1: LEARN ══ */
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;
+  $('fcTitle').textContent=c.title;
+  $('fcOpp').textContent=c.opp;
+  $('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;
+  $('nextBtn').disabled=ci===CARDS.length-1;
+  $('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length) $('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.opp+'. '+c.desc);}
+showCard();
+
+/* ══ PHASE 2: TRUE OR FALSE ══ */
+let tfItems,tfIdx,tfCorrect;
+function buildTF(){
+  tfItems=shuffle(TF_ITEMS).slice(0,10);
+  tfIdx=0;tfCorrect=0;
+  $('btn2').style.display='none';$('fb2').textContent='';
+  renderTFBar();showTF();
+}
+function renderTFBar(){
+  $('spBar').innerHTML=tfItems.map((_,i)=>{
+    let cls='sp-dot';if(i===tfIdx)cls+=' current';
+    return `<div class="${cls}" id="td${i}">${i+1}</div>`;
+  }).join('');
+}
+function showTF(){
+  if(tfIdx>=tfItems.length){endTF();return;}
+  const it=tfItems[tfIdx];
+  $('sEmoji').textContent=it.emoji;
+  $('sName').textContent=it.mat;
+  $('sProp').textContent=it.prop;
+  $('sBtns').innerHTML=`<button class="sort-btn yes" onclick="tfAnswer(true)">✅ TRUE</button><button class="sort-btn no" onclick="tfAnswer(false)">❌ FALSE</button>`;
+  renderTFBar();
+  speak(it.mat+'. '+it.prop);
+}
+function tfAnswer(ans){
+  const it=tfItems[tfIdx];
+  const dot=$('td'+tfIdx);
+  if(ans===it.ans){
+    flash('g');addScore(10);tfCorrect++;dot.classList.add('correct');
+    $('fb2').className='fb ok';
+    $('fb2').textContent='✅ Correct! '+it.mat+(it.ans?' IS ':' is NOT ')+it.prop.toLowerCase()+'.';
+    speak('Correct!');
+  } else {
+    flash('r');dot.classList.add('wrong');
+    $('fb2').className='fb no';
+    $('fb2').textContent='❌ Nope! '+it.mat+(it.ans?' IS ':' is NOT ')+it.prop.toLowerCase()+'.';
+    speak('Not quite.');
+  }
+  tfIdx++;setTimeout(showTF,1200);
+}
+function endTF(){
+  markDone(2);
+  $('sortCard').innerHTML=`<div style="font-size:2rem">🎉</div><div style="color:#69f0ae;font-size:1.2rem">You got ${tfCorrect} / ${tfItems.length} correct!</div>`;
+  $('fb2').textContent='';$('btn2').style.display='';
+}
+
+/* ══ PHASE 3: QUIZ ══ */
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';
+  $('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return;}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Question ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;
+  $('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');
+  speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi];const btns=$('quizOpts').querySelectorAll('.quiz-opt');btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ Well done!';speak('Well done!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Answer: '+q.opts[q.ans];speak('The answer is '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1800);
+}
+function endQuiz(){
+  markDone(3);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg=pct===100?'🏆 PERFECT! Property Master!':pct>=75?'🌟 Great job!':pct>=50?'👍 Good work!':'💪 Keep practising!';
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🔍</div><strong>Quiz finished!</strong><br>You got <strong>${quizCorrect} / ${quizItems.length}</strong> correct (${pct}%)<br>Total score: <strong>⭐ ${score}</strong><br><br>${msg}`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+</script>
+</body>
+</html>

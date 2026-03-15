@@ -20,9 +20,11 @@
     .tab-btn.lengua  { background:#29B6F6; color:#fff; }
     .tab-btn.mates   { background:#4a0072; color:#FFD700; }
     .tab-btn.english { background:#1b5e20; color:#FFD700; }
+    .tab-btn.science { background:#00695c; color:#FFD700; }
     .tab-btn.lengua.inactive  { background:#b3e5fc; color:#0277bd; }
     .tab-btn.mates.inactive   { background:#2d004a; color:#b39ddb; }
     .tab-btn.english.inactive { background:#0d2a10; color:#81c784; }
+    .tab-btn.science.inactive { background:#002a22; color:#4db6ac; }
     /* ── Hero English ─────────────────────────────────── */
     .hero-english {
       width:100%; max-width:820px;
@@ -54,6 +56,38 @@
     .en-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
     .en-card .card-level { font-size:.85rem; color:#a5d6a7; margin-bottom:4px; }
     .en-card .en-badge   { display:inline-block; font-size:.82rem; background:#1b3a1b; color:#FFD700; border:1px solid #4CAF50; border-radius:10px; padding:2px 10px; margin-top:4px; }
+
+    /* ── Hero Science ──────────────────────────────────── */
+    .hero-science {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(0,105,92,.93),rgba(0,42,34,.95));
+      border-radius:0 0 20px 20px;
+      color:#FFD700; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:2px solid #26a69a;
+    }
+    .hero-science h1 { font-size:2.1rem; margin-bottom:6px; color:#FFD700; text-shadow:0 0 18px #00bfa5; }
+    .hero-science p  { font-size:1.05rem; opacity:.9; color:#a7ffeb; }
+    .stars-sc { color:#FFD700; font-size:1.5rem; letter-spacing:3px; display:block; margin:6px 0; }
+    .menu-grid-sc {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:18px; width:100%; max-width:820px; padding:0 8px;
+    }
+    .sc-card {
+      background:linear-gradient(145deg,#002a22,#004d40);
+      border:2px solid #26a69a; border-top:5px solid #FFD700;
+      border-radius:16px; padding:20px 14px 16px;
+      text-align:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 4px 16px rgba(0,150,136,.3);
+      transition:transform .15s, box-shadow .15s; display:block; color:#fff;
+    }
+    .sc-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,200,150,.4); }
+    .sc-card .card-icon  { font-size:2.8rem; display:block; margin-bottom:6px; }
+    .sc-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
+    .sc-card .card-level { font-size:.85rem; color:#a7ffeb; margin-bottom:4px; }
+    .sc-card .sc-badge   { display:inline-block; font-size:.82rem; background:#00332a; color:#FFD700; border:1px solid #26a69a; border-radius:10px; padding:2px 10px; margin-top:4px; }
 
     /* ── Hero Lengua ──────────────────────────────────── */
     .hero-lengua {
@@ -165,6 +199,7 @@
     <button class="tab-btn lengua" id="tabLengua" onclick="switchTab('lengua')">📚 Lengua</button>
     <button class="tab-btn mates inactive" id="tabMates" onclick="switchTab('mates')">🧙 Matemáticas</button>
     <button class="tab-btn english inactive" id="tabEnglish" onclick="switchTab('english')">🇬🇧 English</button>
+    <button class="tab-btn science inactive" id="tabScience" onclick="switchTab('science')">🔬 Science</button>
   </div>
 
   <!-- ══ LENGUA ══════════════════════════════════════ -->
@@ -206,6 +241,17 @@
     <div class="menu-grid-en" id="menuGridEn"></div>
   </div>
 
+  <!-- ══ SCIENCE ══════════════════════════════════════ -->
+  <div class="section" id="secScience">
+    <div class="hero-science">
+      <span class="mascot">🔬</span>
+      <h1>Science Lab!</h1>
+      <p>2nd Grade — Mixtures, materials &amp; more</p>
+      <span class="stars-sc">🧪 ⚗️ 🔬 🧫</span>
+    </div>
+    <div class="menu-grid-sc" id="menuGridSci"></div>
+  </div>
+
   <script src="assets/score.js"></script>
   <script>
 
@@ -214,11 +260,14 @@
       document.getElementById('secLengua').classList.toggle('active', tab==='lengua');
       document.getElementById('secMates').classList.toggle('active', tab==='mates');
       document.getElementById('secEnglish').classList.toggle('active', tab==='english');
+      document.getElementById('secScience').classList.toggle('active', tab==='science');
       document.getElementById('tabLengua').classList.toggle('inactive', tab!=='lengua');
       document.getElementById('tabMates').classList.toggle('inactive', tab!=='mates');
       document.getElementById('tabEnglish').classList.toggle('inactive', tab!=='english');
+      document.getElementById('tabScience').classList.toggle('inactive', tab!=='science');
       if (tab==='mates') renderMates();
       if (tab==='english') renderEng();
+      if (tab==='science') renderSci();
     }
 
     // ── LENGUA ───────────────────────────────────────────────
@@ -327,6 +376,26 @@
           <div class="card-title">${g.title}</div>
           <div class="card-level">${g.desc}</div>
           <span class="en-badge">${g.badge}</span>
+        </a>`).join('');
+    }
+
+    // ── SCIENCE ──────────────────────────────────────────────
+    const sciGames = [
+      { id:'sci1', title:'Mixture Detective',  icon:'🧪', desc:'Homogeneous or heterogeneous?', badge:'Mixtures' },
+      { id:'sci2', title:'Material Explorer',   icon:'🧱', desc:'Metal, wood, glass & more!',    badge:'Materials' },
+      { id:'sci3', title:'Property Lab',         icon:'🔍', desc:'Waterproof, hard, transparent…', badge:'Properties' },
+      { id:'sci4', title:'Substance Sorter',     icon:'⚗️', desc:'Pure, homo or heterogeneous?',  badge:'Substances' },
+      { id:'sci5', title:'Separation Lab',       icon:'🧲', desc:'Filtration, evaporation & more', badge:'Separation' },
+    ];
+
+    function renderSci() {
+      const grid = document.getElementById('menuGridSci');
+      grid.innerHTML = sciGames.map(g => `
+        <a class="sc-card" href="${g.id}/index.html">
+          <span class="card-icon">${g.icon}</span>
+          <div class="card-title">${g.title}</div>
+          <div class="card-level">${g.desc}</div>
+          <span class="sc-badge">${g.badge}</span>
         </a>`).join('');
     }
 

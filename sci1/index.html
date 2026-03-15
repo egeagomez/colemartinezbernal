@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧪 Mixture Detective</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#002a22 0%,#004d40 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#26a69a;color:#fff}
+.score-box{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #26a69a;background:#002a22;color:#80cbc4;cursor:default}
+.p-tab.active{background:#26a69a;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:680px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#a7ffeb;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ══ PHASE 1: LEARN ══ */
+.flashcard-wrap{width:300px;min-height:300px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:300px;background:linear-gradient(145deg,#00332a,#004d40);border:3px solid #26a69a;border-radius:24px;box-shadow:0 8px 32px rgba(0,150,136,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4.5rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.8rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.5);text-align:center}
+.card-type{font-size:1.2rem;color:#69f0ae;font-weight:bold;margin:4px 0}
+.card-desc{font-size:1rem;color:#a7ffeb;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#26a69a}
+.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px}
+.pdot{width:12px;height:12px;border-radius:50%;background:#002a22;border:2px solid #26a69a;transition:background .2s}
+.pdot.seen{background:#26a69a}
+.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#80cbc4;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}
+.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#00695c,#004d40);color:#fff;border:2px solid #26a69a;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#26a69a}
+
+/* ══ PHASE 2: SORT ══ */
+.sort-area{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+.sort-item{background:linear-gradient(135deg,#00332a,#004d40);border:2px solid #26a69a;border-radius:16px;padding:14px 20px;text-align:center;width:100%;max-width:400px;transition:transform .15s}
+.sort-item .si-emoji{font-size:2.5rem;display:block;margin-bottom:4px}
+.sort-item .si-name{font-size:1.2rem;font-weight:bold;color:#FFD700}
+.sort-item .si-desc{font-size:.9rem;color:#a7ffeb}
+.sort-buttons{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;justify-content:center}
+.sort-btn{padding:10px 22px;border-radius:16px;font-family:inherit;font-size:1rem;cursor:pointer;border:2px solid;font-weight:bold;transition:transform .12s,box-shadow .12s}
+.sort-btn:hover{transform:scale(1.05)}
+.sort-btn.homo{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#FFD700;border-color:#42a5f5}
+.sort-btn.hetero{background:linear-gradient(135deg,#e65100,#bf360c);color:#FFD700;border-color:#ff9800}
+.sort-progress{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;justify-content:center}
+.sp-dot{width:28px;height:28px;border-radius:50%;border:2px solid #26a69a;display:flex;align-items:center;justify-content:center;font-size:.75rem;background:#002a22;color:#80cbc4}
+.sp-dot.correct{background:#1b5e20;border-color:#4CAF50;color:#69f0ae}
+.sp-dot.wrong{background:#3a1010;border-color:#f44336;color:#ff5252}
+.sp-dot.current{border-color:#FFD700;background:#1a3a1a;color:#FFD700}
+
+/* ══ PHASE 3: QUIZ ══ */
+.quiz-card{width:100%;max-width:500px;background:#00332a;border:2px solid #26a69a;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#80cbc4;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:360px;background:linear-gradient(135deg,#004d40,#00332a);border:2px solid #26a69a;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#005a4a}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#00332a;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:500px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🧪 Mixture Detective</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Learn</div>
+  <div class="p-tab"        id="tab2">🔬 Sort</div>
+  <div class="p-tab"        id="tab3">❓ Quiz</div>
+</div>
+
+<!-- ═══ PHASE 1: LEARN ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn about mixtures! Tap the card or 🔊 to hear the explanation.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard" id="fc">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-type" id="fcType"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Say it!</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ I know them! → Sort mixtures</button>
+</div>
+
+<!-- ═══ PHASE 2: SORT ═══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Is this mixture <strong style="color:#42a5f5">homogeneous</strong> or <strong style="color:#ff9800">heterogeneous</strong>?</p>
+  <div class="sort-progress" id="sortProg"></div>
+  <div class="sort-area" id="sortArea"></div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" style="display:none">✅ Next → Quiz</button>
+</div>
+
+<!-- ═══ PHASE 3: QUIZ ═══ -->
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Play again</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+/* ── Helpers ── */
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildSort();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+/* ── Data ── */
+const CARDS=[
+  {emoji:'🌊',title:'What is a mixture?',type:'',
+   desc:'A mixture is made when you combine two or more substances together. They do NOT form a new substance — you can often separate them again!'},
+  {emoji:'🥛',title:'Homogeneous mixture',type:'HOMOGENEOUS',
+   desc:'You CANNOT see the different parts. It looks the same everywhere. Example: salt dissolved in water — it looks like plain water!'},
+  {emoji:'🥗',title:'Heterogeneous mixture',type:'HETEROGENEOUS',
+   desc:'You CAN see the different parts. They are NOT mixed evenly. Example: a salad — you can see the lettuce, tomato and cheese!'},
+  {emoji:'☕',title:'Coffee with sugar',type:'HOMOGENEOUS',
+   desc:'When sugar dissolves in coffee, you cannot see the sugar anymore. It looks the same everywhere → homogeneous!'},
+  {emoji:'🥣',title:'Cereal with milk',type:'HETEROGENEOUS',
+   desc:'You can clearly see the cereal pieces floating in the milk. The parts are different → heterogeneous!'},
+  {emoji:'🫧',title:'Air',type:'HOMOGENEOUS',
+   desc:'Air is a mixture of gases (oxygen, nitrogen…). You cannot see the different gases — it looks the same everywhere → homogeneous!'},
+  {emoji:'🍕',title:'Pizza',type:'HETEROGENEOUS',
+   desc:'You can see the cheese, tomato, dough and toppings. Each part is different → heterogeneous!'},
+];
+
+const SORT_ITEMS=[
+  {emoji:'🧂',name:'Salt water',desc:'Salt dissolved in water',type:'homo'},
+  {emoji:'🥗',name:'Salad',desc:'Lettuce, tomato, onion…',type:'hetero'},
+  {emoji:'🍹',name:'Orange juice',desc:'Squeezed and filtered',type:'homo'},
+  {emoji:'🥣',name:'Cereal & milk',desc:'Cereal pieces in milk',type:'hetero'},
+  {emoji:'🫧',name:'Air',desc:'Oxygen, nitrogen mixed',type:'homo'},
+  {emoji:'🍕',name:'Pizza',desc:'Cheese, tomato, dough…',type:'hetero'},
+  {emoji:'☕',name:'Coffee with sugar',desc:'Sugar dissolved in coffee',type:'homo'},
+  {emoji:'🥜',name:'Trail mix',desc:'Nuts, raisins, chocolate…',type:'hetero'},
+  {emoji:'🍯',name:'Honey in water',desc:'Honey stirred until dissolved',type:'homo'},
+  {emoji:'🛢️',name:'Oil and water',desc:'Oil floats on top of water',type:'hetero'},
+];
+
+const QUIZ_QUESTIONS=[
+  {q:'In a HOMOGENEOUS mixture, can you see the different parts?',opts:['No, it looks the same everywhere','Yes, you can see all parts','Only with a magnifying glass'],ans:0,emoji:'🔍'},
+  {q:'Which of these is a HETEROGENEOUS mixture?',opts:['Salt water','A fruit salad','Vinegar'],ans:1,emoji:'🥗'},
+  {q:'What type of mixture is sugar dissolved in water?',opts:['Heterogeneous','Homogeneous','It is not a mixture'],ans:1,emoji:'🧂'},
+  {q:'Why is pizza a heterogeneous mixture?',opts:['Because it is hot','Because you can see cheese, tomato and dough separately','Because it tastes good'],ans:1,emoji:'🍕'},
+  {q:'Air is a mixture of gases. What type is it?',opts:['Heterogeneous','Homogeneous','Neither'],ans:1,emoji:'🫧'},
+  {q:'Which is TRUE about mixtures?',opts:['You can never separate them','They form a totally new substance','The substances keep their own properties'],ans:2,emoji:'🧪'},
+  {q:'Oil and water form what kind of mixture?',opts:['Homogeneous — they mix evenly','Heterogeneous — you can see the oil float','They are not a mixture'],ans:1,emoji:'🛢️'},
+  {q:'What makes a mixture HOMOGENEOUS?',opts:['It is made of solids only','It looks the same everywhere','It always has two parts'],ans:1,emoji:'🔬'},
+];
+
+/* ══ PHASE 1: LEARN ══ */
+let ci=0, seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;
+  $('fcTitle').textContent=c.title;
+  $('fcType').textContent=c.type;
+  $('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;
+  $('nextBtn').disabled=ci===CARDS.length-1;
+  const dots=$('progDots');
+  dots.innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length) $('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.desc);}
+showCard();
+
+/* ══ PHASE 2: SORT ══ */
+let sortItems,sortIdx,sortCorrect;
+function buildSort(){
+  sortItems=shuffle(SORT_ITEMS);
+  sortIdx=0; sortCorrect=0;
+  renderSortProgress();
+  showSortItem();
+  $('btn2').style.display='none';
+  $('fb2').textContent='';
+}
+function renderSortProgress(){
+  $('sortProg').innerHTML=sortItems.map((_,i)=>{
+    let cls='sp-dot';
+    if(i===sortIdx) cls+=' current';
+    return `<div class="${cls}" id="sdot${i}">${i+1}</div>`;
+  }).join('');
+}
+function showSortItem(){
+  if(sortIdx>=sortItems.length){endSort();return;}
+  const it=sortItems[sortIdx];
+  $('sortArea').innerHTML=`
+    <div class="sort-item">
+      <span class="si-emoji">${it.emoji}</span>
+      <div class="si-name">${it.name}</div>
+      <div class="si-desc">${it.desc}</div>
+    </div>
+    <div class="sort-buttons">
+      <button class="sort-btn homo" onclick="sortAnswer('homo')">🔵 Homogeneous</button>
+      <button class="sort-btn hetero" onclick="sortAnswer('hetero')">🟠 Heterogeneous</button>
+    </div>`;
+  renderSortProgress();
+  speak(it.name+'. '+it.desc);
+}
+function sortAnswer(ans){
+  const it=sortItems[sortIdx];
+  const dot=$('sdot'+sortIdx);
+  if(ans===it.type){
+    flash('g'); addScore(10); sortCorrect++;
+    dot.classList.add('correct');
+    $('fb2').className='fb ok';
+    $('fb2').textContent='✅ Correct! '+it.name+' is '+(it.type==='homo'?'homogeneous':'heterogeneous')+'!';
+    speak('Correct! '+it.name+' is '+(it.type==='homo'?'homogeneous':'heterogeneous'));
+  } else {
+    flash('r');
+    dot.classList.add('wrong');
+    $('fb2').className='fb no';
+    $('fb2').textContent='❌ Not quite! '+it.name+' is '+(it.type==='homo'?'homogeneous':'heterogeneous')+'.';
+    speak('Not quite. '+it.name+' is '+(it.type==='homo'?'homogeneous':'heterogeneous'));
+  }
+  sortIdx++;
+  setTimeout(()=>{showSortItem();},1200);
+}
+function endSort(){
+  markDone(2);
+  $('sortArea').innerHTML=`<div style="text-align:center;padding:16px;color:#69f0ae;font-size:1.2rem">
+    🎉 You sorted ${sortCorrect} / ${sortItems.length} correctly!
+  </div>`;
+  $('fb2').textContent='';
+  $('btn2').style.display='';
+}
+
+/* ══ PHASE 3: QUIZ ══ */
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ_QUESTIONS);
+  qi=0; quizCorrect=0;
+  $('quizDone').style.display='none';
+  $('finishRow').style.display='none';
+  $('fb3').textContent='';
+  showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return;}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Question ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;
+  $('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>
+    `<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`
+  ).join('');
+  speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi];
+  const btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){
+    flash('g'); addScore(10); quizCorrect++;
+    btns[i].classList.add('correct-ans');
+    $('fb3').className='fb ok';
+    $('fb3').textContent='✅ Well done!';
+    speak('Well done!');
+  } else {
+    flash('r');
+    btns[i].classList.add('wrong-ans');
+    btns[q.ans].classList.add('correct-ans');
+    $('fb3').className='fb no';
+    $('fb3').textContent='❌ The correct answer is: '+q.opts[q.ans];
+    speak('The correct answer is: '+q.opts[q.ans]);
+  }
+  qi++;
+  setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1800);
+}
+function endQuiz(){
+  markDone(3);
+  $('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg='';
+  if(pct===100) msg='🏆 PERFECT! You are a Mixture Expert!';
+  else if(pct>=75) msg='🌟 Great job! Almost perfect!';
+  else if(pct>=50) msg='👍 Good work! Keep practising!';
+  else msg='💪 Keep learning — you\'ll get better!';
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🧪</div>
+    <strong>Quiz finished!</strong><br>
+    You got <strong>${quizCorrect} / ${quizItems.length}</strong> correct (${pct}%)<br>
+    Total score: <strong>⭐ ${score}</strong><br><br>
+    ${msg}`;
+  $('finishRow').style.display='flex';
+  speak(msg);
+}
+</script>
+</body>
+</html>

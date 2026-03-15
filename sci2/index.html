@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧱 Material Explorer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#002a22 0%,#004d40 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#26a69a;color:#fff}
+.score-box{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #26a69a;background:#002a22;color:#80cbc4;cursor:default}
+.p-tab.active{background:#26a69a;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:680px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#a7ffeb;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ══ PHASE 1: LEARN ══ */
+.flashcard-wrap{width:300px;min-height:300px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:300px;background:linear-gradient(145deg,#00332a,#004d40);border:3px solid #26a69a;border-radius:24px;box-shadow:0 8px 32px rgba(0,150,136,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4.5rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.8rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.5);text-align:center}
+.card-type{font-size:1.1rem;color:#69f0ae;font-weight:bold;margin:4px 0}
+.card-desc{font-size:1rem;color:#a7ffeb;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#00332a;color:#FFD700;border:2px solid #26a69a;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#26a69a}
+.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px}
+.pdot{width:12px;height:12px;border-radius:50%;background:#002a22;border:2px solid #26a69a;transition:background .2s}
+.pdot.seen{background:#26a69a}
+.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#80cbc4;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}
+.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#00695c,#004d40);color:#fff;border:2px solid #26a69a;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#26a69a}
+
+/* ══ PHASE 2: MATCH ══ */
+.match-area{position:relative;width:100%;display:flex;justify-content:space-between}
+.match-col{display:flex;flex-direction:column;gap:6px;width:44%}
+.match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.mi{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#00332a,#004d40);border:2px solid #26a69a;border-radius:12px;padding:7px 10px;cursor:pointer;position:relative;min-height:48px;transition:border-color .15s,box-shadow .15s}
+.mi:hover:not(.matched){border-color:#a7ffeb;box-shadow:0 0 8px rgba(167,255,235,.4)}
+.mi.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.mi.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+.mi.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mi .em{font-size:1.7rem}.mi .wd{font-size:.9rem;font-weight:bold;color:#FFD700}
+.dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#26a69a;border:2px solid #a7ffeb}
+.dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#26a69a;border:2px solid #a7ffeb}
+
+/* ══ PHASE 3: QUIZ ══ */
+.quiz-card{width:100%;max-width:500px;background:#00332a;border:2px solid #26a69a;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#80cbc4;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:360px;background:linear-gradient(135deg,#004d40,#00332a);border:2px solid #26a69a;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#005a4a}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#00332a;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:500px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🧱 Material Explorer</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Learn</div>
+  <div class="p-tab"        id="tab2">🔗 Match</div>
+  <div class="p-tab"        id="tab3">❓ Quiz</div>
+</div>
+
+<!-- ═══ PHASE 1: LEARN ═══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn about materials! Tap the card or 🔊 to hear the explanation.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard" id="fc">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-type" id="fcType"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Say it!</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ I know them! → Match objects</button>
+</div>
+
+<!-- ═══ PHASE 2: MATCH ═══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Connect each object to its material!</p>
+  <div class="match-area" id="ma1">
+    <div class="match-col" id="lc1"></div>
+    <svg class="match-svg" id="ms1"></svg>
+    <div class="match-col" id="rc1"></div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Next → Quiz</button>
+</div>
+
+<!-- ═══ PHASE 3: QUIZ ═══ -->
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Play again</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+/* ── Helpers ── */
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.82;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildMatch();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+/* ── Data ── */
+const CARDS=[
+  {emoji:'🔩',title:'Metal',type:'METAL',
+   desc:'Metal is very strong and hard. It can be shiny. It is used to make coins, keys, cars and bridges. Metal conducts heat and electricity!'},
+  {emoji:'📄',title:'Paper',type:'PAPER',
+   desc:'Paper is made from wood. It is light, thin and flexible. We use it for books, notebooks, newspapers and drawing. Paper is absorbent — it soaks up water!'},
+  {emoji:'🧱',title:'Brick',type:'BRICK',
+   desc:'Bricks are made from clay. They are hard, heavy and rough. We use bricks to build houses and walls. Bricks are waterproof and very strong!'},
+  {emoji:'🪵',title:'Wood',type:'WOOD',
+   desc:'Wood comes from trees. It is hard but lighter than metal. We use it for furniture, doors, pencils and toys. Wood can float on water!'},
+  {emoji:'🥤',title:'Plastic',type:'PLASTIC',
+   desc:'Plastic is made by people (man-made). It is light, waterproof and can be any colour or shape. We use it for bottles, toys and bags. We should recycle plastic!'},
+  {emoji:'🪟',title:'Glass',type:'GLASS',
+   desc:'Glass is transparent — you can see through it! It is hard, smooth and waterproof. We use it for windows, bottles and mirrors. Be careful, glass can break!'},
+];
+
+const MATCH_ITEMS=[
+  {emoji:'🔑',name:'Key',material:'Metal'},
+  {emoji:'📰',name:'Newspaper',material:'Paper'},
+  {emoji:'🏠',name:'House wall',material:'Brick'},
+  {emoji:'🪑',name:'Chair',material:'Wood'},
+  {emoji:'🧴',name:'Shampoo bottle',material:'Plastic'},
+  {emoji:'🪟',name:'Window',material:'Glass'},
+];
+
+const QUIZ=[
+  {q:'Which material comes from trees?',opts:['Metal','Plastic','Wood'],ans:2,emoji:'🌳'},
+  {q:'Which material is transparent (you can see through it)?',opts:['Brick','Glass','Wood'],ans:1,emoji:'🪟'},
+  {q:'A coin is made of…',opts:['Paper','Plastic','Metal'],ans:2,emoji:'🪙'},
+  {q:'Which material is man-made and can be recycled?',opts:['Plastic','Brick','Wood'],ans:0,emoji:'♻️'},
+  {q:'Which material is absorbent and soaks up water?',opts:['Glass','Metal','Paper'],ans:2,emoji:'💧'},
+  {q:'Houses and walls are built with…',opts:['Paper','Brick','Plastic'],ans:1,emoji:'🏗️'},
+  {q:'Which material can float on water?',opts:['Metal','Glass','Wood'],ans:2,emoji:'🛶'},
+  {q:'A window is made of glass because glass is…',opts:['Rough and soft','Transparent and hard','Absorbent and light'],ans:1,emoji:'🔍'},
+  {q:'Which is TRUE about metal?',opts:['It conducts heat and electricity','It is very soft','It comes from trees'],ans:0,emoji:'⚡'},
+  {q:'Books and notebooks are made of…',opts:['Brick','Glass','Paper'],ans:2,emoji:'📚'},
+];
+
+/* ══ PHASE 1: LEARN ══ */
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;
+  $('fcTitle').textContent=c.title;
+  $('fcType').textContent=c.type;
+  $('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;
+  $('nextBtn').disabled=ci===CARDS.length-1;
+  $('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length) $('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.desc);}
+showCard();
+
+/* ══ PHASE 2: MATCH ══ */
+let selL=null,matched2=0;
+function buildMatch(){
+  matched2=0;selL=null;
+  const shuf=shuffle(MATCH_ITEMS.map((_,i)=>i));
+  $('lc1').innerHTML=MATCH_ITEMS.map((o,i)=>`<div class="mi" id="l${i}" onclick="clL(${i})"><span class="em">${o.emoji}</span><span class="wd" style="color:#a7ffeb">${o.name}</span><div class="dot-r" id="dr${i}"></div></div>`).join('');
+  $('rc1').innerHTML=shuf.map((ci,p)=>`<div class="mi" id="r${p}" data-ci="${ci}" onclick="clR(${p})"><div class="dot-l" id="dl${p}"></div><span class="wd">${MATCH_ITEMS[ci].material}</span></div>`).join('');
+  $('fb2').textContent='';$('btn2').disabled=true;
+}
+function clL(i){const el=$('l'+i);if(el.classList.contains('matched'))return;if(selL!==null)$('l'+selL).classList.remove('sel');selL=i;el.classList.add('sel');speak(MATCH_ITEMS[i].name);}
+function clR(p){
+  const re=$('r'+p);if(re.classList.contains('matched'))return;
+  if(selL===null){$('fb2').className='fb no';$('fb2').textContent='⬅️ Click an object first!';return;}
+  const ci=parseInt(re.dataset.ci);
+  if(ci===selL){
+    flash('g');addScore(10);matched2++;
+    $('l'+selL).classList.remove('sel');$('l'+selL).classList.add('matched');re.classList.add('matched');
+    drawLine($('dr'+selL),$('dl'+p),'#4CAF50');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+MATCH_ITEMS[selL].name+' → '+MATCH_ITEMS[selL].material;
+    speak(MATCH_ITEMS[selL].name+' is made of '+MATCH_ITEMS[selL].material);selL=null;
+    if(matched2===MATCH_ITEMS.length){$('fb2').textContent='🎉 All matched!';$('btn2').disabled=false;markDone(2);}
+  } else {
+    flash('r');re.classList.add('wrong');setTimeout(()=>re.classList.remove('wrong'),400);
+    $('fb2').className='fb no';$('fb2').textContent='❌ Try again!';
+  }
+}
+function drawLine(a,b,col){
+  const svg=$('ms1'),ar=$('ma1').getBoundingClientRect();
+  const r1=a.getBoundingClientRect(),r2=b.getBoundingClientRect();
+  const x1=r1.left+r1.width/2-ar.left,y1=r1.top+r1.height/2-ar.top;
+  const x2=r2.left+r2.width/2-ar.left,y2=r2.top+r2.height/2-ar.top;
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);ln.setAttribute('x2',x2);ln.setAttribute('y2',y2);
+  ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','3');ln.setAttribute('stroke-linecap','round');
+  svg.appendChild(ln);
+}
+
+/* ══ PHASE 3: QUIZ ══ */
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';
+  $('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return;}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Question ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;
+  $('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');
+  speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi];
+  const btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ Well done!';speak('Well done!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ The answer is: '+q.opts[q.ans];speak('The correct answer is '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1800);
+}
+function endQuiz(){
+  markDone(3);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg=pct===100?'🏆 PERFECT! You are a Material Expert!':pct>=75?'🌟 Great job!':pct>=50?'👍 Good work!':'💪 Keep learning!';
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🧱</div><strong>Quiz finished!</strong><br>You got <strong>${quizCorrect} / ${quizItems.length}</strong> correct (${pct}%)<br>Total score: <strong>⭐ ${score}</strong><br><br>${msg}`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+</script>
+</body>
+</html>
