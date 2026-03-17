@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📜 Línea del Tiempo Quiz</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#3e2723 0%,#5d4037 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#8d6e63;color:#fff}
+.score-box{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #8d6e63;background:#3e2723;color:#d7ccc8;cursor:default}
+.p-tab.active{background:#8d6e63;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:760px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#efebe9;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+.flashcard-wrap{width:330px;min-height:300px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:300px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:3px solid #8d6e63;border-radius:24px;box-shadow:0 8px 32px rgba(80,50,40,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.65rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.4);text-align:center}
+.card-year{font-size:1.15rem;color:#ffcc80;font-weight:bold;margin:2px 0}
+.card-desc{font-size:.95rem;color:#efebe9;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#8d6e63}.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pdot{width:12px;height:12px;border-radius:50%;background:#3e2723;border:2px solid #8d6e63;transition:background .2s}
+.pdot.seen{background:#8d6e63}.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#d7ccc8;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#5d4037,#4e342e);color:#fff;border:2px solid #8d6e63;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#8d6e63}
+
+.tl-wrap{width:100%;max-width:720px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:2px solid #8d6e63;border-radius:16px;padding:14px}
+.tl-row{display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed #bcaaa4}
+.tl-row:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.tl-event{font-size:1rem;color:#fff}
+.tl-select{background:#3e2723;color:#FFD700;border:2px solid #8d6e63;border-radius:10px;padding:8px 10px;font-family:inherit;font-size:1rem}
+.tl-select:disabled{opacity:.6}
+.tl-status{font-size:.92rem;color:#efebe9;margin-top:2px}
+
+.quiz-card{width:100%;max-width:600px;background:#4e342e;border:2px solid #8d6e63;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#d7ccc8;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:500px;background:linear-gradient(135deg,#6d4c41,#4e342e);border:2px solid #8d6e63;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#7b5a4f}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#4e342e;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:600px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">📜 Línea del Tiempo Quiz</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Aprende</div>
+  <div class="p-tab" id="tab2">🗓️ Coloca fechas</div>
+  <div class="p-tab" id="tab3">❓ Quiz</div>
+</div>
+
+<div class="phase active" id="phase1">
+  <p class="ph-title">Repasa la línea del tiempo de las etapas históricas.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-year" id="fcYear"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Escuchar</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ Continuar → Colocar fechas</button>
+</div>
+
+<div class="phase" id="phase2">
+  <p class="ph-title">Elige la fecha correcta para cada etapa.</p>
+  <div class="tl-wrap" id="tlWrap"></div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btnCheckTl" onclick="checkTimeline()">✅ Comprobar</button>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" style="display:none">✅ Siguiente → Quiz</button>
+</div>
+
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar otra vez</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=0.9;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildTimeline();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+const CARDS=[
+  {emoji:'🪨',title:'Prehistoria',year:'Hace millones de años',desc:'Primeros seres humanos. Vivían en cuevas, descubrían el fuego y no tenían escritura.'},
+  {emoji:'🏺',title:'Edad Antigua',year:'3500 a.C.',desc:'Nace la escritura. Grandes civilizaciones como Egipto, Grecia y Roma.'},
+  {emoji:'🏰',title:'Edad Media',year:'476 d.C.',desc:'Comienza con la caída del Imperio Romano.'},
+  {emoji:'⛵',title:'Edad Moderna',year:'1492',desc:'Época de grandes descubrimientos, como América por Cristóbal Colón.'},
+  {emoji:'⚖️',title:'Edad Contemporánea',year:'1789',desc:'Empieza con la Revolución Francesa y continúa hasta hoy.'},
+];
+
+const YEAR_OPTIONS=['Hace millones de años','3500 a.C.','476 d.C.','1492','1789'];
+const TL_ITEMS=[
+  {stage:'Prehistoria',correct:'Hace millones de años',hint:'Primeros seres humanos'},
+  {stage:'Edad Antigua',correct:'3500 a.C.',hint:'Inventa la escritura'},
+  {stage:'Edad Media',correct:'476 d.C.',hint:'Fin del Imperio Romano'},
+  {stage:'Edad Moderna',correct:'1492',hint:'Descubrimiento de América'},
+  {stage:'Edad Contemporánea',correct:'1789',hint:'Revolución Francesa'},
+];
+
+const QUIZ=[
+  {q:'¿Cómo vivían los primeros seres humanos en la Prehistoria?',opts:['Vivían en casas de madera y usaban electricidad','Vivían en cuevas, cazaban y usaban piedras como herramientas','Usaban ordenadores y tenían coches'],ans:1,emoji:'🪨'},
+  {q:'¿Qué inventaron los antiguos egipcios para escribir en la Edad Antigua?',opts:['Tizas y pizarras','El papiro, como un papel hecho de una planta','Lapiceros y cuadernos'],ans:1,emoji:'🏺'},
+  {q:'¿Qué ocurrió al final de la Edad Media y al comenzar la Edad Moderna?',opts:['El descubrimiento de América','La caída del Imperio Romano','La invención de la electricidad'],ans:0,emoji:'⛵'},
+  {q:'¿Por qué se llama "Edad Moderna" al periodo en que vivió Colón?',opts:['Porque se inventaron los primeros coches','Porque fue una época de grandes descubrimientos y avances científicos','Porque las personas vivían en casas modernas con electricidad'],ans:1,emoji:'🧭'},
+  {q:'¿Por qué la Revolución Francesa fue importante en la Edad Contemporánea?',opts:['Porque ayudó a que las personas pudieran votar y ser tratadas con igualdad','Porque inventaron una nueva máquina','Porque empezaron a usar teléfonos móviles'],ans:0,emoji:'⚖️'},
+];
+
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;$('fcTitle').textContent=c.title;$('fcYear').textContent=c.year;$('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;$('nextBtn').disabled=ci===CARDS.length-1;
+  $('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length)$('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.year+'. '+c.desc);}
+showCard();
+
+let tlItems=[];
+function buildTimeline(){
+  tlItems=shuffle(TL_ITEMS);
+  $('btn2').style.display='none';
+  $('btnCheckTl').style.display='';
+  $('fb2').textContent='';
+  $('tlWrap').innerHTML=tlItems.map((it,i)=>`
+    <div class="tl-row">
+      <div>
+        <div class="tl-event"><strong>${it.stage}</strong> - ${it.hint}</div>
+        <div class="tl-status" id="tlStatus${i}"></div>
+      </div>
+      <select class="tl-select" id="tlSel${i}">
+        <option value="">Selecciona fecha...</option>
+        ${YEAR_OPTIONS.map(y=>`<option value="${y}">${y}</option>`).join('')}
+      </select>
+    </div>`).join('');
+}
+function checkTimeline(){
+  let right=0;
+  tlItems.forEach((it,i)=>{
+    const val=$('tlSel'+i).value;
+    const st=$('tlStatus'+i);
+    if(val===it.correct){
+      st.textContent='✅ Correcto';
+      st.style.color='#69f0ae';
+      right++;
+      $('tlSel'+i).disabled=true;
+    }else if(!val){
+      st.textContent='⚠️ Elige una fecha';
+      st.style.color='#ffcc80';
+    }else{
+      st.textContent='❌ Era: '+it.correct;
+      st.style.color='#ff8a80';
+      $('tlSel'+i).disabled=true;
+    }
+  });
+  addScore(right*10);
+  if(right===tlItems.length){
+    flash('g');
+    $('fb2').className='fb ok';
+    $('fb2').textContent='🎉 ¡Perfecto! Línea del tiempo completa.';
+  }else{
+    flash('r');
+    $('fb2').className='fb no';
+    $('fb2').textContent='Has acertado '+right+' de '+tlItems.length+'.';
+  }
+  $('btnCheckTl').style.display='none';
+  $('btn2').style.display='';
+  markDone(2);
+}
+
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';
+  $('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return;}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;
+  $('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');
+}
+function quizAnswer(i){
+  const q=quizItems[qi];
+  const btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien!';}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Respuesta: '+q.opts[q.ans];}
+  qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1700);
+}
+function endQuiz(){
+  markDone(3);
+  $('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">📜</div><strong>Quiz terminado</strong><br>Aciertos: <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong>⭐ ${score}</strong>`;
+  $('finishRow').style.display='flex';
+}
+</script>
+</body>
+</html>

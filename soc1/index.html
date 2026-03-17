@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏺 Etapas de la Historia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#3e2723 0%,#5d4037 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#8d6e63;color:#fff}
+.score-box{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #8d6e63;background:#3e2723;color:#d7ccc8;cursor:default}
+.p-tab.active{background:#8d6e63;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#efebe9;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+.flashcard-wrap{width:310px;min-height:310px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:310px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:3px solid #8d6e63;border-radius:24px;box-shadow:0 8px 32px rgba(80,50,40,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.7rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.4);text-align:center}
+.card-date{font-size:1.05rem;color:#ffcc80;font-weight:bold;margin:2px 0}
+.card-desc{font-size:.95rem;color:#efebe9;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#8d6e63}.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pdot{width:12px;height:12px;border-radius:50%;background:#3e2723;border:2px solid #8d6e63;transition:background .2s}
+.pdot.seen{background:#8d6e63}.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#d7ccc8;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#5d4037,#4e342e);color:#fff;border:2px solid #8d6e63;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#8d6e63}
+
+.sort-card{width:100%;max-width:480px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:2px solid #8d6e63;border-radius:18px;padding:18px;text-align:center}
+.sort-emoji{font-size:3rem;margin-bottom:4px}
+.sort-name{font-size:1.3rem;font-weight:bold;color:#FFD700;margin-bottom:2px}
+.sort-hint{font-size:.95rem;color:#efebe9;margin-bottom:10px}
+.sort-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:16px;font-family:inherit;font-size:.92rem;cursor:pointer;border:2px solid;font-weight:bold;transition:transform .12s}
+.sort-btn:hover{transform:scale(1.05)}
+.sort-btn.pre{background:linear-gradient(135deg,#37474f,#263238);color:#FFD700;border-color:#90a4ae}
+.sort-btn.ant{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#FFD700;border-color:#64b5f6}
+.sort-btn.med{background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#FFD700;border-color:#ce93d8}
+.sort-btn.mod{background:linear-gradient(135deg,#ef6c00,#e65100);color:#FFD700;border-color:#ffb74d}
+.sort-btn.con{background:linear-gradient(135deg,#c62828,#b71c1c);color:#FFD700;border-color:#ef9a9a}
+.sp-bar{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap;justify-content:center}
+.sp-dot{width:26px;height:26px;border-radius:50%;border:2px solid #8d6e63;display:flex;align-items:center;justify-content:center;font-size:.7rem;background:#3e2723;color:#d7ccc8}
+.sp-dot.correct{background:#1b5e20;border-color:#4CAF50;color:#69f0ae}
+.sp-dot.wrong{background:#3a1010;border-color:#f44336;color:#ff5252}
+.sp-dot.current{border-color:#FFD700;background:#5d4037;color:#FFD700}
+
+.quiz-card{width:100%;max-width:500px;background:#4e342e;border:2px solid #8d6e63;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#d7ccc8;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:380px;background:linear-gradient(135deg,#6d4c41,#4e342e);border:2px solid #8d6e63;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#7b5a4f}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#4e342e;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:500px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🏺 Etapas de la Historia</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Aprende</div>
+  <div class="p-tab" id="tab2">🕰️ Clasifica</div>
+  <div class="p-tab" id="tab3">❓ Quiz</div>
+</div>
+
+<div class="phase active" id="phase1">
+  <p class="ph-title">Aprende las etapas de la historia y su fecha clave.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-date" id="fcDate"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Escuchar</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ Ya me lo sé → Clasificar</button>
+</div>
+
+<div class="phase" id="phase2">
+  <p class="ph-title">¿En qué etapa histórica encaja cada pista?</p>
+  <div class="sp-bar" id="spBar"></div>
+  <div class="sort-card" id="sortCard">
+    <div class="sort-emoji" id="sEmoji"></div>
+    <div class="sort-name" id="sName"></div>
+    <div class="sort-hint" id="sHint"></div>
+    <div class="sort-btns">
+      <button class="sort-btn pre" onclick="sortAnswer('prehistoria')">Prehistoria</button>
+      <button class="sort-btn ant" onclick="sortAnswer('antigua')">Edad Antigua</button>
+      <button class="sort-btn med" onclick="sortAnswer('media')">Edad Media</button>
+      <button class="sort-btn mod" onclick="sortAnswer('moderna')">Edad Moderna</button>
+      <button class="sort-btn con" onclick="sortAnswer('contemporanea')">Contemporánea</button>
+    </div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" style="display:none">✅ Siguiente → Quiz</button>
+</div>
+
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar otra vez</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=0.9;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildSort();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+const CARDS=[
+  {emoji:'🪨',title:'Prehistoria',date:'Primeros seres humanos',desc:'No había escritura. Se comunicaban con dibujos y gestos. Vivían en cuevas, descubrieron el fuego y cazaban.'},
+  {emoji:'🏺',title:'Edad Antigua',date:'Aparece la escritura (hace ~5000 años)',desc:'Grandes imperios como Egipto, Grecia y Roma. Construyeron teatros, calzadas, termas y acueductos.'},
+  {emoji:'🏰',title:'Edad Media',date:'Caída del Imperio Romano (476 d.C.)',desc:'Reinos gobernados por un rey. Se construyen castillos. Sociedad de reyes, nobles, caballeros y aldeanos.'},
+  {emoji:'⛵',title:'Edad Moderna',date:'Descubrimiento de América (1492)',desc:'Unificación de reinos e importantes inventos: imprenta, brújula, telescopio y máquina de vapor.'},
+  {emoji:'🏭',title:'Edad Contemporánea',date:'Revolución Francesa (1789)',desc:'Cambios sociales por los derechos humanos e inventos como bombilla, coche, teléfono, radio, TV, internet y móviles.'},
+];
+
+const SORT_ITEMS=[
+  {emoji:'🔥',name:'Se descubre el fuego',hint:'Primeros humanos',type:'prehistoria'},
+  {emoji:'✍️',name:'Aparición de la escritura',hint:'Comienza una etapa histórica',type:'antigua'},
+  {emoji:'🛡️',name:'Caballeros y castillos',hint:'Reinos medievales',type:'media'},
+  {emoji:'🗺️',name:'Descubrimiento de América',hint:'1492',type:'moderna'},
+  {emoji:'⚖️',name:'Revolución Francesa',hint:'1789',type:'contemporanea'},
+  {emoji:'🗿',name:'Viven en cuevas',hint:'Sin escritura',type:'prehistoria'},
+  {emoji:'🏛️',name:'Imperios: Egipto, Grecia y Roma',hint:'Grandes civilizaciones',type:'antigua'},
+  {emoji:'👑',name:'Muchos reinos con un rey',hint:'Feudalismo',type:'media'},
+  {emoji:'🧭',name:'Imprenta y brújula',hint:'Nuevos inventos',type:'moderna'},
+  {emoji:'💡',name:'Bombilla, coche y teléfono',hint:'Grandes avances técnicos',type:'contemporanea'},
+];
+
+const QUIZ=[
+  {q:'¿En qué etapa aparece la escritura?',opts:['Prehistoria','Edad Antigua','Edad Media'],ans:1,emoji:'✍️'},
+  {q:'¿Qué hecho marca el inicio de la Edad Media?',opts:['Revolución Francesa','Caída del Imperio Romano','Descubrimiento de América'],ans:1,emoji:'🏰'},
+  {q:'¿Qué año se asocia al descubrimiento de América?',opts:['476','1492','1789'],ans:1,emoji:'⛵'},
+  {q:'¿Qué etapa comienza con la Revolución Francesa?',opts:['Edad Moderna','Edad Contemporánea','Edad Antigua'],ans:1,emoji:'⚖️'},
+  {q:'En la Prehistoria…',opts:['Ya había escritura','Vivían en cuevas y usaban el fuego','Había internet'],ans:1,emoji:'🪨'},
+  {q:'Egipto, Grecia y Roma pertenecen a…',opts:['Edad Antigua','Edad Media','Edad Contemporánea'],ans:0,emoji:'🏺'},
+  {q:'¿Dónde colocas castillos y caballeros?',opts:['Edad Media','Edad Moderna','Prehistoria'],ans:0,emoji:'🛡️'},
+  {q:'¿Qué orden es correcto?',opts:['Media → Antigua → Prehistoria','Prehistoria → Antigua → Media','Contemporánea → Moderna → Media'],ans:1,emoji:'🕰️'},
+  {q:'¿Cuál es una característica de la Edad Moderna?',opts:['Aparece la escritura','Se descubre América','No había lenguaje'],ans:1,emoji:'🗺️'},
+  {q:'Bombilla, coche y teléfono son típicos de…',opts:['Edad Contemporánea','Edad Antigua','Edad Media'],ans:0,emoji:'💡'},
+];
+
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;$('fcTitle').textContent=c.title;$('fcDate').textContent=c.date;$('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;$('nextBtn').disabled=ci===CARDS.length-1;
+  $('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length)$('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.desc);}
+showCard();
+
+let sortItems,sortIdx,sortCorrect;
+const LABELS={prehistoria:'Prehistoria',antigua:'Edad Antigua',media:'Edad Media',moderna:'Edad Moderna',contemporanea:'Edad Contemporánea'};
+function buildSort(){sortItems=shuffle(SORT_ITEMS);sortIdx=0;sortCorrect=0;$('btn2').style.display='none';$('fb2').textContent='';renderBar();showSortItem();}
+function renderBar(){ $('spBar').innerHTML=sortItems.map((_,i)=>{let cls='sp-dot';if(i===sortIdx)cls+=' current';return `<div class="${cls}" id="sd${i}">${i+1}</div>`;}).join('');}
+function showSortItem(){if(sortIdx>=sortItems.length){endSort();return;}const it=sortItems[sortIdx];$('sEmoji').textContent=it.emoji;$('sName').textContent=it.name;$('sHint').textContent=it.hint;renderBar();speak(it.name);}
+function sortAnswer(ans){
+  const it=sortItems[sortIdx];const dot=$('sd'+sortIdx);
+  if(ans===it.type){flash('g');addScore(10);sortCorrect++;dot.classList.add('correct');$('fb2').className='fb ok';$('fb2').textContent='✅ Correcto: '+LABELS[it.type];}
+  else{flash('r');dot.classList.add('wrong');$('fb2').className='fb no';$('fb2').textContent='❌ Era '+LABELS[it.type];}
+  sortIdx++;setTimeout(showSortItem,1200);
+}
+function endSort(){markDone(2);$('sortCard').innerHTML=`<div style="font-size:2rem">🎉</div><div style="color:#69f0ae;font-size:1.2rem">Has acertado ${sortCorrect} / ${sortItems.length}</div>`;$('fb2').textContent='';$('btn2').style.display='';}
+
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';$('quizCard').style.display='';showQuizQ();}
+function showQuizQ(){if(qi>=quizItems.length){endQuiz();return;}const q=quizItems[qi];$('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;$('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;$('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');}
+function quizAnswer(i){const q=quizItems[qi];const btns=$('quizOpts').querySelectorAll('.quiz-opt');btns.forEach(b=>b.disabled=true);if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien!';}else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Respuesta: '+q.opts[q.ans];}qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1700);}
+function endQuiz(){markDone(3);$('quizCard').style.display='none';const pct=Math.round(quizCorrect/quizItems.length*100);$('quizDone').style.display='';$('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🏺</div><strong>Quiz terminado</strong><br>Aciertos: <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong>⭐ ${score}</strong>`;$('finishRow').style.display='flex';}
+</script>
+</body>
+</html>

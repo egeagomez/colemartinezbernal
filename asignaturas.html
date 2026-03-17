@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprende — 2º Primaria</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    /* ── Tabs ─────────────────────────────────────────── */
+    .tab-bar {
+      display:flex; gap:0; max-width:820px; width:100%;
+      border-radius:18px 18px 0 0; overflow:hidden;
+      margin-bottom:0; box-shadow:0 2px 8px rgba(0,0,0,.15);
+    }
+    .tab-btn {
+      flex:1; padding:16px 10px; font-size:1.25rem; font-weight:bold;
+      font-family:'Patrick Hand',cursive; border:none; cursor:pointer;
+      transition:background .2s, color .2s;
+    }
+    .tab-btn.lengua  { background:#29B6F6; color:#fff; }
+    .tab-btn.mates   { background:#4a0072; color:#FFD700; }
+    .tab-btn.english { background:#1b5e20; color:#FFD700; }
+    .tab-btn.science { background:#00695c; color:#FFD700; }
+    .tab-btn.social  { background:#5d4037; color:#FFD700; }
+    .tab-btn.lengua.inactive  { background:#b3e5fc; color:#0277bd; }
+    .tab-btn.mates.inactive   { background:#2d004a; color:#b39ddb; }
+    .tab-btn.english.inactive { background:#0d2a10; color:#81c784; }
+    .tab-btn.science.inactive { background:#002a22; color:#4db6ac; }
+    .tab-btn.social.inactive  { background:#3e2723; color:#bcaaa4; }
+    /* ── Hero English ─────────────────────────────────── */
+    .hero-english {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(27,94,32,.93),rgba(13,42,16,.95));
+      border-radius:0 0 20px 20px;
+      color:#FFD700; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:2px solid #4CAF50;
+    }
+    .hero-english h1 { font-size:2.1rem; margin-bottom:6px; color:#FFD700; text-shadow:0 0 18px #4CAF50; }
+    .hero-english p  { font-size:1.05rem; opacity:.9; color:#a5d6a7; }
+    .stars-en { color:#FFD700; font-size:1.5rem; letter-spacing:3px; display:block; margin:6px 0; }
+    .menu-grid-en {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:18px; width:100%; max-width:820px; padding:0 8px;
+    }
+    .en-card {
+      background:linear-gradient(145deg,#0d2a10,#1a3a1a);
+      border:2px solid #4CAF50; border-top:5px solid #FFD700;
+      border-radius:16px; padding:20px 14px 16px;
+      text-align:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 4px 16px rgba(0,150,60,.3);
+      transition:transform .15s, box-shadow .15s; display:block; color:#fff;
+    }
+    .en-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,200,80,.4); }
+    .en-card .card-icon  { font-size:2.8rem; display:block; margin-bottom:6px; }
+    .en-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
+    .en-card .card-level { font-size:.85rem; color:#a5d6a7; margin-bottom:4px; }
+    .en-card .en-badge   { display:inline-block; font-size:.82rem; background:#1b3a1b; color:#FFD700; border:1px solid #4CAF50; border-radius:10px; padding:2px 10px; margin-top:4px; }
+
+    /* ── Hero Science ──────────────────────────────────── */
+    .hero-science {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(0,105,92,.93),rgba(0,42,34,.95));
+      border-radius:0 0 20px 20px;
+      color:#FFD700; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:2px solid #26a69a;
+    }
+    .hero-science h1 { font-size:2.1rem; margin-bottom:6px; color:#FFD700; text-shadow:0 0 18px #00bfa5; }
+    .hero-science p  { font-size:1.05rem; opacity:.9; color:#a7ffeb; }
+    .stars-sc { color:#FFD700; font-size:1.5rem; letter-spacing:3px; display:block; margin:6px 0; }
+    .menu-grid-sc {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:18px; width:100%; max-width:820px; padding:0 8px;
+    }
+    .sc-card {
+      background:linear-gradient(145deg,#002a22,#004d40);
+      border:2px solid #26a69a; border-top:5px solid #FFD700;
+      border-radius:16px; padding:20px 14px 16px;
+      text-align:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 4px 16px rgba(0,150,136,.3);
+      transition:transform .15s, box-shadow .15s; display:block; color:#fff;
+    }
+    .sc-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,200,150,.4); }
+    .sc-card .card-icon  { font-size:2.8rem; display:block; margin-bottom:6px; }
+    .sc-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
+    .sc-card .card-level { font-size:.85rem; color:#a7ffeb; margin-bottom:4px; }
+    .sc-card .sc-badge   { display:inline-block; font-size:.82rem; background:#00332a; color:#FFD700; border:1px solid #26a69a; border-radius:10px; padding:2px 10px; margin-top:4px; }
+
+    /* ── Hero Sociales ─────────────────────────────────── */
+    .hero-social {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(93,64,55,.93),rgba(62,39,35,.95));
+      border-radius:0 0 20px 20px;
+      color:#FFD700; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:2px solid #8d6e63;
+    }
+    .hero-social h1 { font-size:2.1rem; margin-bottom:6px; color:#FFD700; text-shadow:0 0 18px #bcaaa4; }
+    .hero-social p  { font-size:1.05rem; opacity:.9; color:#efebe9; }
+    .stars-so { color:#FFD700; font-size:1.5rem; letter-spacing:3px; display:block; margin:6px 0; }
+    .menu-grid-so {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:18px; width:100%; max-width:820px; padding:0 8px;
+    }
+    .so-card {
+      background:linear-gradient(145deg,#3e2723,#5d4037);
+      border:2px solid #8d6e63; border-top:5px solid #FFD700;
+      border-radius:16px; padding:20px 14px 16px;
+      text-align:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 4px 16px rgba(80,50,40,.35);
+      transition:transform .15s, box-shadow .15s; display:block; color:#fff;
+    }
+    .so-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(120,80,70,.45); }
+    .so-card .card-icon  { font-size:2.8rem; display:block; margin-bottom:6px; }
+    .so-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
+    .so-card .card-level { font-size:.85rem; color:#efebe9; margin-bottom:4px; }
+    .so-card .so-badge   { display:inline-block; font-size:.82rem; background:#4e342e; color:#FFD700; border:1px solid #8d6e63; border-radius:10px; padding:2px 10px; margin-top:4px; }
+
+    /* ── Hero Lengua ──────────────────────────────────── */
+    .hero-lengua {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(41,182,246,.82),rgba(171,71,188,.82)),
+                 url('Portada.jpg') center/cover no-repeat;
+      border-radius:0 0 20px 20px;
+      color:#fff; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.2);
+    }
+
+    /* ── Hero Mates ───────────────────────────────────── */
+    .hero-mates {
+      width:100%; max-width:820px;
+      background:linear-gradient(135deg,rgba(74,0,114,.93),rgba(30,0,50,.95)),
+                 url('Portada.jpg') center/cover no-repeat;
+      border-radius:0 0 20px 20px;
+      color:#FFD700; padding:28px 28px 22px;
+      text-align:center; margin-bottom:22px;
+      box-shadow:0 6px 24px rgba(0,0,0,.35);
+      border:2px solid #7c43bd;
+    }
+    .hero-mates h1 { font-size:2.1rem; margin-bottom:6px; color:#FFD700; text-shadow:0 0 18px #a020f0; }
+    .hero-mates p  { font-size:1.05rem; opacity:.9; color:#e1bee7; }
+    .stars-hp { color:#FFD700; font-size:1.5rem; letter-spacing:3px; display:block; margin:6px 0; }
+
+    /* ── Hero shared ──────────────────────────────────── */
+    .hero-lengua h1 { font-size:2.1rem; margin-bottom:6px; }
+    .hero-lengua p  { font-size:1.05rem; opacity:.9; }
+    .total-score {
+      background:var(--yellow); border-radius:30px;
+      padding:6px 22px; font-size:1.05rem;
+      color:var(--text); font-weight:bold;
+      display:inline-block; margin-top:10px;
+    }
+    .total-score-hp {
+      background:#FFD700; border-radius:30px;
+      padding:6px 22px; font-size:1.05rem;
+      color:#2d004a; font-weight:bold;
+      display:inline-block; margin-top:10px;
+    }
+    .mascot { font-size:3.5rem; display:block; margin:0 auto 6px; }
+
+    /* ── Buttons ──────────────────────────────────────── */
+    .btn-start {
+      background:#4CAF50; color:#fff;
+      font-size:1.2rem; padding:12px 36px;
+      border-radius:30px; border:none; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.25);
+      font-family:'Patrick Hand',cursive; margin-top:14px;
+      transition:transform .12s, box-shadow .12s; display:inline-block;
+    }
+    .btn-start:hover { transform:scale(1.05); }
+    .btn-start-hp {
+      background:#FFD700; color:#2d004a;
+      font-size:1.2rem; padding:12px 36px;
+      border-radius:30px; border:none; cursor:pointer;
+      box-shadow:0 4px 14px rgba(160,32,240,.4);
+      font-family:'Patrick Hand',cursive; margin-top:14px;
+      transition:transform .12s; display:inline-block; font-weight:bold;
+    }
+    .btn-start-hp:hover { transform:scale(1.05); }
+    .reset-btn { margin-top:20px; }
+
+    /* ── Lengua cards ─────────────────────────────────── */
+    .menu-card:nth-child(1)  { border-top-color:#29B6F6; }
+    .menu-card:nth-child(2)  { border-top-color:#AB47BC; }
+    .menu-card:nth-child(3)  { border-top-color:#FF7043; }
+    .menu-card:nth-child(4)  { border-top-color:#4CAF50; }
+    .menu-card:nth-child(5)  { border-top-color:#FDD835; }
+    .menu-card:nth-child(6)  { border-top-color:#29B6F6; }
+    .menu-card:nth-child(7)  { border-top-color:#FF7043; }
+    .menu-card:nth-child(8)  { border-top-color:#AB47BC; }
+    .menu-card:nth-child(9)  { border-top-color:#4CAF50; }
+    .menu-card:nth-child(10) { border-top-color:#EF5350; }
+    .card-badge { display:inline-block; font-size:.85rem; background:#E8F5E9; color:#388E3C; border-radius:10px; padding:2px 10px; margin-top:4px; }
+    .card-badge.locked { background:#F5F5F5; color:#9E9E9E; }
+
+    /* ── Mates cards ──────────────────────────────────── */
+    .menu-grid-hp {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:18px; width:100%; max-width:820px; padding:0 8px;
+    }
+    .hp-card {
+      background:linear-gradient(145deg,#1a0533,#2d004a);
+      border:2px solid #7c43bd; border-top:5px solid #FFD700;
+      border-radius:16px; padding:20px 14px 16px;
+      text-align:center; cursor:pointer; text-decoration:none;
+      box-shadow:0 4px 16px rgba(100,0,200,.3);
+      transition:transform .15s, box-shadow .15s; display:block;
+      color:#fff;
+    }
+    .hp-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(160,32,240,.45); }
+    .hp-card.done  { border-top-color:#4CAF50; }
+    .hp-card .card-icon  { font-size:2.8rem; display:block; margin-bottom:6px; }
+    .hp-card .card-title { font-size:1.1rem; font-weight:bold; color:#FFD700; margin-bottom:4px; }
+    .hp-card .card-level { font-size:.85rem; color:#ce93d8; margin-bottom:4px; }
+    .hp-card .hp-badge   { display:inline-block; font-size:.82rem; background:#4a0072; color:#FFD700; border:1px solid #7c43bd; border-radius:10px; padding:2px 10px; margin-top:4px; }
+    .hp-card .hp-badge.locked { background:#1a0533; color:#7c43bd; border-color:#4a0072; }
+    .section { display:none; flex-direction:column; align-items:center; }
+    .section.active { display:flex; }
+  </style>
+</head>
+<body>
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn lengua" id="tabLengua" onclick="switchTab('lengua')">📚 Lengua</button>
+    <button class="tab-btn mates inactive" id="tabMates" onclick="switchTab('mates')">🧙 Matemáticas</button>
+    <button class="tab-btn english inactive" id="tabEnglish" onclick="switchTab('english')">🇬🇧 English</button>
+    <button class="tab-btn science inactive" id="tabScience" onclick="switchTab('science')">🔬 Science</button>
+    <button class="tab-btn social inactive" id="tabSocial" onclick="switchTab('social')">🏺 Sociales</button>
+  </div>
+
+  <!-- ══ LENGUA ══════════════════════════════════════ -->
+  <div class="section active" id="secLengua">
+    <div class="hero-lengua">
+      <span class="mascot">🐸</span>
+      <h1>¡Aprende Lengua!</h1>
+      <p>2º de Primaria — 10 juegos divertidos</p>
+      <div class="total-score" id="totalScore">⭐ 0 puntos en total</div>
+      <br>
+      <button class="btn-start" onclick="startFresh()">▶ Empezar de nuevo</button>
+    </div>
+    <div class="menu-grid" id="menuGrid"></div>
+    <button class="btn btn-gray reset-btn" onclick="resetAll()">Borrar puntuaciones</button>
+  </div>
+
+  <!-- ══ MATEMÁTICAS ══════════════════════════════════ -->
+  <div class="section" id="secMates">
+    <div class="hero-mates">
+      <span class="mascot">🧙</span>
+      <h1>¡Academia de Magia!</h1>
+      <p>Matemáticas de 2º — ¿Llegarás a Brujo Experto?</p>
+      <span class="stars-hp">✨ ⚡ 🌟 🏆</span>
+      <div class="total-score-hp" id="matLevel">🎓 Nivel: Aprendiz</div>
+      <br>
+      <button class="btn-start-hp" onclick="resetMates()">🔮 Nueva sesión</button>
+    </div>
+    <div class="menu-grid-hp" id="menuGridMat"></div>
+  </div>
+
+  <!-- ══ ENGLISH ══════════════════════════════════════ -->
+  <div class="section" id="secEnglish">
+    <div class="hero-english">
+      <span class="mascot">🇬🇧</span>
+      <h1>English Corner!</h1>
+      <p>2nd Grade — Learn clothes vocabulary</p>
+      <span class="stars-en">👔 🎩 👗 👟</span>
+    </div>
+    <div class="menu-grid-en" id="menuGridEn"></div>
+  </div>
+
+  <!-- ══ SCIENCE ══════════════════════════════════════ -->
+  <div class="section" id="secScience">
+    <div class="hero-science">
+      <span class="mascot">🔬</span>
+      <h1>Science Lab!</h1>
+      <p>2nd Grade — Mixtures, materials &amp; more</p>
+      <span class="stars-sc">🧪 ⚗️ 🔬 🧫</span>
+    </div>
+    <div class="menu-grid-sc" id="menuGridSci"></div>
+  </div>
+
+  <!-- ══ SOCIALES ════════════════════════════════════ -->
+  <div class="section" id="secSocial">
+    <div class="hero-social">
+      <span class="mascot">🏺</span>
+      <h1>¡Sociales en el Tiempo!</h1>
+      <p>2º Primaria — Prehistoria y Edades de la Historia</p>
+      <span class="stars-so">🪨 🏛️ 🏰 ⛵ 🚗</span>
+    </div>
+    <div class="menu-grid-so" id="menuGridSoc"></div>
+  </div>
+
+  <script src="assets/score.js"></script>
+  <script>
+
+    // ── Tab switching ────────────────────────────────────────
+    function switchTab(tab) {
+      document.getElementById('secLengua').classList.toggle('active', tab==='lengua');
+      document.getElementById('secMates').classList.toggle('active', tab==='mates');
+      document.getElementById('secEnglish').classList.toggle('active', tab==='english');
+      document.getElementById('secScience').classList.toggle('active', tab==='science');
+      document.getElementById('secSocial').classList.toggle('active', tab==='social');
+      document.getElementById('tabLengua').classList.toggle('inactive', tab!=='lengua');
+      document.getElementById('tabMates').classList.toggle('inactive', tab!=='mates');
+      document.getElementById('tabEnglish').classList.toggle('inactive', tab!=='english');
+      document.getElementById('tabScience').classList.toggle('inactive', tab!=='science');
+      document.getElementById('tabSocial').classList.toggle('inactive', tab!=='social');
+      if (tab==='mates') renderMates();
+      if (tab==='english') renderEng();
+      if (tab==='science') renderSci();
+      if (tab==='social') renderSoc();
+    }
+
+    // ── LENGUA ───────────────────────────────────────────────
+    const games = [
+      { id:1,  title:'R o RR',               icon:'🐶', stars:'⭐',        desc:'¿Una R o dos?' },
+      { id:2,  title:'La H misteriosa',       icon:'🥚', stars:'⭐',        desc:'¿Lleva H?' },
+      { id:3,  title:'GA, JA, GO, JO…',      icon:'🐱', stars:'⭐⭐',      desc:'Arrastra la sílaba' },
+      { id:4,  title:'CE, SE o ZE',           icon:'🦓', stars:'⭐⭐',      desc:'El sonido de la S' },
+      { id:5,  title:'CA, QUE, QUI…',        icon:'🏠', stars:'⭐⭐',      desc:'El sonido K' },
+      { id:6,  title:'Las tildes viajeras',   icon:'📖', stars:'⭐⭐⭐',    desc:'Pon la tilde' },
+      { id:7,  title:'Mayúsculas al rescate', icon:'🔠', stars:'⭐⭐⭐',    desc:'¿Mayúscula o minúscula?' },
+      { id:8,  title:'Corrige el dictado',    icon:'✏️', stars:'⭐⭐⭐',    desc:'Arregla los errores' },
+      { id:9,  title:'Ordena la frase',       icon:'🧩', stars:'⭐⭐⭐⭐',  desc:'Pon las palabras en orden' },
+      { id:10, title:'El Gran Dictado',       icon:'🏆', stars:'⭐⭐⭐⭐⭐',desc:'¡Todo junto!' },
+    ];
+
+    function render() {
+      const grid = document.getElementById('menuGrid');
+      const scores = ScoreManager.getAll();
+      grid.innerHTML = games.map(g => {
+        const s = scores[g.id];
+        const badge = s
+          ? `<span class="card-badge">✔ ${s.percent}%</span>`
+          : `<span class="card-badge locked">Sin completar</span>`;
+        return `<a class="menu-card ${s?'done':''}" href="juego${g.id}/index.html">
+          <div class="card-num">${g.icon}</div>
+          <div class="card-title">${g.title}</div>
+          <div class="card-stars">${g.stars}</div>
+          <small>${g.desc}</small><br>${badge}
+        </a>`;
+      }).join('');
+      document.getElementById('totalScore').textContent =
+        '⭐ ' + ScoreManager.totalPoints() + ' puntos en total';
+    }
+
+    function startFresh() {
+      if (confirm('¿Borrar todas las puntuaciones y empezar desde el principio?')) {
+        ScoreManager.reset(); render();
+        window.scrollTo({ top: 0, behavior:'smooth' });
+      }
+    }
+    function resetAll() {
+      if (confirm('¿Borrar todas las puntuaciones?')) { ScoreManager.reset(); render(); }
+    }
+
+    // ── MATEMÁTICAS ──────────────────────────────────────────
+    const WIZARD_LEVELS = ['🎓 Aprendiz','⚡ Mago','🌟 Archimago','🧙 Brujo Experto'];
+
+    const matGames = [
+      { id:'mat1', title:'Las sumas locas',     icon:'➕', desc:'Suma 3 números mágicos',  spells:'Encanto I' },
+      { id:'mat2', title:'Las restas rebeldes', icon:'➖', desc:'Restas con llevada',       spells:'Encanto II' },
+      { id:'mat3', title:'Isla de los números', icon:'🏝️', desc:'Viaja entre islas',        spells:'Encanto III' },
+      { id:'mat4', title:'Problemas del mago',  icon:'📜', desc:'Resuelve los enigmas',     spells:'Encanto IV' },
+      { id:'mat5', title:'Lluvia de números',   icon:'☔', desc:'Caza el resultado',        spells:'Encanto V' },
+      { id:'mat6', title:'Galaxia Matemática',  icon:'🚀', desc:'Dispara la operación',      spells:'Encanto VI' },
+      { id:'mat7', title:'La Varita de Harry',  icon:'🪄', desc:'¿PAR o IMPAR?',              spells:'Encanto VII' },
+      { id:'mat8', title:'Rosa de los Vientos', icon:'🧭', desc:'Norte, Sur, Este, Oeste',    spells:'Encanto VIII' },
+    ];
+
+    function getMatLevel(id) {
+      return parseInt(sessionStorage.getItem(id+'_level')||'0');
+    }
+
+    function renderMates() {
+      const grid = document.getElementById('menuGridMat');
+      grid.innerHTML = matGames.map(g => {
+        const lv = getMatLevel(g.id);
+        const lvLabel = lv > 0 ? WIZARD_LEVELS[Math.min(lv,3)] : null;
+        const badge = lvLabel
+          ? `<span class="hp-badge">${lvLabel}</span>`
+          : `<span class="hp-badge locked">🔒 Sin empezar</span>`;
+        return `<a class="hp-card ${lv>0?'done':''}" href="${g.id}/index.html">
+          <span class="card-icon">${g.icon}</span>
+          <div class="card-title">${g.title}</div>
+          <div class="card-level">${g.spells}</div>
+          <small style="color:#ce93d8">${g.desc}</small><br>${badge}
+        </a>`;
+      }).join('');
+
+      // Overall level = max level reached
+      const maxLv = matGames.reduce((m,g)=>Math.max(m,getMatLevel(g.id)),0);
+      document.getElementById('matLevel').textContent = WIZARD_LEVELS[Math.min(maxLv,3)];
+    }
+
+    function resetMates() {
+      if (confirm('¿Empezar una nueva sesión de Matemáticas?')) {
+        matGames.forEach(g => sessionStorage.removeItem(g.id+'_level'));
+        renderMates();
+      }
+    }
+
+    // ── ENGLISH ──────────────────────────────────────────────
+    const engGames = [
+      { id:'eng2', title:'Clothes – Learn & Match', icon:'👗', desc:'Flashcards + matching game',       badge:'Vocabulary' },
+      { id:'eng1', title:'Clothes Crossword',       icon:'✏️', desc:'Fill in the crossword!',           badge:'Spelling' },
+      { id:'eng3', title:'Wearing, Colours & Pets', icon:'🎽', desc:'Match · Drag sentences · Dress up', badge:'Clothes' },
+      { id:'eng4', title:'Adjectives & Seasons',    icon:'🌤️', desc:'Adjectives · Winter / Summer sort', badge:'Adjectives' },
+      { id:'eng5', title:'Label the Objects',       icon:'🏷️', desc:'Match · Label · Spell',             badge:'Objects' },
+    ];
+
+    function renderEng() {
+      const grid = document.getElementById('menuGridEn');
+      grid.innerHTML = engGames.map(g => `
+        <a class="en-card" href="${g.id}/index.html">
+          <span class="card-icon">${g.icon}</span>
+          <div class="card-title">${g.title}</div>
+          <div class="card-level">${g.desc}</div>
+          <span class="en-badge">${g.badge}</span>
+        </a>`).join('');
+    }
+
+    // ── SCIENCE ──────────────────────────────────────────────
+    const sciGames = [
+      { id:'sci1', title:'Mixture Detective',  icon:'🧪', desc:'Homogeneous or heterogeneous?', badge:'Mixtures' },
+      { id:'sci2', title:'Material Explorer',   icon:'🧱', desc:'Metal, wood, glass & more!',    badge:'Materials' },
+      { id:'sci3', title:'Property Lab',         icon:'🔍', desc:'Waterproof, hard, transparent…', badge:'Properties' },
+      { id:'sci4', title:'Substance Sorter',     icon:'⚗️', desc:'Pure, homo or heterogeneous?',  badge:'Substances' },
+      { id:'sci5', title:'Separation Lab',       icon:'🧲', desc:'Filtration, evaporation & more', badge:'Separation' },
+    ];
+
+    function renderSci() {
+      const grid = document.getElementById('menuGridSci');
+      grid.innerHTML = sciGames.map(g => `
+        <a class="sc-card" href="${g.id}/index.html">
+          <span class="card-icon">${g.icon}</span>
+          <div class="card-title">${g.title}</div>
+          <div class="card-level">${g.desc}</div>
+          <span class="sc-badge">${g.badge}</span>
+        </a>`).join('');
+    }
+
+    // ── SOCIALES ────────────────────────────────────────────
+    const socGames = [
+      { id:'soc1', title:'Etapas de la Historia', icon:'🕰️', desc:'Prehistoria, Antigua, Media, Moderna y Contemporánea', badge:'Cronología' },
+      { id:'soc2', title:'Vida en Cada Etapa', icon:'🏛️', desc:'Cómo vivía la gente en cada época', badge:'Características' },
+      { id:'soc3', title:'Línea del Tiempo Quiz', icon:'📜', desc:'Fechas clave + preguntas tipo test', badge:'Repaso' },
+      { id:'soc4', title:'Línea del Tiempo Drag & Drop', icon:'🧩', desc:'Arrastra años a cada etapa', badge:'Interactivo' },
+    ];
+
+    function renderSoc() {
+      const grid = document.getElementById('menuGridSoc');
+      grid.innerHTML = socGames.map(g => `
+        <a class="so-card" href="${g.id}/index.html">
+          <span class="card-icon">${g.icon}</span>
+          <div class="card-title">${g.title}</div>
+          <div class="card-level">${g.desc}</div>
+          <span class="so-badge">${g.badge}</span>
+        </a>`).join('');
+    }
+
+    render();
+
+    const initialTab = (location.hash || '').replace('#','').toLowerCase();
+    if (['lengua','mates','english','science','social'].includes(initialTab)) {
+      switchTab(initialTab);
+    }
+  </script>
+</body>
+</html>

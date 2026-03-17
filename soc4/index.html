@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧩 Línea del Tiempo Drag & Drop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#3e2723 0%,#5d4037 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#8d6e63;color:#fff}
+.score-box{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #8d6e63;background:#3e2723;color:#d7ccc8;cursor:default}
+.p-tab.active{background:#8d6e63;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:760px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#efebe9;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+.flashcard-wrap{width:330px;min-height:300px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:300px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:3px solid #8d6e63;border-radius:24px;box-shadow:0 8px 32px rgba(80,50,40,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:4rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.65rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.4);text-align:center}
+.card-year{font-size:1.15rem;color:#ffcc80;font-weight:bold;margin:2px 0}
+.card-desc{font-size:.95rem;color:#efebe9;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#8d6e63}.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pdot{width:12px;height:12px;border-radius:50%;background:#3e2723;border:2px solid #8d6e63;transition:background .2s}
+.pdot.seen{background:#8d6e63}.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#d7ccc8;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#5d4037,#4e342e);color:#fff;border:2px solid #8d6e63;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#8d6e63}
+
+.dd-wrap{width:100%;max-width:720px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:2px solid #8d6e63;border-radius:16px;padding:14px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.chip{background:#3e2723;border:2px solid #8d6e63;color:#FFD700;border-radius:12px;padding:8px 12px;font-size:1rem;cursor:grab;user-select:none}
+.chip.dragging{opacity:.45}
+.chip.selected{border-color:#FFD700;box-shadow:0 0 10px rgba(255,215,0,.5)}
+.slot-row{display:grid;grid-template-columns:1fr 160px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed #bcaaa4}
+.slot-row:last-child{border-bottom:none}
+.slot-title{font-size:1.02rem;color:#fff}
+.slot{min-height:42px;background:#3e2723;border:2px dashed #8d6e63;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#d7ccc8;padding:4px 8px;transition:border-color .15s,background .15s}
+.slot.over{border-color:#FFD700;background:#5d4037}
+.slot.filled{border-style:solid;border-color:#ffcc80;color:#FFD700}
+.slot.correct{border-color:#4CAF50;color:#69f0ae}
+.slot.wrong{border-color:#f44336;color:#ff8a80}
+.note{font-size:.9rem;color:#efebe9;text-align:center;margin-top:8px}
+
+.quiz-card{width:100%;max-width:600px;background:#4e342e;border:2px solid #8d6e63;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#d7ccc8;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:500px;background:linear-gradient(135deg,#6d4c41,#4e342e);border:2px solid #8d6e63;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#7b5a4f}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#4e342e;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:600px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🧩 Línea del Tiempo Drag & Drop</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Aprende</div>
+  <div class="p-tab" id="tab2">🧩 Arrastra años</div>
+  <div class="p-tab" id="tab3">❓ Quiz</div>
+</div>
+
+<div class="phase active" id="phase1">
+  <p class="ph-title">Repasa fechas clave antes de jugar.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-year" id="fcYear"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Escuchar</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ Continuar → Arrastrar</button>
+</div>
+
+<div class="phase" id="phase2">
+  <p class="ph-title">Arrastra cada fecha a su etapa (en móvil también puedes tocar un año y luego un hueco).</p>
+  <div class="dd-wrap">
+    <div class="chips" id="chips"></div>
+    <div id="slots"></div>
+    <div class="note" id="ddNote">Coloca todos los años y pulsa comprobar.</div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="checkBtn" onclick="checkDD()">✅ Comprobar</button>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" style="display:none">✅ Siguiente → Quiz</button>
+</div>
+
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar otra vez</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=0.9;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildDD();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+const CARDS=[
+  {emoji:'🪨',title:'Prehistoria',year:'Hace millones de años',desc:'Primeros humanos. No había escritura.'},
+  {emoji:'🏺',title:'Edad Antigua',year:'3500 a.C.',desc:'Aparece la escritura.'},
+  {emoji:'🏰',title:'Edad Media',year:'476 d.C.',desc:'Caída del Imperio Romano.'},
+  {emoji:'⛵',title:'Edad Moderna',year:'1492',desc:'Descubrimiento de América.'},
+  {emoji:'⚖️',title:'Edad Contemporánea',year:'1789',desc:'Revolución Francesa.'},
+];
+
+const DD_ITEMS=[
+  {stage:'Prehistoria',year:'Hace millones de años'},
+  {stage:'Edad Antigua',year:'3500 a.C.'},
+  {stage:'Edad Media',year:'476 d.C.'},
+  {stage:'Edad Moderna',year:'1492'},
+  {stage:'Edad Contemporánea',year:'1789'},
+];
+
+const QUIZ=[
+  {q:'¿Qué etapa corresponde a 3500 a.C.?',opts:['Edad Media','Edad Antigua','Edad Moderna'],ans:1,emoji:'🏺'},
+  {q:'476 d.C. marca el inicio de…',opts:['Edad Media','Edad Contemporánea','Prehistoria'],ans:0,emoji:'🏰'},
+  {q:'¿Qué pasó en 1492?',opts:['Revolución Francesa','Aparece la escritura','Descubrimiento de América'],ans:2,emoji:'⛵'},
+  {q:'La Edad Contemporánea comienza en…',opts:['1789','1492','476 d.C.'],ans:0,emoji:'⚖️'},
+  {q:'La etapa más antigua es…',opts:['Edad Antigua','Prehistoria','Edad Moderna'],ans:1,emoji:'🪨'},
+  {q:'Orden correcto de más antiguo a más reciente:',opts:['Prehistoria → Antigua → Media → Moderna → Contemporánea','Antigua → Prehistoria → Media → Moderna → Contemporánea','Prehistoria → Media → Antigua → Moderna → Contemporánea'],ans:0,emoji:'🕰️'},
+];
+
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('fcEmoji').textContent=c.emoji;$('fcTitle').textContent=c.title;$('fcYear').textContent=c.year;$('fcDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;$('nextBtn').disabled=ci===CARDS.length-1;
+  $('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  $('seenCount').textContent=`${ci+1} / ${CARDS.length}`;
+  if(seen.size===CARDS.length)$('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.year+'. '+c.desc);}
+showCard();
+
+let dragValue='';
+let selectedChip='';
+function buildDD(){
+  const years=shuffle(DD_ITEMS.map(i=>i.year));
+  $('chips').innerHTML=years.map(y=>`<div class="chip" draggable="true" data-year="${y}">${y}</div>`).join('');
+  $('slots').innerHTML=DD_ITEMS.map((it,i)=>`<div class="slot-row"><div class="slot-title"><strong>${it.stage}</strong></div><div class="slot" data-index="${i}" data-year="">Suelta aquí</div></div>`).join('');
+  $('fb2').textContent='';
+  $('checkBtn').style.display='';
+  $('btn2').style.display='none';
+  $('ddNote').textContent='Coloca todos los años y pulsa comprobar.';
+  selectedChip='';
+
+  document.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('dragstart',e=>{dragValue=ch.dataset.year;ch.classList.add('dragging');e.dataTransfer.setData('text/plain',dragValue);});
+    ch.addEventListener('dragend',()=>{ch.classList.remove('dragging');});
+    ch.addEventListener('click',()=>{
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));
+      selectedChip=ch.dataset.year;
+      ch.classList.add('selected');
+      $('ddNote').textContent='Año seleccionado: '+selectedChip+' → toca un hueco.';
+    });
+  });
+
+  document.querySelectorAll('.slot').forEach(sl=>{
+    sl.addEventListener('dragover',e=>{e.preventDefault();sl.classList.add('over');});
+    sl.addEventListener('dragleave',()=>sl.classList.remove('over'));
+    sl.addEventListener('drop',e=>{
+      e.preventDefault();
+      sl.classList.remove('over');
+      const val=e.dataTransfer.getData('text/plain') || dragValue;
+      assignToSlot(sl,val);
+    });
+    sl.addEventListener('click',()=>{
+      if(selectedChip){assignToSlot(sl,selectedChip);selectedChip='';document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));}
+    });
+  });
+}
+
+function assignToSlot(slot,val){
+  if(!val) return;
+  slot.dataset.year=val;
+  slot.textContent=val;
+  slot.classList.add('filled');
+  const chip=document.querySelector('.chip[data-year="'+val+'"]');
+  if(chip) chip.style.display='none';
+}
+
+function checkDD(){
+  const slots=[...document.querySelectorAll('.slot')];
+  if(slots.some(s=>!s.dataset.year)){
+    $('fb2').className='fb no';
+    $('fb2').textContent='❗ Completa todos los huecos antes de comprobar.';
+    flash('r');
+    return;
+  }
+  let correct=0;
+  slots.forEach((s,i)=>{
+    const ok=s.dataset.year===DD_ITEMS[i].year;
+    s.classList.remove('wrong','correct');
+    if(ok){s.classList.add('correct');correct++;}
+    else{s.classList.add('wrong');}
+  });
+  addScore(correct*10);
+  if(correct===DD_ITEMS.length){
+    $('fb2').className='fb ok';
+    $('fb2').textContent='🎉 ¡Perfecto! Has colocado toda la línea del tiempo.';
+    flash('g');
+  } else {
+    $('fb2').className='fb no';
+    $('fb2').textContent='Has acertado '+correct+' de '+DD_ITEMS.length+'.';
+    flash('r');
+  }
+  $('checkBtn').style.display='none';
+  $('btn2').style.display='';
+  markDone(2);
+}
+
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';$('quizCard').style.display='';showQuizQ();}
+function showQuizQ(){if(qi>=quizItems.length){endQuiz();return;}const q=quizItems[qi];$('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;$('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;$('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');}
+function quizAnswer(i){const q=quizItems[qi];const btns=$('quizOpts').querySelectorAll('.quiz-opt');btns.forEach(b=>b.disabled=true);if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien!';}else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Respuesta: '+q.opts[q.ans];}qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1700);}
+function endQuiz(){markDone(3);$('quizCard').style.display='none';const pct=Math.round(quizCorrect/quizItems.length*100);$('quizDone').style.display='';$('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🧩</div><strong>Quiz terminado</strong><br>Aciertos: <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong>⭐ ${score}</strong>`;$('finishRow').style.display='flex';}
+</script>
+</body>
+</html>

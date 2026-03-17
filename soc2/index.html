@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧠 Vida en Cada Etapa</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#3e2723 0%,#5d4037 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#8d6e63;color:#fff}
+.score-box{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #8d6e63;background:#3e2723;color:#d7ccc8;cursor:default}
+.p-tab.active{background:#8d6e63;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.1rem;color:#efebe9;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-next:hover{background:#4CAF50}.btn-next:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+.flashcard-wrap{width:320px;min-height:300px;margin:8px auto 14px;cursor:pointer}
+.flashcard{width:100%;min-height:300px;background:linear-gradient(145deg,#4e342e,#6d4c41);border:3px solid #8d6e63;border-radius:24px;box-shadow:0 8px 32px rgba(80,50,40,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;transition:transform .25s}
+.flashcard:hover{transform:scale(1.03)}
+.card-emoji{font-size:3.8rem;line-height:1;user-select:none}
+.card-title-fc{font-size:1.55rem;font-weight:bold;color:#FFD700;text-shadow:0 0 16px rgba(255,215,0,.4);text-align:center}
+.card-sub{font-size:1rem;color:#ffcc80;font-weight:bold;margin:2px 0}
+.card-desc{font-size:.95rem;color:#efebe9;text-align:center;line-height:1.4}
+.card-nav{display:flex;align-items:center;gap:16px;margin:14px 0 6px}
+.nav-btn{background:#4e342e;color:#FFD700;border:2px solid #8d6e63;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#8d6e63}.nav-btn:disabled{opacity:.35;cursor:default}
+.prog-dots{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pdot{width:12px;height:12px;border-radius:50%;background:#3e2723;border:2px solid #8d6e63;transition:background .2s}
+.pdot.seen{background:#8d6e63}.pdot.active{background:#FFD700;border-color:#f9a825}
+.seen-count{color:#d7ccc8;font-size:.9rem;margin-bottom:10px}
+.btn-phase{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 32px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:8px}
+.btn-phase:hover{background:#4CAF50;color:#fff}.btn-phase:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,#5d4037,#4e342e);color:#fff;border:2px solid #8d6e63;border-radius:20px;padding:8px 28px;font-family:inherit;font-size:1.1rem;cursor:pointer}
+.speak-btn:hover{background:#8d6e63}
+
+.match-area{position:relative;width:100%;display:flex;justify-content:space-between;gap:8px}
+.match-col{display:flex;flex-direction:column;gap:6px;width:46%}
+.match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.mi{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#4e342e,#6d4c41);border:2px solid #8d6e63;border-radius:12px;padding:7px 10px;cursor:pointer;position:relative;min-height:52px;transition:border-color .15s,box-shadow .15s}
+.mi:hover:not(.matched){border-color:#ffcc80;box-shadow:0 0 8px rgba(255,204,128,.4)}
+.mi.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.mi.matched{opacity:.42;cursor:default;border-color:#4CAF50}
+.mi.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mi .em{font-size:1.6rem}.mi .wd{font-size:.9rem;font-weight:bold;color:#FFD700}
+.dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#8d6e63;border:2px solid #d7ccc8}
+.dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#8d6e63;border:2px solid #d7ccc8}
+
+.quiz-card{width:100%;max-width:500px;background:#4e342e;border:2px solid #8d6e63;border-radius:16px;padding:20px;text-align:center}
+.quiz-progress{color:#d7ccc8;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:380px;background:linear-gradient(135deg,#6d4c41,#4e342e);border:2px solid #8d6e63;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:#7b5a4f}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:#1b4a1b;color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:#3a1010;color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:#4e342e;border:2px solid #4CAF50;border-radius:14px;padding:16px 22px;color:#69f0ae;text-align:center;margin-top:12px;width:100%;max-width:500px}
+.finish-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🧠 Vida en Cada Etapa</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Aprende</div>
+  <div class="p-tab" id="tab2">🔗 Relaciona</div>
+  <div class="p-tab" id="tab3">❓ Quiz</div>
+</div>
+
+<div class="phase active" id="phase1">
+  <p class="ph-title">¿Cómo vivía la gente en cada etapa? Aprende y escucha.</p>
+  <div class="flashcard-wrap" onclick="speakCurrent()">
+    <div class="flashcard">
+      <div class="card-emoji" id="fcEmoji"></div>
+      <div class="card-title-fc" id="fcTitle"></div>
+      <div class="card-sub" id="fcSub"></div>
+      <div class="card-desc" id="fcDesc"></div>
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speakCurrent()">🔊 Escuchar</button>
+  <div class="card-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+    <div class="prog-dots" id="progDots"></div>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+  </div>
+  <div class="seen-count" id="seenCount"></div>
+  <button class="btn-phase" id="phase1Btn" onclick="goTab(2)" disabled>✅ Ya me lo sé → Relacionar</button>
+</div>
+
+<div class="phase" id="phase2">
+  <p class="ph-title">Relaciona cada característica con su etapa histórica.</p>
+  <div class="match-area" id="ma1">
+    <div class="match-col" id="lc1"></div>
+    <svg class="match-svg" id="ms1"></svg>
+    <div class="match-col" id="rc1"></div>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>✅ Siguiente → Quiz</button>
+</div>
+
+<div class="phase" id="phase3">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar otra vez</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280);}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=0.9;speechSynthesis.speak(u);}
+function addScore(n){score+=n;$('scoreDisp').textContent=score;}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildMatch();if(n===3)buildQuiz();}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done');}
+
+const CARDS=[
+  {emoji:'🪨',title:'Prehistoria',sub:'Sin escritura',desc:'Se comunicaban con dibujos y gestos. Vivían en cuevas, descubrieron el fuego y cazaban/cogían frutos.'},
+  {emoji:'🏛️',title:'Edad Antigua',sub:'Grandes imperios',desc:'Egipto, Grecia y Roma. Hicieron teatros, acueductos, calzadas y termas; también carreras y luchas.'},
+  {emoji:'🏰',title:'Edad Media',sub:'Reinos y castillos',desc:'Muchos reinos gobernados por un rey. Se construyen castillos. Sociedad: rey, nobles, caballeros y aldeanos.'},
+  {emoji:'⛵',title:'Edad Moderna',sub:'Nuevos descubrimientos',desc:'Unificación de reinos, descubrimiento de América e inventos como imprenta, brújula y telescopio.'},
+  {emoji:'🚗',title:'Edad Contemporánea',sub:'Cambios sociales y tecnología',desc:'Lucha por la igualdad y los derechos humanos. Avances: bombilla, coche, teléfono, internet y móviles.'},
+];
+
+const MATCH_ITEMS=[
+  {emoji:'🔥',name:'Descubrieron el fuego',era:'Prehistoria'},
+  {emoji:'📝',name:'No había lenguaje escrito',era:'Prehistoria'},
+  {emoji:'🏺',name:'Egipto, Grecia y Roma',era:'Edad Antigua'},
+  {emoji:'🏟️',name:'Construcción de teatros y acueductos',era:'Edad Antigua'},
+  {emoji:'👑',name:'Reinos gobernados por un rey',era:'Edad Media'},
+  {emoji:'🏰',name:'Construcción de castillos',era:'Edad Media'},
+  {emoji:'🗺️',name:'Se descubre América',era:'Edad Moderna'},
+  {emoji:'🧭',name:'Inventos: imprenta y brújula',era:'Edad Moderna'},
+  {emoji:'⚖️',name:'Lucha por la igualdad',era:'Edad Contemporánea'},
+  {emoji:'📱',name:'Internet y móviles',era:'Edad Contemporánea'},
+];
+
+const QUIZ=[
+  {q:'En la Prehistoria, ¿cómo se comunicaban?',opts:['Con internet','Con dibujos y gestos','Con libros impresos'],ans:1,emoji:'🪨'},
+  {q:'¿Qué imperios son de la Edad Antigua?',opts:['Egipto, Grecia y Roma','España, Francia y Alemania','Estados Unidos y Japón'],ans:0,emoji:'🏛️'},
+  {q:'¿Qué construcciones son típicas de la Edad Media?',opts:['Rascacielos','Castillos','Estaciones espaciales'],ans:1,emoji:'🏰'},
+  {q:'¿Qué ocurrió en 1492?',opts:['Caída del Imperio Romano','Revolución Francesa','Descubrimiento de América'],ans:2,emoji:'⛵'},
+  {q:'La Edad Contemporánea empieza con…',opts:['La escritura','La Revolución Francesa','La brújula'],ans:1,emoji:'⚖️'},
+  {q:'¿Cuál es un invento de la Edad Contemporánea?',opts:['Bombilla','Acueducto romano','Pintura rupestre'],ans:0,emoji:'💡'},
+  {q:'Rey, nobles, caballeros y aldeanos son de…',opts:['Edad Media','Prehistoria','Edad Antigua'],ans:0,emoji:'👑'},
+  {q:'Teatros y acueductos son propios de…',opts:['Edad Antigua','Edad Moderna','Edad Contemporánea'],ans:0,emoji:'🏟️'},
+  {q:'¿Qué etapa tiene internet y móviles?',opts:['Edad Moderna','Edad Contemporánea','Edad Media'],ans:1,emoji:'📱'},
+  {q:'Primero fue…',opts:['Edad Contemporánea','Edad Moderna','Prehistoria'],ans:2,emoji:'🕰️'},
+];
+
+let ci=0,seen=new Set([0]);
+function showCard(){const c=CARDS[ci];$('fcEmoji').textContent=c.emoji;$('fcTitle').textContent=c.title;$('fcSub').textContent=c.sub;$('fcDesc').textContent=c.desc;$('prevBtn').disabled=ci===0;$('nextBtn').disabled=ci===CARDS.length-1;$('progDots').innerHTML=CARDS.map((_,i)=>`<div class="pdot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');$('seenCount').textContent=`${ci+1} / ${CARDS.length}`;if(seen.size===CARDS.length)$('phase1Btn').disabled=false;}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.desc);}
+showCard();
+
+let selL=null,matched2=0;
+function buildMatch(){
+  matched2=0;selL=null;$('ms1').innerHTML='';
+  const left=shuffle(MATCH_ITEMS.map((_,i)=>i));
+  const eras=['Prehistoria','Edad Antigua','Edad Media','Edad Moderna','Edad Contemporánea'];
+  const right=shuffle(eras);
+  $('lc1').innerHTML=left.map((idx,p)=>`<div class="mi" id="l${p}" data-idx="${idx}" onclick="clL(${p})"><span class="em">${MATCH_ITEMS[idx].emoji}</span><span class="wd" style="color:#efebe9">${MATCH_ITEMS[idx].name}</span><div class="dot-r" id="dr${p}"></div></div>`).join('');
+  $('rc1').innerHTML=right.map((name,p)=>`<div class="mi" id="r${p}" data-era="${name}" onclick="clR(${p})"><div class="dot-l" id="dl${p}"></div><span class="wd">${name}</span></div>`).join('');
+  $('fb2').textContent='';$('btn2').disabled=true;
+}
+function clL(i){const el=$('l'+i);if(el.classList.contains('matched'))return;if(selL!==null)$('l'+selL).classList.remove('sel');selL=i;el.classList.add('sel');}
+function clR(p){
+  const re=$('r'+p);if(selL===null){$('fb2').className='fb no';$('fb2').textContent='⬅️ Primero elige una característica';return;}
+  if(re.classList.contains('matched'))return;
+  const li=$('l'+selL);const idx=parseInt(li.dataset.idx,10);const need=MATCH_ITEMS[idx].era;const got=re.dataset.era;
+  if(need===got){flash('g');addScore(10);matched2++;li.classList.remove('sel');li.classList.add('matched');re.classList.add('matched');drawLine($('dr'+selL),$('dl'+p),'#4CAF50');$('fb2').className='fb ok';$('fb2').textContent='✅ Correcto: '+need;selL=null;if(matched2===MATCH_ITEMS.length){$('fb2').textContent='🎉 ¡Has relacionado todo!';$('btn2').disabled=false;markDone(2);}}
+  else{flash('r');re.classList.add('wrong');setTimeout(()=>re.classList.remove('wrong'),400);$('fb2').className='fb no';$('fb2').textContent='❌ Inténtalo otra vez';}
+}
+function drawLine(a,b,col){const svg=$('ms1'),ar=$('ma1').getBoundingClientRect();const r1=a.getBoundingClientRect(),r2=b.getBoundingClientRect();const x1=r1.left+r1.width/2-ar.left,y1=r1.top+r1.height/2-ar.top;const x2=r2.left+r2.width/2-ar.left,y2=r2.top+r2.height/2-ar.top;const ln=document.createElementNS('http://www.w3.org/2000/svg','line');ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);ln.setAttribute('x2',x2);ln.setAttribute('y2',y2);ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','3');ln.setAttribute('stroke-linecap','round');svg.appendChild(ln);}
+
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb3').textContent='';$('quizCard').style.display='';showQuizQ();}
+function showQuizQ(){if(qi>=quizItems.length){endQuiz();return;}const q=quizItems[qi];$('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;$('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;$('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');}
+function quizAnswer(i){const q=quizItems[qi];const btns=$('quizOpts').querySelectorAll('.quiz-opt');btns.forEach(b=>b.disabled=true);if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien!';}else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Respuesta: '+q.opts[q.ans];}qi++;setTimeout(()=>{$('fb3').textContent='';showQuizQ();},1700);}
+function endQuiz(){markDone(3);$('quizCard').style.display='none';const pct=Math.round(quizCorrect/quizItems.length*100);$('quizDone').style.display='';$('quizDone').innerHTML=`<div style="font-size:2rem;margin-bottom:8px">🧠</div><strong>Quiz terminado</strong><br>Aciertos: <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong>⭐ ${score}</strong>`;$('finishRow').style.display='flex';}
+</script>
+</body>
+</html>
