@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🔷 Figuras del Castillo — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:640px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .lives { font-size:1.3rem; letter-spacing:3px; }
+    .wave-info { color:#ce93d8; font-size:.9rem; }
+
+    /* ── Main card ────────────────────────────────── */
+    .main-card {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:3px solid #b8860b; border-radius:24px;
+      padding:18px 20px 14px; text-align:center;
+      box-shadow:0 0 36px rgba(160,32,240,.45);
+      width:100%; max-width:380px;
+    }
+    .q-label { font-size:.85rem; color:#6d4000; font-family:'Patrick Hand',cursive; margin-bottom:6px; }
+    .q-text  {
+      font-family:'Patrick Hand',cursive; font-size:1.25rem;
+      color:#3e2000; margin-bottom:8px; min-height:1.8rem;
+    }
+    .shape-display {
+      display:flex; align-items:center; justify-content:center;
+      height:150px; margin:4px 0;
+    }
+    .q-feedback {
+      min-height:1.5rem; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; margin-top:6px;
+    }
+    .q-feedback.correct { color:#1b5e20; }
+    .q-feedback.wrong   { color:#b71c1c; }
+
+    /* ── Name-answer buttons (show shape, pick name) */
+    .answers-names {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px; margin-top:12px; width:100%; max-width:380px;
+    }
+    .ans-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:16px;
+      padding:13px 8px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s, box-shadow .15s;
+      box-shadow:0 3px 12px rgba(100,0,200,.3);
+    }
+    .ans-btn:hover:not(:disabled) { transform:scale(1.06); box-shadow:0 6px 20px rgba(160,32,240,.55); }
+    .ans-btn:disabled { opacity:.45; cursor:default; transform:none; }
+    .ans-btn.correct { background:linear-gradient(135deg,#1b5e20,#388E3C) !important; border-color:#4CAF50 !important; }
+    .ans-btn.wrong   { background:linear-gradient(135deg,#b71c1c,#c62828) !important; border-color:#ef9a9a !important; }
+
+    /* ── Shape-choice grid (show name, pick shape) ─ */
+    .answers-shapes {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:12px; margin-top:12px; width:100%; max-width:400px;
+    }
+    .shape-btn {
+      background:linear-gradient(145deg,#2d004a,#4a0072);
+      border:2px solid #7c43bd; border-radius:16px;
+      padding:12px 8px; cursor:pointer;
+      transition:transform .12s, box-shadow .15s;
+      box-shadow:0 3px 12px rgba(100,0,200,.3);
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+      font-family:'Patrick Hand',cursive; font-size:.85rem; color:#ce93d8;
+    }
+    .shape-btn:hover:not(:disabled) { transform:scale(1.06); box-shadow:0 6px 20px rgba(160,32,240,.55); }
+    .shape-btn:disabled { opacity:.45; cursor:default; transform:none; }
+    .shape-btn.correct { background:linear-gradient(135deg,#1b5e20,#388E3C) !important; border-color:#4CAF50 !important; color:#fff; }
+    .shape-btn.wrong   { background:linear-gradient(135deg,#b71c1c,#c62828) !important; border-color:#ef9a9a !important; color:#fff; }
+
+    /* ── Prop question (yes/no + numbers) ───────────*/
+    .answers-props {
+      display:flex; flex-wrap:wrap; justify-content:center;
+      gap:10px; margin-top:12px; width:100%; max-width:400px;
+    }
+    .prop-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:20px;
+      padding:12px 20px; font-size:1.2rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s;
+      box-shadow:0 3px 12px rgba(100,0,200,.3);
+    }
+    .prop-btn:hover:not(:disabled) { transform:scale(1.08); }
+    .prop-btn:disabled { opacity:.45; cursor:default; transform:none; }
+    .prop-btn.correct { background:linear-gradient(135deg,#1b5e20,#388E3C) !important; border-color:#4CAF50 !important; }
+    .prop-btn.wrong   { background:linear-gradient(135deg,#b71c1c,#c62828) !important; border-color:#ef9a9a !important; }
+
+    /* ── Overlays ─────────────────────────────────── */
+    .overlay {
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:14px;
+      background:rgba(20,0,40,.92);
+      font-family:'Patrick Hand',cursive; color:#FFD700;
+      text-align:center; padding:24px; z-index:50;
+    }
+    .overlay.show { display:flex; }
+    .overlay h2 { font-size:1.9rem; text-shadow:0 0 18px #FFD700; margin:0; }
+    .overlay p  { font-size:1rem; color:#ce93d8; margin:0; }
+    .btn-play {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #FFD700; border-radius:20px;
+      padding:11px 34px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+    }
+    .btn-play:hover { background:#7c43bd; }
+
+    /* shape type pill */
+    .type-pill {
+      display:inline-block; font-size:.8rem; border-radius:12px;
+      padding:2px 12px; margin-bottom:4px; font-family:'Patrick Hand',cursive;
+    }
+    .type-pill.flat   { background:#e1bee7; color:#4a0072; }
+    .type-pill.solid  { background:#fff3e0; color:#6d1a00; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">🔷 Figuras del Castillo</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="lives" id="livesDisp">❤️❤️❤️</div>
+    <div class="wave-info" id="waveInfo"></div>
+  </div>
+
+  <div class="main-card">
+    <div class="q-label" id="qLabel">¿Cuál es el nombre de esta figura?</div>
+    <div id="typePill"></div>
+    <div class="q-text" id="qText">–</div>
+    <div class="shape-display" id="shapeDisplay"></div>
+    <div class="q-feedback" id="qFeedback"></div>
+  </div>
+
+  <div id="answersArea"></div>
+
+  <!-- ── Overlays ──────────────────────────────────── -->
+  <div class="overlay show" id="readyOverlay">
+    <h2>🔷 Figuras del Castillo</h2>
+    <p>¡El castillo está lleno de figuras mágicas!<br>Aprende a reconocerlas todas.</p>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-size:.9rem;color:#ffe082;margin:4px 0">
+      <span>🎓 Figuras planas</span>
+      <span>⚡ Cuerpos sólidos</span>
+      <span>🌟 Propiedades</span>
+      <span>🧙 Todo mezclado</span>
+    </div>
+    <button class="btn-play" onclick="startGame()">▶ ¡Empezar!</button>
+  </div>
+
+  <div class="overlay" id="waveWinOverlay">
+    <h2 id="waveWinTitle">✨ ¡Ronda superada!</h2>
+    <p id="waveWinMsg"></p>
+    <button class="btn-play" onclick="nextWave()">🔮 ¡Siguiente ronda!</button>
+  </div>
+
+  <div class="overlay" id="levelUpOverlay">
+    <h2 id="levelUpTitle">⚡ ¡Nuevo poder!</h2>
+    <p id="levelUpMsg"></p>
+    <button class="btn-play" onclick="nextLevel()">🌟 ¡Continuar!</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <div class="overlay" id="winOverlay">
+    <h2>🏆 ¡Brujo Experto en Geometría!</h2>
+    <p id="winMsg"></p>
+    <button class="btn-play" onclick="restartGame()">🔄 Jugar de nuevo</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay">
+    <h2>💔 ¡Las figuras se escaparon!</h2>
+    <p>Se te acabaron las vidas…<br>¡Vuelve a intentarlo!</p>
+    <button class="btn-play" onclick="restartLevel()">🔄 Intentar de nuevo</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <script>
+  // ── Shape definitions (SVG 120×120 viewBox) ───────
+  const SHAPES = [
+    // FLAT
+    {
+      id:'circulo', name:'Círculo', type:'flat', sides:0, corners:0,
+      svg:`<circle cx="60" cy="60" r="52" fill="#ab47bc" stroke="#7c43bd" stroke-width="3"/>
+           <circle cx="45" cy="45" r="8" fill="rgba(255,255,255,.3)"/>`
+    },
+    {
+      id:'cuadrado', name:'Cuadrado', type:'flat', sides:4, corners:4,
+      svg:`<rect x="10" y="10" width="100" height="100" rx="4" fill="#42a5f5" stroke="#1565c0" stroke-width="3"/>
+           <circle cx="30" cy="30" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'triangulo', name:'Triángulo', type:'flat', sides:3, corners:3,
+      svg:`<polygon points="60,6 114,114 6,114" fill="#ef5350" stroke="#b71c1c" stroke-width="3"/>
+           <circle cx="50" cy="70" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'rectangulo', name:'Rectángulo', type:'flat', sides:4, corners:4,
+      svg:`<rect x="5" y="28" width="110" height="64" rx="4" fill="#66bb6a" stroke="#2e7d32" stroke-width="3"/>
+           <circle cx="22" cy="44" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'hexagono', name:'Hexágono', type:'flat', sides:6, corners:6,
+      svg:`<polygon points="60,5 110,32 110,88 60,115 10,88 10,32" fill="#ffa726" stroke="#e65100" stroke-width="3"/>
+           <circle cx="38" cy="42" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'rombo', name:'Rombo', type:'flat', sides:4, corners:4,
+      svg:`<polygon points="60,5 115,60 60,115 5,60" fill="#ec407a" stroke="#880e4f" stroke-width="3"/>
+           <circle cx="42" cy="48" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'pentagono', name:'Pentágono', type:'flat', sides:5, corners:5,
+      svg:`<polygon points="60,5 114,44 93,112 27,112 6,44" fill="#26c6da" stroke="#006064" stroke-width="3"/>
+           <circle cx="36" cy="50" r="5" fill="rgba(255,255,255,.35)"/>`
+    },
+    {
+      id:'ovalo', name:'Óvalo', type:'flat', sides:0, corners:0,
+      svg:`<ellipse cx="60" cy="60" rx="55" ry="36" fill="#9575cd" stroke="#4527a0" stroke-width="3"/>
+           <circle cx="35" cy="45" r="6" fill="rgba(255,255,255,.3)"/>`
+    },
+    // SOLID 3D
+    {
+      id:'esfera', name:'Esfera', type:'solid', sides:0, corners:0,
+      svg:`<defs>
+             <radialGradient id="sg1" cx="38%" cy="32%">
+               <stop offset="0%"   stop-color="#fff"/>
+               <stop offset="55%"  stop-color="#ab47bc"/>
+               <stop offset="100%" stop-color="#4a0072"/>
+             </radialGradient>
+           </defs>
+           <circle cx="60" cy="60" r="54" fill="url(#sg1)" stroke="#7c43bd" stroke-width="2"/>`
+    },
+    {
+      id:'cubo', name:'Cubo', type:'solid', sides:6, corners:8,
+      svg:`<polygon points="20,35 70,35 70,85 20,85" fill="#42a5f5" stroke="#1565c0" stroke-width="2"/>
+           <polygon points="70,35 100,15 100,65 70,85" fill="#1565c0" stroke="#0d47a1" stroke-width="2"/>
+           <polygon points="20,35 50,15 100,15 70,35" fill="#90caf9" stroke="#1565c0" stroke-width="2"/>`
+    },
+    {
+      id:'cilindro', name:'Cilindro', type:'solid', sides:0, corners:0,
+      svg:`<rect x="18" y="35" width="84" height="65" fill="#66bb6a" stroke="#2e7d32" stroke-width="2"/>
+           <ellipse cx="60" cy="35" rx="42" ry="13" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2"/>
+           <ellipse cx="60" cy="100" rx="42" ry="13" fill="#388e3c" stroke="#2e7d32" stroke-width="2"/>`
+    },
+    {
+      id:'cono', name:'Cono', type:'solid', sides:1, corners:1,
+      svg:`<polygon points="60,5 112,105 8,105" fill="#ffa726" stroke="#e65100" stroke-width="2"/>
+           <ellipse cx="60" cy="105" rx="52" ry="13" fill="#ffcc80" stroke="#e65100" stroke-width="2"/>`
+    },
+    {
+      id:'piramide', name:'Pirámide', type:'solid', sides:5, corners:5,
+      svg:`<polygon points="60,5 112,105 8,105" fill="#ef5350" stroke="#b71c1c" stroke-width="2"/>
+           <polygon points="60,5 112,105 95,88 55,8"  fill="#c62828" stroke="#b71c1c" stroke-width="2"/>
+           <polygon points="8,105 112,105 95,88 25,92" fill="#b71c1c" stroke="#880e0e" stroke-width="2"/>`
+    },
+    {
+      id:'prisma', name:'Prisma rectangular', type:'solid', sides:6, corners:8,
+      svg:`<polygon points="10,45 75,45 75,95 10,95"  fill="#26c6da" stroke="#006064" stroke-width="2"/>
+           <polygon points="75,45 105,20 105,70 75,95" fill="#006064" stroke="#004d4d" stroke-width="2"/>
+           <polygon points="10,45 40,20 105,20 75,45"  fill="#80deea" stroke="#006064" stroke-width="2"/>`
+    },
+  ];
+
+  // ── Levels ────────────────────────────────────────
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      wavesNeeded:3, mode:'flat',
+      desc:'Figuras planas', label:'¿Cuál es el nombre de esta figura plana?' },
+    { name:'⚡ Mago',          wavesNeeded:4, mode:'solid',
+      desc:'Cuerpos sólidos', label:'¿Cuál es el nombre de este cuerpo sólido?' },
+    { name:'🌟 Archimago',     wavesNeeded:4, mode:'props',
+      desc:'Propiedades', label:'' },
+    { name:'🧙 Brujo Experto', wavesNeeded:5, mode:'mix',
+      desc:'¡Todo mezclado!', label:'¿Cuál es el nombre de esta figura?' },
+  ];
+  const QX_PER_WAVE = 5;
+
+  // ── State ─────────────────────────────────────────
+  let levelIdx  = parseInt(sessionStorage.getItem('mat10_level') || '0');
+  if (levelIdx >= LEVELS.length) levelIdx = LEVELS.length - 1;
+  let lives = 3, score = 0, waveCount = 0, qCount = 0;
+  let locked = false;
+  let currentShape = null, currentPropQ = null;
+  let currentOptions = [];
+
+  // ── Utility ───────────────────────────────────────
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function getPool(mode) {
+    if (mode === 'flat')  return SHAPES.filter(s => s.type === 'flat');
+    if (mode === 'solid') return SHAPES.filter(s => s.type === 'solid');
+    return SHAPES; // mix / props uses all
+  }
+
+  // ── Property questions ────────────────────────────
+  const PROP_QUESTIONS = [
+    {
+      template: s => `¿Cuántos lados tiene el ${s.name.toLowerCase()}?`,
+      answer: s => String(s.sides),
+      options: s => {
+        const a = s.sides;
+        const all = [0,3,4,5,6,8,1];
+        const wrong = shuffle(all.filter(n => n !== a)).slice(0,3);
+        return shuffle([a, ...wrong]).map(String);
+      },
+      applicable: () => true,
+    },
+    {
+      template: s => `¿Tiene esquinas el ${s.name.toLowerCase()}?`,
+      answer: s => s.corners > 0 ? 'Sí' : 'No',
+      options: () => shuffle(['Sí', 'No']),
+      applicable: () => true,
+    },
+    {
+      template: s => `¿Es una figura plana o un cuerpo sólido?`,
+      answer: s => s.type === 'flat' ? 'Figura plana' : 'Cuerpo sólido',
+      options: () => shuffle(['Figura plana', 'Cuerpo sólido']),
+      applicable: () => true,
+    },
+    {
+      template: s => `¿Cuántas esquinas tiene el ${s.name.toLowerCase()}?`,
+      answer: s => String(s.corners),
+      options: s => {
+        const a = s.corners;
+        const all = [0,3,4,5,6,8,1];
+        const wrong = shuffle(all.filter(n => n !== a)).slice(0,3);
+        return shuffle([a, ...wrong]).map(String);
+      },
+      applicable: () => true,
+    },
+  ];
+
+  // ── Build question ────────────────────────────────
+  function newQuestion() {
+    locked = false;
+    const mode = LEVELS[levelIdx].mode;
+    const lv   = LEVELS[levelIdx];
+
+    document.getElementById('qFeedback').textContent = '';
+    document.getElementById('qFeedback').className = 'q-feedback';
+
+    if (mode === 'props') {
+      buildPropQuestion();
+    } else {
+      // Show shape → pick name  OR  Show name → pick shape (alternate)
+      const pool = shuffle(getPool(mode));
+      currentShape = pool[0];
+      const useNameMode = Math.random() < 0.5; // 50/50
+
+      if (useNameMode) {
+        buildNameQuestion(pool, lv);
+      } else {
+        buildShapeQuestion(pool, lv);
+      }
+    }
+    updateHUD();
+  }
+
+  function buildNameQuestion(pool, lv) {
+    // Show shape SVG, pick the name
+    currentShape = pool[0];
+    document.getElementById('qLabel').textContent = lv.label || '¿Cuál es el nombre de esta figura?';
+    showTypePill(currentShape.type);
+    document.getElementById('qText').textContent = '';
+    document.getElementById('shapeDisplay').innerHTML =
+      `<svg viewBox="0 0 120 120" width="130" height="130">${currentShape.svg}</svg>`;
+
+    // 3 distractors with same or different type
+    const wrong3 = shuffle(pool.slice(1).filter(s => s.id !== currentShape.id)).slice(0,3);
+    currentOptions = shuffle([currentShape, ...wrong3]);
+
+    const area = document.getElementById('answersArea');
+    area.className = '';
+    area.innerHTML = `<div class="answers-names">
+      ${currentOptions.map((s,i) =>
+        `<button class="ans-btn" onclick="guessName(${i})">${s.name}</button>`
+      ).join('')}
+    </div>`;
+  }
+
+  function buildShapeQuestion(pool, lv) {
+    // Show name, pick the correct shape from 4
+    currentShape = pool[0];
+    document.getElementById('qLabel').textContent = 'Toca la figura que se llama:';
+    showTypePill(currentShape.type);
+    document.getElementById('qText').textContent = currentShape.name;
+    document.getElementById('shapeDisplay').innerHTML = '';
+
+    const wrong3 = shuffle(pool.slice(1).filter(s => s.id !== currentShape.id)).slice(0,3);
+    currentOptions = shuffle([currentShape, ...wrong3]);
+
+    const area = document.getElementById('answersArea');
+    area.innerHTML = `<div class="answers-shapes">
+      ${currentOptions.map((s,i) =>
+        `<button class="shape-btn" onclick="guessShape(${i})">
+           <svg viewBox="0 0 120 120" width="80" height="80">${s.svg}</svg>
+           <span></span>
+         </button>`
+      ).join('')}
+    </div>`;
+  }
+
+  function buildPropQuestion() {
+    const pool = shuffle(SHAPES);
+    currentShape = pool[0];
+    const qDef = pick(PROP_QUESTIONS);
+
+    document.getElementById('qLabel').textContent = '¿Cuánto sabes de esta figura?';
+    showTypePill(currentShape.type);
+    document.getElementById('qText').textContent = qDef.template(currentShape);
+    document.getElementById('shapeDisplay').innerHTML =
+      `<svg viewBox="0 0 120 120" width="120" height="120">${currentShape.svg}</svg>`;
+
+    const opts = qDef.options(currentShape);
+    const correctAns = qDef.answer(currentShape);
+    currentPropQ = { correctAns, opts };
+
+    const area = document.getElementById('answersArea');
+    area.innerHTML = `<div class="answers-props">
+      ${opts.map((o,i) =>
+        `<button class="prop-btn" onclick="guessProp(${i})">${o}</button>`
+      ).join('')}
+    </div>`;
+  }
+
+  function showTypePill(type) {
+    const pill = document.getElementById('typePill');
+    pill.innerHTML = type === 'flat'
+      ? `<span class="type-pill flat">Figura plana</span>`
+      : `<span class="type-pill solid">Cuerpo sólido</span>`;
+  }
+
+  // ── Guess handlers ────────────────────────────────
+  function guessName(idx) {
+    if (locked) return; locked = true;
+    const btns = document.querySelectorAll('.ans-btn');
+    btns.forEach(b => b.disabled = true);
+    const correct = currentOptions[idx].id === currentShape.id;
+    handleResult(correct, idx, btns, currentShape.name);
+  }
+
+  function guessShape(idx) {
+    if (locked) return; locked = true;
+    const btns = document.querySelectorAll('.shape-btn');
+    btns.forEach(b => b.disabled = true);
+    const correct = currentOptions[idx].id === currentShape.id;
+    handleResult(correct, idx, btns, currentShape.name);
+  }
+
+  function guessProp(idx) {
+    if (locked) return; locked = true;
+    const btns = document.querySelectorAll('.prop-btn');
+    btns.forEach(b => b.disabled = true);
+    const chosen  = currentPropQ.opts[idx];
+    const correct = chosen === currentPropQ.correctAns;
+    // highlight correct
+    currentPropQ.opts.forEach((o, i) => {
+      if (o === currentPropQ.correctAns) btns[i].classList.add('correct');
+    });
+    const fb = document.getElementById('qFeedback');
+    if (correct) {
+      btns[idx].classList.add('correct');
+      fb.className = 'q-feedback correct'; fb.textContent = '✅ ¡Correcto! ✨';
+      score += 10 * (levelIdx + 1);
+      document.getElementById('scoreDisp').textContent = score;
+    } else {
+      btns[idx].classList.add('wrong');
+      fb.className = 'q-feedback wrong';
+      fb.textContent = `❌ La respuesta era: ${currentPropQ.correctAns}`;
+      lives--;
+      updateHUD();
+      if (lives <= 0) { setTimeout(showGameOver, 1300); qCount++; return; }
+    }
+    qCount++;
+    setTimeout(checkWave, 1100);
+  }
+
+  function handleResult(correct, idx, btns, correctName) {
+    const fb = document.getElementById('qFeedback');
+    if (correct) {
+      btns[idx].classList.add('correct');
+      fb.className = 'q-feedback correct'; fb.textContent = '✅ ¡Correcto! ✨';
+      score += 10 * (levelIdx + 1);
+      document.getElementById('scoreDisp').textContent = score;
+    } else {
+      btns[idx].classList.add('wrong');
+      // mark correct
+      currentOptions.forEach((s,i) => {
+        if (s && s.id === currentShape.id) btns[i].classList.add('correct');
+      });
+      fb.className = 'q-feedback wrong';
+      fb.textContent = `❌ Era: ${correctName}`;
+      lives--;
+      updateHUD();
+      if (lives <= 0) { setTimeout(showGameOver, 1300); qCount++; return; }
+    }
+    qCount++;
+    setTimeout(checkWave, 1100);
+  }
+
+  function checkWave() {
+    if (qCount < QX_PER_WAVE) { newQuestion(); return; }
+    qCount = 0;
+    waveCount++;
+    const needed = LEVELS[levelIdx].wavesNeeded;
+    if (waveCount >= needed) {
+      if (levelIdx >= LEVELS.length - 1) {
+        document.getElementById('winMsg').textContent =
+          `¡Conoces todas las figuras mágicas! Puntuación: ${score} ⭐`;
+        document.getElementById('winOverlay').classList.add('show');
+      } else {
+        document.getElementById('levelUpTitle').textContent =
+          `⚡ ¡${LEVELS[levelIdx].name} superado!`;
+        document.getElementById('levelUpMsg').textContent =
+          `Pasas a: ${LEVELS[levelIdx+1].desc}`;
+        document.getElementById('levelUpOverlay').classList.add('show');
+      }
+    } else {
+      const left = needed - waveCount;
+      document.getElementById('waveWinTitle').textContent = '✨ ¡Ronda superada!';
+      document.getElementById('waveWinMsg').textContent =
+        `¡Genial! Quedan ${left} ronda${left>1?'s':''} para subir de nivel.`;
+      document.getElementById('waveWinOverlay').classList.add('show');
+    }
+  }
+
+  // ── HUD ───────────────────────────────────────────
+  function updateHUD() {
+    const lv = LEVELS[levelIdx];
+    document.getElementById('levelBadge').textContent = lv.name;
+    document.getElementById('livesDisp').textContent =
+      '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+    const w = lv.wavesNeeded;
+    document.getElementById('waveInfo').textContent =
+      `Ronda ${Math.min(waveCount+1, w)}/${w}`;
+  }
+
+  // ── Transitions ───────────────────────────────────
+  function startGame() {
+    document.getElementById('readyOverlay').classList.remove('show');
+    updateHUD(); newQuestion();
+  }
+  function nextWave() {
+    document.getElementById('waveWinOverlay').classList.remove('show');
+    newQuestion();
+  }
+  function nextLevel() {
+    levelIdx++;
+    sessionStorage.setItem('mat10_level', levelIdx);
+    document.getElementById('levelUpOverlay').classList.remove('show');
+    waveCount = 0; lives = 3; updateHUD(); newQuestion();
+  }
+  function restartLevel() {
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    lives = 3; waveCount = 0; qCount = 0; updateHUD(); newQuestion();
+  }
+  function restartGame() {
+    document.getElementById('winOverlay').classList.remove('show');
+    levelIdx = 0; lives = 3; score = 0; waveCount = 0; qCount = 0;
+    sessionStorage.setItem('mat10_level', 0);
+    document.getElementById('scoreDisp').textContent = 0;
+    updateHUD(); newQuestion();
+  }
+  function showGameOver() {
+    document.getElementById('gameOverOverlay').classList.add('show');
+  }
+
+  updateHUD();
+  </script>
+</body>
+</html>

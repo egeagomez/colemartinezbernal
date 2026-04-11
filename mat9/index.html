@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>⏰ El Reloj Mágico — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:600px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .lives { font-size:1.3rem; letter-spacing:3px; }
+    .wave-info { color:#ce93d8; font-size:.9rem; }
+
+    /* ── Clock card ───────────────────────────────── */
+    .clock-card {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:3px solid #b8860b; border-radius:24px;
+      padding:20px 24px 16px; text-align:center;
+      box-shadow:0 0 36px rgba(160,32,240,.45);
+      width:100%; max-width:340px;
+    }
+    .mode-label {
+      font-size:.85rem; color:#6d4000; font-family:'Patrick Hand',cursive;
+      margin-bottom:6px; letter-spacing:.5px;
+    }
+    .q-text {
+      font-family:'Patrick Hand',cursive; font-size:1.3rem;
+      color:#3e2000; margin-bottom:10px; min-height:2rem;
+    }
+    .q-feedback {
+      min-height:1.5rem; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; margin-top:8px;
+    }
+    .q-feedback.correct { color:#1b5e20; }
+    .q-feedback.wrong   { color:#b71c1c; }
+
+    /* ── Answer buttons ───────────────────────────── */
+    .answers {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px; margin-top:14px; width:100%; max-width:340px;
+    }
+    .ans-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:16px;
+      padding:14px 8px; font-size:1.15rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s, box-shadow .15s;
+      box-shadow:0 3px 12px rgba(100,0,200,.3);
+      line-height:1.3;
+    }
+    .ans-btn:hover:not(:disabled) { transform:scale(1.06); box-shadow:0 6px 20px rgba(160,32,240,.55); }
+    .ans-btn:disabled { opacity:.45; cursor:default; transform:none; }
+    .ans-btn.correct { background:linear-gradient(135deg,#1b5e20,#388E3C) !important; border-color:#4CAF50 !important; }
+    .ans-btn.wrong   { background:linear-gradient(135deg,#b71c1c,#c62828) !important; border-color:#ef9a9a !important; }
+
+    /* ── Overlays ─────────────────────────────────── */
+    .overlay {
+      position:fixed; inset:0; display:none;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:14px;
+      background:rgba(20,0,40,.92);
+      font-family:'Patrick Hand',cursive; color:#FFD700;
+      text-align:center; padding:24px; z-index:50;
+    }
+    .overlay.show { display:flex; }
+    .overlay h2 { font-size:1.9rem; text-shadow:0 0 18px #FFD700; margin:0; }
+    .overlay p  { font-size:1rem; color:#ce93d8; margin:0; }
+    .btn-play {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #FFD700; border-radius:20px;
+      padding:11px 34px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+    }
+    .btn-play:hover { background:#7c43bd; }
+
+    /* ── Hint strip ───────────────────────────────── */
+    .hint-strip {
+      display:flex; gap:18px; justify-content:center; flex-wrap:wrap;
+      margin-top:10px; font-family:'Patrick Hand',cursive; font-size:.88rem;
+      color:#ce93d8; max-width:340px;
+    }
+    .hint-strip span { display:flex; align-items:center; gap:4px; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">⏰ El Reloj Mágico</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="lives" id="livesDisp">❤️❤️❤️</div>
+    <div class="wave-info" id="waveInfo"></div>
+  </div>
+
+  <!-- Clock display -->
+  <div class="clock-card">
+    <div class="mode-label" id="modeLabel">Mira el reloj y elige la hora correcta</div>
+    <div class="q-text" id="qText">–</div>
+    <svg id="clockSvg" width="180" height="180" viewBox="0 0 180 180"
+         style="display:block;margin:0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))">
+      <!-- Face -->
+      <circle cx="90" cy="90" r="86" fill="#fffde7" stroke="#b8860b" stroke-width="4"/>
+      <circle cx="90" cy="90" r="80" fill="none" stroke="#f9d030" stroke-width="1" opacity=".4"/>
+      <!-- Hour marks + numbers (filled by JS) -->
+      <g id="clockTicks"></g>
+      <g id="clockNums"></g>
+      <!-- Hands -->
+      <line id="hourHand"   x1="90" y1="90" x2="90" y2="48"
+            stroke="#3e2000" stroke-width="6" stroke-linecap="round"/>
+      <line id="minuteHand" x1="90" y1="90" x2="90" y2="28"
+            stroke="#7b3b00" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- Center dot -->
+      <circle cx="90" cy="90" r="6" fill="#b8860b" stroke="#3e2000" stroke-width="1.5"/>
+    </svg>
+    <div class="q-feedback" id="qFeedback"></div>
+  </div>
+
+  <div class="answers" id="answerBtns"></div>
+
+  <div class="hint-strip" id="hintStrip"></div>
+
+  <!-- ── Overlays ──────────────────────────────────── -->
+  <div class="overlay show" id="readyOverlay">
+    <h2>⏰ El Reloj Mágico</h2>
+    <p>¡Descifra el hechizo del tiempo!<br>Mira las agujas del reloj y elige la hora.</p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;font-size:.9rem;color:#ffe082;margin:4px 0">
+      <span>🎓 En punto</span>
+      <span>⚡ Y media</span>
+      <span>🌟 Cuartos</span>
+      <span>🧙 Todo mezclado</span>
+    </div>
+    <button class="btn-play" onclick="startGame()">▶ ¡Empezar!</button>
+  </div>
+
+  <div class="overlay" id="waveWinOverlay">
+    <h2 id="waveWinTitle">✨ ¡Ronda superada!</h2>
+    <p id="waveWinMsg"></p>
+    <button class="btn-play" onclick="nextWave()">🔮 ¡Siguiente ronda!</button>
+  </div>
+
+  <div class="overlay" id="levelUpOverlay">
+    <h2 id="levelUpTitle">⚡ ¡Nuevo poder!</h2>
+    <p id="levelUpMsg"></p>
+    <button class="btn-play" onclick="nextLevel()">🌟 ¡Continuar!</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <div class="overlay" id="winOverlay">
+    <h2>🏆 ¡Brujo Experto del Tiempo!</h2>
+    <p id="winMsg"></p>
+    <button class="btn-play" onclick="restartGame()">🔄 Jugar de nuevo</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay">
+    <h2>💔 ¡El tiempo se escapó!</h2>
+    <p>Se te acabaron las vidas…<br>¡Vuelve a intentarlo!</p>
+    <button class="btn-play" onclick="restartLevel()">🔄 Intentar de nuevo</button>
+    <a class="back-btn" href="../asignaturas.html" style="margin-top:4px">← Inicio</a>
+  </div>
+
+  <script>
+  // ── Build SVG clock face ─────────────────────────
+  (function() {
+    const ticks = document.getElementById('clockTicks');
+    const nums  = document.getElementById('clockNums');
+    const NS    = 'http://www.w3.org/2000/svg';
+    for (let i = 1; i <= 12; i++) {
+      const ang = (i * 30 - 90) * Math.PI / 180;
+      const cos = Math.cos(ang), sin = Math.sin(ang);
+      // Tick mark
+      const ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('x1', 90 + 72*cos); ln.setAttribute('y1', 90 + 72*sin);
+      ln.setAttribute('x2', 90 + 82*cos); ln.setAttribute('y2', 90 + 82*sin);
+      ln.setAttribute('stroke', '#b8860b'); ln.setAttribute('stroke-width', i % 3 === 0 ? '3' : '1.5');
+      ticks.appendChild(ln);
+      // Number
+      const txt = document.createElementNS(NS, 'text');
+      txt.setAttribute('x', 90 + 60*cos); txt.setAttribute('y', 90 + 60*sin + 5);
+      txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size','14');
+      txt.setAttribute('font-family','Patrick Hand, cursive'); txt.setAttribute('fill','#3e2000');
+      txt.setAttribute('font-weight','bold');
+      txt.textContent = i;
+      nums.appendChild(txt);
+    }
+  })();
+
+  function setClock(h, m) {
+    const hDeg = ((h % 12) + m / 60) * 30 - 90;
+    const mDeg = m * 6 - 90;
+    const hr = hDeg * Math.PI / 180, mr = mDeg * Math.PI / 180;
+    const hEl = document.getElementById('hourHand');
+    const mEl = document.getElementById('minuteHand');
+    hEl.setAttribute('x2', 90 + 42 * Math.cos(hr));
+    hEl.setAttribute('y2', 90 + 42 * Math.sin(hr));
+    mEl.setAttribute('x2', 90 + 62 * Math.cos(mr));
+    mEl.setAttribute('y2', 90 + 62 * Math.sin(mr));
+  }
+
+  // ── Levels ────────────────────────────────────────
+  const LEVELS = [
+    { name:'🎓 Aprendiz',      wavesNeeded:3, mode:'enPunto',
+      modeLabel:'Horas en punto',
+      hint:'La aguja corta = horas · La aguja larga en 12 = en punto' },
+    { name:'⚡ Mago',          wavesNeeded:4, mode:'media',
+      modeLabel:'Horas en punto y medias',
+      hint:'La aguja larga en 6 = y media' },
+    { name:'🌟 Archimago',     wavesNeeded:4, mode:'cuarto',
+      modeLabel:'Y cuarto / Menos cuarto',
+      hint:'Aguja larga en 3 = y cuarto · en 9 = menos cuarto' },
+    { name:'🧙 Brujo Experto', wavesNeeded:5, mode:'mix',
+      modeLabel:'¡Todo mezclado!',
+      hint:'En punto · Y media · Y cuarto · Menos cuarto' },
+  ];
+  const QX_PER_WAVE = 5;
+
+  // ── State ─────────────────────────────────────────
+  let levelIdx  = parseInt(sessionStorage.getItem('mat9_level') || '0');
+  if (levelIdx >= LEVELS.length) levelIdx = LEVELS.length - 1;
+  let lives = 3, score = 0, waveCount = 0, qCount = 0;
+  let correctTime = null, locked = false;
+  let ansOptions  = [];
+
+  // ── Time pools ────────────────────────────────────
+  function getPool(mode) {
+    const p = [];
+    for (let h = 1; h <= 12; h++) {
+      if (mode === 'enPunto' || mode === 'mix') p.push({h, m:0});
+      if (mode === 'media'   || mode === 'mix') p.push({h, m:30});
+      if (mode === 'cuarto'  || mode === 'mix') p.push({h, m:15}, {h, m:45});
+    }
+    return p;
+  }
+
+  function timeLabel(h, m) {
+    const names = ['una','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce'];
+    const nm  = names[h - 1];
+    const nm2 = names[(h % 12)]; // next hour
+    if (m ===  0) return `Las ${nm} en punto`;
+    if (m === 30) return `Las ${nm} y media`;
+    if (m === 15) return `Las ${nm} y cuarto`;
+    if (m === 45) return `Las ${nm2} menos cuarto`;
+    return '';
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function timesEq(a, b) { return a.h === b.h && a.m === b.m; }
+
+  // ── Build question ────────────────────────────────
+  function newQuestion() {
+    locked = false;
+    const mode = LEVELS[levelIdx].mode;
+    const pool = shuffle(getPool(mode));
+    correctTime = pool[0];
+
+    // 3 unique distractors
+    const dist = [];
+    for (let t of pool.slice(1)) {
+      if (!timesEq(t, correctTime) && !dist.some(d => timesEq(d, t))) {
+        dist.push(t);
+        if (dist.length === 3) break;
+      }
+    }
+
+    setClock(correctTime.h, correctTime.m);
+    document.getElementById('qText').textContent = '¿Qué hora muestra el reloj?';
+    document.getElementById('qFeedback').textContent = '';
+    document.getElementById('qFeedback').className = 'q-feedback';
+
+    ansOptions = shuffle([correctTime, ...dist]);
+    const btnsDiv = document.getElementById('answerBtns');
+    btnsDiv.innerHTML = ansOptions.map((t, i) =>
+      `<button class="ans-btn" onclick="guess(${i})">${timeLabel(t.h, t.m)}</button>`
+    ).join('');
+
+    updateHUD();
+  }
+
+  // ── Guess ─────────────────────────────────────────
+  function guess(idx) {
+    if (locked) return;
+    locked = true;
+    const btns = document.querySelectorAll('.ans-btn');
+    btns.forEach(b => b.disabled = true);
+
+    const chosen = ansOptions[idx];
+    const fb = document.getElementById('qFeedback');
+
+    if (timesEq(chosen, correctTime)) {
+      btns[idx].classList.add('correct');
+      fb.className = 'q-feedback correct';
+      fb.textContent = '✅ ¡Correcto! ✨';
+      score += 10 * (levelIdx + 1);
+      document.getElementById('scoreDisp').textContent = score;
+      qCount++;
+      setTimeout(checkWave, 900);
+    } else {
+      btns[idx].classList.add('wrong');
+      ansOptions.forEach((t, i) => { if (timesEq(t, correctTime)) btns[i].classList.add('correct'); });
+      fb.className = 'q-feedback wrong';
+      fb.textContent = `❌ Era: ${timeLabel(correctTime.h, correctTime.m)}`;
+      lives--;
+      updateHUD();
+      qCount++;
+      if (lives <= 0) { setTimeout(showGameOver, 1300); return; }
+      setTimeout(checkWave, 1500);
+    }
+  }
+
+  function checkWave() {
+    if (qCount < QX_PER_WAVE) { newQuestion(); return; }
+    qCount = 0;
+    waveCount++;
+    const needed = LEVELS[levelIdx].wavesNeeded;
+    if (waveCount >= needed) {
+      if (levelIdx >= LEVELS.length - 1) {
+        document.getElementById('winMsg').textContent =
+          `¡Dominas el tiempo mágico! Puntuación: ${score} ⭐`;
+        document.getElementById('winOverlay').classList.add('show');
+      } else {
+        document.getElementById('levelUpTitle').textContent =
+          `⚡ ¡${LEVELS[levelIdx].name} superado!`;
+        document.getElementById('levelUpMsg').textContent =
+          `Ahora aprenderás: ${LEVELS[levelIdx+1].modeLabel}`;
+        document.getElementById('levelUpOverlay').classList.add('show');
+      }
+    } else {
+      const left = needed - waveCount;
+      document.getElementById('waveWinTitle').textContent = '✨ ¡Ronda superada!';
+      document.getElementById('waveWinMsg').textContent =
+        `¡Genial! Quedan ${left} ronda${left>1?'s':''} para subir de nivel.`;
+      document.getElementById('waveWinOverlay').classList.add('show');
+    }
+  }
+
+  // ── HUD ───────────────────────────────────────────
+  function updateHUD() {
+    const lv = LEVELS[levelIdx];
+    document.getElementById('levelBadge').textContent = lv.name;
+    document.getElementById('livesDisp').textContent =
+      '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+    const w = lv.wavesNeeded;
+    document.getElementById('waveInfo').textContent =
+      `Ronda ${Math.min(waveCount+1, w)}/${w}`;
+    document.getElementById('modeLabel').textContent = lv.modeLabel;
+    document.getElementById('hintStrip').innerHTML =
+      `<span>💡 ${lv.hint}</span>`;
+  }
+
+  // ── Transitions ───────────────────────────────────
+  function startGame() {
+    document.getElementById('readyOverlay').classList.remove('show');
+    updateHUD(); newQuestion();
+  }
+  function nextWave() {
+    document.getElementById('waveWinOverlay').classList.remove('show');
+    newQuestion();
+  }
+  function nextLevel() {
+    levelIdx++;
+    sessionStorage.setItem('mat9_level', levelIdx);
+    document.getElementById('levelUpOverlay').classList.remove('show');
+    waveCount = 0; lives = 3; updateHUD(); newQuestion();
+  }
+  function restartLevel() {
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    lives = 3; waveCount = 0; qCount = 0; updateHUD(); newQuestion();
+  }
+  function restartGame() {
+    document.getElementById('winOverlay').classList.remove('show');
+    levelIdx = 0; lives = 3; score = 0; waveCount = 0; qCount = 0;
+    sessionStorage.setItem('mat9_level', 0);
+    document.getElementById('scoreDisp').textContent = 0;
+    updateHUD(); newQuestion();
+  }
+  function showGameOver() {
+    document.getElementById('gameOverOverlay').classList.add('show');
+  }
+
+  updateHUD();
+  </script>
+</body>
+</html>
