@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏔️ La Geosfera: Montañas, Volcanes, Mares y Continentes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#1a0d00 0%,#2e1808 55%,#1a0f04 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🏔️ 🌋 🏝️ 🌊 🏔️ 🌋 🏝️ 🌊 🏔️ 🌋 🏝️ 🌊 🏔️ 🌋 🏝️ 🌊 🏔️ 🌋 🏝️ 🌊';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.07);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(50,25,0,.7);color:#FFD700;border:2px solid #ff8f00;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#ff8f00;color:#1a0d00}
+.score-box{background:rgba(50,25,0,.7);color:#FFD700;border:2px solid #ff8f00;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #ff8f00;background:rgba(30,15,0,.8);color:#ffe082;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#ff8f00;color:#1a0d00;font-weight:bold}
+.p-tab.done{background:#e65100;border-color:#ff6d00;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(30,15,0,.92),rgba(50,28,5,.92));border:3px solid #ff8f00;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(200,100,0,.28);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#fff3e0;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#ff8f00;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#e65100,#bf360c);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s}
+.btn-next:hover{background:#ff8f00}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(80,40,0,.8),rgba(60,25,0,.8));color:#fff;border:2px solid #ff8f00;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#ff8f00;color:#1a0d00}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(30,15,0,.85);border:3px solid #ff8f00;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.8rem;display:block}.pick-card .pc-label{font-size:.95rem;color:#fff3e0;margin-top:6px}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #ff8f00;background:rgba(30,15,0,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:12px 18px;border-radius:16px;font-family:inherit;font-size:1rem;cursor:pointer;border:3px solid #ff8f00;background:rgba(30,15,0,.8);color:#fff3e0;transition:transform .12s;backdrop-filter:blur(2px);min-width:105px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(50,28,5,.92),rgba(30,15,0,.9));border:3px solid #ff8f00;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#fff3e0;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 16px;border-radius:18px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:80px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-btn.montana{background:linear-gradient(135deg,#4e342e,#6d4c41);color:#FFD700;border-color:#bcaaa4}
+.sort-btn.volcan{background:linear-gradient(135deg,#b71c1c,#d32f2f);color:#FFD700;border-color:#ef9a9a}
+.sort-btn.mar{background:linear-gradient(135deg,#0d47a1,#1565c0);color:#FFD700;border-color:#90caf9}
+.sort-btn.isla{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#FFD700;border-color:#a5d6a7}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #ff8f00;background:rgba(30,15,0,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(50,28,5,.92),rgba(30,15,0,.9));border:3px solid #ff8f00;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(30,15,0,.9);border:2px solid #ff8f00;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#ffe082;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(50,25,0,.8),rgba(30,15,0,.8));border:2px solid #ff8f00;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(80,40,0,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(30,15,0,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🏔️ La Geosfera</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌍 Geosfera</div>
+  <div class="p-tab"        id="tab2">🏔️ Montañas</div>
+  <div class="p-tab"        id="tab3">🌊 Mares e Islas</div>
+  <div class="p-tab"        id="tab4">🌎 Continentes</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+<!-- FASE 1 -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌍 ¿Qué es la Geosfera?</div>
+    <div class="story-text">
+      La <strong style="color:#FFD700">geosfera</strong> es la parte <strong style="color:#ffe082">sólida</strong> de la Tierra. ¡Todo lo que es duro y sólido!<br><br>
+      Forman parte de la geosfera:<br>
+      🏔️ Las <strong style="color:#bcaaa4">montañas</strong> y las colinas<br>
+      🌋 Los <strong style="color:#ef9a9a">volcanes</strong><br>
+      🏝️ Las <strong style="color:#a5d6a7">islas</strong><br>
+      🌎 Los <strong style="color:#ffe082">continentes</strong><br>
+      🪨 Las <strong style="color:#bcaaa4">rocas y el suelo</strong> donde caminamos<br><br>
+      ¡Incluso el fondo del mar es geosfera! 🌊
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="320" height="230" viewBox="0 0 320 230" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="160" cy="115" r="105" fill="rgba(21,101,192,.6)"/>
+      <circle cx="160" cy="115" r="82" fill="#bf360c" opacity=".85"/>
+      <circle cx="160" cy="115" r="46" fill="#b71c1c"/>
+      <circle cx="160" cy="115" r="26" fill="#FFD700" opacity=".9"/>
+      <circle cx="160" cy="115" r="105" fill="none" stroke="#8d6e63" stroke-width="10" opacity=".85"/>
+      <ellipse cx="125" cy="36" rx="32" ry="13" fill="#6d4c41" stroke="#bcaaa4" stroke-width="1.5"/>
+      <ellipse cx="200" cy="48" rx="20" ry="10" fill="#6d4c41" stroke="#bcaaa4" stroke-width="1.5"/>
+      <polygon points="110,36 125,14 140,36" fill="#8d6e63" stroke="#bcaaa4" stroke-width="1.5"/>
+      <polygon points="192,48 204,24 216,48" fill="#b71c1c" stroke="#ef9a9a" stroke-width="1.5"/>
+      <text x="10" y="58" fill="#ff8f00" font-size="14" font-family="Patrick Hand,cursive" font-weight="bold">GEOSFERA</text>
+      <path d="M18 62 Q14 88 20 105" fill="none" stroke="#ff8f00" stroke-width="2" marker-end="url(#ga)"/>
+      <defs><marker id="ga" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#ff8f00"/></marker></defs>
+      <rect x="55" y="108" width="70" height="16" rx="8" fill="rgba(30,15,0,.8)"/>
+      <text x="90" y="120" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive">corteza</text>
+      <rect x="80" y="138" width="55" height="16" rx="8" fill="rgba(30,15,0,.8)"/>
+      <text x="107" y="150" text-anchor="middle" fill="#ffab91" font-size="11" font-family="Patrick Hand,cursive">manto</text>
+      <rect x="132" y="108" width="56" height="16" rx="8" fill="rgba(30,15,0,.8)"/>
+      <text x="160" y="120" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive">núcleo</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('La geosfera es la parte sólida de la Tierra. Las montañas, los volcanes, las islas, los continentes y las rocas forman la geosfera.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: La geosfera es la parte… de la Tierra</div>
+  <p style="text-align:center;color:#fff3e0;font-size:1rem;margin-bottom:8px">¡Toca la respuesta correcta!</p>
+  <div class="pick-grid" id="geoGrid">
+    <div class="pick-card" onclick="pickGeo('liquida',this)"><span class="pc-emoji">💧</span><div class="pc-label">Líquida (el agua)</div></div>
+    <div class="pick-card" onclick="pickGeo('solida',this)"><span class="pc-emoji">🪨</span><div class="pc-label">Sólida (las rocas)</div></div>
+    <div class="pick-card" onclick="pickGeo('gaseosa',this)"><span class="pc-emoji">💨</span><div class="pc-label">Gaseosa (el aire)</div></div>
+    <div class="pick-card" onclick="pickGeo('viva',this)"><span class="pc-emoji">🌿</span><div class="pc-label">De los seres vivos</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Montañas y Volcanes 🏔️ →</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🏔️ Montañas, Volcanes y Llanuras</div>
+    <div class="story-text">
+      Las <strong style="color:#bcaaa4">montañas</strong> son grandes elevaciones de tierra. Pueden tener nieve ❄️ en la cima. La más alta del mundo es el <strong style="color:#FFD700">Everest</strong> ⛰️.<br><br>
+      Los <strong style="color:#ef9a9a">volcanes</strong> también son montañas, pero tienen un <strong style="color:#FFD700">cráter</strong> en la cima por donde sale <strong style="color:#ef9a9a">lava ardiente</strong> 🔥. En España el más famoso es el <strong style="color:#FFD700">Teide</strong>, en las Islas Canarias 🌋.<br><br>
+      Las <strong style="color:#ffe082">llanuras</strong> son terrenos <strong style="color:#FFD700">planos y amplios</strong>, sin montañas, donde crecen campos de cereales 🌾.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="185" viewBox="0 0 340 185" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="152" width="340" height="33" rx="0" fill="#4e342e"/>
+      <polygon points="28,152 95,38 162,152" fill="#6d4c41" stroke="#bcaaa4" stroke-width="2"/>
+      <polygon points="78,54 95,38 112,54 102,64 88,64" fill="#e3f2fd"/>
+      <text x="95" y="172" text-anchor="middle" fill="#bcaaa4" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🏔️ Montaña</text>
+      <polygon points="190,152 252,36 314,152" fill="#bf360c" stroke="#ef9a9a" stroke-width="2"/>
+      <ellipse cx="252" cy="40" rx="22" ry="9" fill="#b71c1c"/>
+      <path d="M245 36 Q237 22 232 12" fill="none" stroke="#ff8f00" stroke-width="3" opacity=".9"/>
+      <path d="M252 34 Q252 18 255 8" fill="none" stroke="#FFD700" stroke-width="2.5" opacity=".9"/>
+      <path d="M259 36 Q267 22 272 12" fill="none" stroke="#ff8f00" stroke-width="3" opacity=".9"/>
+      <text x="252" y="172" text-anchor="middle" fill="#ef9a9a" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🌋 Volcán</text>
+      <text x="95" y="28" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive">Everest ⛰️</text>
+      <text x="252" y="26" text-anchor="middle" fill="#ffcc80" font-size="11" font-family="Patrick Hand,cursive">Teide 🌋</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Las montañas tienen una cima que puede tener nieve. La más alta es el Everest. Los volcanes tienen un cráter por donde sale lava. El Teide es un volcán en las Islas Canarias. Las llanuras son terrenos planos.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿Qué es cada uno?</div>
+  <div class="tap-q" id="mtnQ">Cargando…</div>
+  <div class="tap-prog" id="mtnProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#bcaaa4" onclick="tapMtn('montana')">🏔️ Montaña</button>
+    <button class="tap-btn" style="border-color:#ef9a9a" onclick="tapMtn('volcan')">🌋 Volcán</button>
+    <button class="tap-btn" style="border-color:#ffe082" onclick="tapMtn('llanura')">🌾 Llanura</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Mares e Islas 🌊 →</button>
+</div>
+
+<!-- FASE 3 -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🌊 Mares, Océanos e Islas</div>
+    <div class="story-text">
+      Los <strong style="color:#90caf9">mares y océanos</strong> son grandes extensiones de agua salada. Los <strong style="color:#FFD700">océanos son más grandes</strong> que los mares. ¡En el mundo hay cinco océanos!<br><br>
+      Las <strong style="color:#a5d6a7">islas</strong> son trozos de tierra completamente <strong style="color:#FFD700">rodeados de agua</strong>. España tiene islas famosas: las <strong style="color:#ffe082">Islas Canarias</strong> 🌋 y las <strong style="color:#ffe082">Islas Baleares</strong> 🏝️.<br><br>
+      Un <strong style="color:#bcaaa4">continente</strong> es una porción de tierra muy grande, mucho mayor que una isla.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="195" viewBox="0 0 330 195" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="330" height="195" rx="12" fill="rgba(13,71,161,.55)" stroke="#42a5f5" stroke-width="1.5"/>
+      <path d="M0 75 Q42 60 84 75 Q126 90 168 75 Q210 60 252 75 Q294 90 330 75" fill="none" stroke="#90caf9" stroke-width="2" opacity=".6"/>
+      <path d="M0 105 Q42 90 84 105 Q126 120 168 105 Q210 90 252 105 Q294 120 330 105" fill="none" stroke="#42a5f5" stroke-width="1.5" opacity=".5"/>
+      <ellipse cx="65" cy="95" rx="55" ry="40" fill="#6d4c41"/>
+      <ellipse cx="60" cy="88" rx="40" ry="28" fill="#5d4037"/>
+      <polygon points="48,88 65,62 82,88" fill="#8d6e63"/>
+      <text x="65" y="150" text-anchor="middle" fill="#bcaaa4" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌎 Continente</text>
+      <ellipse cx="178" cy="135" rx="28" ry="18" fill="#2e7d32"/>
+      <ellipse cx="178" cy="130" rx="18" ry="11" fill="#388e3c"/>
+      <line x1="178" y1="129" x2="178" y2="110" stroke="#5d4037" stroke-width="3"/>
+      <ellipse cx="171" cy="109" rx="10" ry="6" fill="#1b5e20" transform="rotate(-20,171,109)"/>
+      <ellipse cx="185" cy="108" rx="10" ry="6" fill="#1b5e20" transform="rotate(15,185,108)"/>
+      <text x="178" y="168" text-anchor="middle" fill="#a5d6a7" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🏝️ Isla</text>
+      <rect x="235" y="72" width="88" height="18" rx="9" fill="rgba(13,71,161,.75)"/>
+      <text x="279" y="85" text-anchor="middle" fill="#90caf9" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌊 Océano</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Los océanos son más grandes que los mares. Las islas están rodeadas de agua por todos lados. España tiene las Islas Canarias y las Islas Baleares.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 3: ¡Clasifica cada pista!</div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns">
+    <button class="sort-btn montana" onclick="ansSort3('montana')">🏔️ Montaña</button>
+    <button class="sort-btn volcan"  onclick="ansSort3('volcan')">🌋 Volcán</button>
+    <button class="sort-btn mar"     onclick="ansSort3('mar')">🌊 Mar/Océano</button>
+    <button class="sort-btn isla"    onclick="ansSort3('isla')">🏝️ Isla</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Continentes 🌎 →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">🌎 Los Continentes</div>
+    <div class="story-text">
+      Los <strong style="color:#FFD700">continentes</strong> son las grandes porciones de tierra del planeta. ¡Hay <strong style="color:#ffe082">6 continentes</strong>!<br><br>
+      🌍 <strong style="color:#ef9a9a">África</strong> — <strong style="color:#ffe082">Europa</strong> — <strong style="color:#ce93d8">Asia</strong><br>
+      🌎 <strong style="color:#a5d6a7">América</strong><br>
+      🌏 <strong style="color:#80cbc4">Oceanía</strong> — <strong style="color:#b3e5fc">Antártida ❄️</strong><br><br>
+      ¡España está en <strong style="color:#FFD700">Europa</strong>!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="320" height="175" viewBox="0 0 320 175" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="320" height="175" rx="14" fill="rgba(13,71,161,.5)" stroke="#42a5f5" stroke-width="1.5"/>
+      <ellipse cx="65" cy="90" rx="40" ry="58" fill="#2e7d32" opacity=".85"/>
+      <text x="65" y="94" text-anchor="middle" fill="#a5d6a7" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <ellipse cx="152" cy="52" rx="22" ry="22" fill="#1565c0" opacity=".9"/>
+      <text x="152" y="56" text-anchor="middle" fill="#ffe082" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Europa</text>
+      <ellipse cx="165" cy="105" rx="28" ry="38" fill="#e65100" opacity=".8"/>
+      <text x="165" y="110" text-anchor="middle" fill="#ffcc80" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">África</text>
+      <ellipse cx="240" cy="62" rx="48" ry="38" fill="#7b1fa2" opacity=".75"/>
+      <text x="240" y="66" text-anchor="middle" fill="#ce93d8" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Asia</text>
+      <ellipse cx="272" cy="128" rx="28" ry="20" fill="#00695c" opacity=".85"/>
+      <text x="272" y="132" text-anchor="middle" fill="#80cbc4" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Oceanía</text>
+      <ellipse cx="160" cy="168" rx="52" ry="10" fill="#b3e5fc" opacity=".7"/>
+      <text x="160" y="173" text-anchor="middle" fill="#b3e5fc" font-size="9" font-family="Patrick Hand,cursive">Antártida ❄️</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Hay seis continentes: África, Europa, Asia, América, Oceanía y Antártida. España está en Europa.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 4: ¿Verdad o Mentira?</div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initMtn();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickGeo(ans,el){
+  $('geoGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='solida'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! La geosfera es la parte SÓLIDA de la Tierra: rocas, montañas, volcanes… 🪨';
+    speak('¡Correcto! La geosfera es la parte sólida de la Tierra.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! La geosfera es la parte SÓLIDA. ¡Inténtalo!';
+    speak('No exactamente. La geosfera es la parte sólida.');
+    setTimeout(()=>{
+      el.classList.remove('wrong');
+      const c=$('geoGrid').querySelectorAll('.pick-card');
+      c[0].onclick=()=>pickGeo('liquida',c[0]);c[1].onclick=()=>pickGeo('solida',c[1]);
+      c[2].onclick=()=>pickGeo('gaseosa',c[2]);c[3].onclick=()=>pickGeo('viva',c[3]);
+    },1100);
+  }
+}
+
+/* Fase 2 */
+const MTN_Qs=[
+  {ask:'Tiene una cima nevada y está formada por rocas apiladas',correct:'montana',hint:'¡Las montañas tienen cima y pueden tener nieve!'},
+  {ask:'Tiene un cráter y por él sale lava ardiente 🔥',correct:'volcan',hint:'¡Los volcanes tienen cráter y expulsan lava!'},
+  {ask:'El Everest es la más alta del mundo',correct:'montana',hint:'¡El Everest es una montaña, la más alta del mundo!'},
+  {ask:'El Teide, en Canarias, expulsa gases y lava',correct:'volcan',hint:'¡El Teide es un volcán que está en las Islas Canarias!'},
+  {ask:'Un terreno muy plano y amplio donde crecen cereales 🌾',correct:'llanura',hint:'¡Las llanuras son terrenos planos y amplios!'},
+];
+let mtnItems,mtnIdx;
+function initMtn(){mtnItems=shuffle(MTN_Qs);mtnIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderMtnProg();showMtnQ()}
+function renderMtnProg(){$('mtnProg').innerHTML=mtnItems.map((_,i)=>`<div class="pdot" id="mp_${i}"></div>`).join('')}
+function showMtnQ(){
+  if(mtnIdx>=mtnItems.length){endMtn();return}
+  $('mtnQ').textContent=mtnItems[mtnIdx].ask;$('fb2').textContent='';speak(mtnItems[mtnIdx].ask);
+}
+function tapMtn(ans){
+  if(mtnIdx>=mtnItems.length)return;
+  const q=mtnItems[mtnIdx],dot=$('mp_'+mtnIdx);
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');mtnIdx++;setTimeout(showMtnQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! '+q.hint;speak('No exactamente.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endMtn(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Ya conoces montañas, volcanes y llanuras!';speak('¡Conoces las formas del relieve!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3 Sort */
+const SORT3=[
+  {emoji:'⛰️',text:'El Everest, la montaña más alta del mundo',target:'montana'},
+  {emoji:'🌋',text:'El volcán Etna en Italia que expulsa lava',target:'volcan'},
+  {emoji:'🌊',text:'El océano Atlántico, enorme y profundo',target:'mar'},
+  {emoji:'🏝️',text:'Ibiza, rodeada de agua por todos lados',target:'isla'},
+  {emoji:'🌋',text:'El Teide en las Islas Canarias',target:'volcan'},
+  {emoji:'🌊',text:'El mar Mediterráneo entre Europa y África',target:'mar'},
+  {emoji:'🏔️',text:'Los Pirineos, entre España y Francia',target:'montana'},
+  {emoji:'🏝️',text:'Mallorca, una isla española',target:'isla'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={montana:'🏔️ Montaña',volcan:'🌋 Volcán',mar:'🌊 Mar/Océano',isla:'🏝️ Isla'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Clasificaste todo el relieve! ¡Eres un geógrafo!';speak('¡Clasificaste todo el relieve!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 TF */
+const TF4=[
+  {emoji:'🪨',stmt:'La geosfera es la parte sólida de la Tierra.',ans:true},
+  {emoji:'🌋',stmt:'Un volcán y una montaña normal son exactamente lo mismo.',ans:false},
+  {emoji:'🏝️',stmt:'Una isla está rodeada de agua por todos lados.',ans:true},
+  {emoji:'🌊',stmt:'Los océanos son más pequeños que los mares.',ans:false},
+  {emoji:'🌍',stmt:'Hay seis continentes en el mundo.',ans:true},
+  {emoji:'🇪🇸',stmt:'España está en el continente europeo.',ans:true},
+  {emoji:'⛰️',stmt:'El Everest es un volcán, no una montaña.',ans:false},
+  {emoji:'🌋',stmt:'El Teide es un volcán en las Islas Canarias.',ans:true},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Sabes todo sobre la geosfera!';speak('¡Perfecto!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 Quiz */
+const QUIZ=[
+  {q:'¿Qué es la geosfera?',opts:['La capa de agua 💧','La capa de aire 💨','La parte sólida de la Tierra 🪨','La capa de seres vivos 🌿'],ans:2,emoji:'🌍'},
+  {q:'¿Qué tiene un volcán que no tiene una montaña normal?',opts:['Nieve en la cima ❄️','Un río 🌊','Un cráter que expulsa lava 🌋','Un bosque 🌳'],ans:2,emoji:'🌋'},
+  {q:'¿Cómo se llama la montaña más alta del mundo?',opts:['El Teide 🌋','El Everest ⛰️','Los Alpes 🏔️','Los Pirineos'],ans:1,emoji:'⛰️'},
+  {q:'¿Qué es una isla?',opts:['Una montaña muy alta','Un océano pequeño','Un trozo de tierra rodeado de agua 🏝️','Un desierto grande'],ans:2,emoji:'🏝️'},
+  {q:'¿Cuál es más grande?',opts:['Un mar','Un océano 🌊','Son iguales','Un lago'],ans:1,emoji:'🌊'},
+  {q:'¿Cuántos continentes hay?',opts:['4','5','6 🌍','7'],ans:2,emoji:'🌎'},
+  {q:'¿En qué continente está España?',opts:['África 🌍','América 🌎','Asia 🌏','Europa 🌍'],ans:3,emoji:'🇪🇸'},
+  {q:'¿En qué islas españolas está el volcán Teide?',opts:['Islas Baleares 🏝️','Islas Canarias 🌋','Islas Azores','Malta'],ans:1,emoji:'🌋'},
+  {q:'¿Qué son las llanuras?',opts:['Montañas muy altas','Terrenos planos y amplios 🌾','Islas grandes','Ríos anchos'],ans:1,emoji:'🌾'},
+  {q:'¿Cuál de estos es un continente?',opts:['El Mediterráneo 🌊','Mallorca 🏝️','África 🌍','El Everest ⛰️'],ans:2,emoji:'🌍'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Explorador de la Tierra!';emoji='🏆🌍🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, gran geógrafo!';emoji='🌟🏔️🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa un poco más.';emoji='👍🌋';}
+  else{msg='¡Sigue aprendiendo! La geosfera te espera.';emoji='💪🌍';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a descubrir la geosfera: montañas, volcanes, mares, islas y continentes.');
+</script>
+</body>
+</html>

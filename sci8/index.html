@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌍 La Biosfera: ¿Dónde hay vida en la Tierra?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#0a1f0a 0%,#0d2b1a 55%,#081a14 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+
+body::before{content:'🌿 🦋 🌸 🐝 🌿 🦋 🌸 🐝 🌿 🦋 🌸 🐝 🌿 🦋 🌸 🐝 🌿 🦋 🌸 🐝';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.07);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(10,50,20,.7);color:#FFD700;border:2px solid #66bb6a;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#66bb6a;color:#081a14}
+.score-box{background:rgba(10,50,20,.7);color:#FFD700;border:2px solid #66bb6a;border-radius:20px;padding:4px 16px;font-size:1rem}
+
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #66bb6a;background:rgba(10,30,10,.8);color:#a5d6a7;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#66bb6a;color:#081a14;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+
+.story-card{background:linear-gradient(145deg,rgba(10,35,15,.92),rgba(15,50,25,.92));border:3px solid #66bb6a;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(30,150,60,.28);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e8f5e9;line-height:1.65}
+
+.mini-title{font-size:1.15rem;color:#66bb6a;text-align:center;margin:12px 0 10px;font-weight:bold}
+
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s}
+.btn-next:hover{background:#4CAF50}
+.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(15,80,30,.8),rgba(10,55,20,.8));color:#fff;border:2px solid #66bb6a;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#66bb6a;color:#081a14}
+
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+
+/* ── Phase 1: pick habitat ── */
+.habitat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.hab-card{background:rgba(10,35,15,.85);border:3px solid #66bb6a;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.hab-card:hover{transform:scale(1.05);border-color:#FFD700}
+.hab-card .hc-emoji{font-size:2.8rem;display:block}
+.hab-card .hc-label{font-size:.95rem;color:#e8f5e9;margin-top:6px}
+.hab-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.hab-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+
+/* ── Phase 2 & 3: tap game ── */
+.tap-question{font-size:1.18rem;color:#FFD700;text-align:center;margin-bottom:10px;line-height:1.4}
+.tap-progress{display:flex;gap:10px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #66bb6a;background:rgba(10,30,10,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}
+.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:12px 16px;border-radius:16px;font-family:inherit;font-size:1.05rem;cursor:pointer;border:3px solid #66bb6a;background:rgba(10,35,15,.8);color:#e8f5e9;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px);min-width:90px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+
+/* ── Phase 3: sort cards ── */
+.sort-card-big{background:linear-gradient(145deg,rgba(15,50,20,.92),rgba(10,30,10,.9));border:3px solid #66bb6a;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#e8f5e9;line-height:1.5}
+.sort-btns{display:flex;gap:10px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:11px 18px;border-radius:18px;font-family:inherit;font-size:.98rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:90px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-btn.plantas{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#FFD700;border-color:#69f0ae}
+.sort-btn.animales{background:linear-gradient(135deg,#bf360c,#e64a19);color:#FFD700;border-color:#ff8a65}
+.sort-btn.personas{background:linear-gradient(135deg,#4a148c,#7b1fa2);color:#FFD700;border-color:#ce93d8}
+.sort-progress-bar{display:flex;gap:6px;justify-content:center;margin:8px 0}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #66bb6a;background:rgba(10,30,10,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}
+.rpdot.ng{background:#f44336;border-color:#f44336}
+
+/* ── Phase 4: true/false ── */
+.tf-card{background:linear-gradient(145deg,rgba(15,50,20,.92),rgba(10,30,10,.9));border:3px solid #66bb6a;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-statement{font-size:1.2rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center;margin:8px 0}
+.tf-btn{padding:12px 30px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.true-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.false-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+
+/* ── Phase 5: quiz ── */
+.quiz-card{width:100%;max-width:540px;background:rgba(10,35,15,.9);border:2px solid #66bb6a;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-progress{color:#a5d6a7;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(15,60,20,.8),rgba(10,30,10,.8));border:2px solid #66bb6a;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(30,90,25,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(10,35,15,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px;backdrop-filter:blur(4px)}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+
+/* color highlights */
+.pl{color:#69f0ae;font-weight:bold}
+.an{color:#ff8a65;font-weight:bold}
+.pe{color:#ce93d8;font-weight:bold}
+.bio{color:#FFD700;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌍 La Biosfera</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌍 Biosfera</div>
+  <div class="p-tab"        id="tab2">🌿 Plantas</div>
+  <div class="p-tab"        id="tab3">🦁 Animales</div>
+  <div class="p-tab"        id="tab4">👨‍👩‍👧 Personas</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     FASE 1 — ¿QUÉ ES LA BIOSFERA?
+════════════════════════════════════════════ -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌍 ¿Dónde hay vida en la Tierra?</div>
+    <div class="story-text">
+      La Tierra es el único planeta que conocemos donde hay <strong style="color:#FFD700">¡VIDA!</strong> 🎉<br><br>
+      Los científicos llaman <span class="bio">biosfera</span> a la capa de la Tierra donde viven todos los seres vivos.<br><br>
+      <span class="bio">Bio</span> viene de una palabra griega que significa <strong style="color:#FFD700">vida</strong>.<br><br>
+      En la biosfera viven tres grupos de seres vivos:<br>
+      <span class="pl">🌿 Las plantas</span> — <span class="an">🦁 Los animales</span> — <span class="pe">👤 Las personas</span>
+    </div>
+  </div>
+
+  <div class="scene">
+    <svg width="340" height="260" viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- Earth base -->
+      <circle cx="170" cy="138" r="108" fill="#1565c0" opacity=".85"/>
+      <!-- Continents -->
+      <ellipse cx="148" cy="108" rx="40" ry="28" fill="#2e7d32" transform="rotate(-15,148,108)"/>
+      <ellipse cx="190" cy="155" rx="32" ry="22" fill="#2e7d32" transform="rotate(10,190,155)"/>
+      <ellipse cx="136" cy="162" rx="22" ry="17" fill="#2e7d32"/>
+      <ellipse cx="200" cy="112" rx="16" ry="11" fill="#2e7d32" transform="rotate(-8,200,112)"/>
+      <!-- Ice caps -->
+      <ellipse cx="170" cy="32"  rx="38" ry="14" fill="#e3f2fd" opacity=".85"/>
+      <ellipse cx="170" cy="244" rx="38" ry="14" fill="#e3f2fd" opacity=".85"/>
+      <!-- Biosfera ring — animated glow -->
+      <circle cx="170" cy="138" r="118" fill="none" stroke="#66bb6a" stroke-width="5" stroke-dasharray="18,8" opacity=".7"/>
+      <circle cx="170" cy="138" r="122" fill="none" stroke="#a5d6a7" stroke-width="2" opacity=".4"/>
+      <!-- Labels on ring -->
+      <text x="170" y="10"  text-anchor="middle" fill="#69f0ae" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🌿 Plantas</text>
+      <text x="300" y="148" text-anchor="middle" fill="#ff8a65" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🦁 Animales</text>
+      <text x="170" y="262" text-anchor="middle" fill="#ce93d8" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">👤 Personas</text>
+      <!-- BIOSFERA label -->
+      <rect x="92" y="122" width="156" height="32" rx="16" fill="rgba(10,50,20,.75)"/>
+      <text x="170" y="143" text-anchor="middle" fill="#FFD700" font-size="16" font-family="Patrick Hand,cursive" font-weight="bold">🌍 Biosfera</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('La biosfera es la capa de la Tierra donde viven todos los seres vivos. En ella viven las plantas, los animales y las personas.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 1: ¿Qué significa "bio"?</div>
+  <p style="text-align:center;color:#e8f5e9;font-size:1rem;margin-bottom:8px">Toca la respuesta correcta</p>
+
+  <div class="habitat-grid" id="bioGrid">
+    <div class="hab-card" onclick="pickBio('piedra',this)">
+      <span class="hc-emoji">🪨</span>
+      <div class="hc-label">Piedra</div>
+    </div>
+    <div class="hab-card" onclick="pickBio('vida',this)">
+      <span class="hc-emoji">🌱</span>
+      <div class="hc-label">Vida</div>
+    </div>
+    <div class="hab-card" onclick="pickBio('agua',this)">
+      <span class="hc-emoji">💧</span>
+      <div class="hc-label">Agua</div>
+    </div>
+    <div class="hab-card" onclick="pickBio('fuego',this)">
+      <span class="hc-emoji">🔥</span>
+      <div class="hc-label">Fuego</div>
+    </div>
+  </div>
+
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Las Plantas 🌿 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 2 — LAS PLANTAS
+════════════════════════════════════════ -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🌿 Las Plantas: Los Seres Vivos Más Tranquilos</div>
+    <div class="story-text">
+      Las plantas son seres vivos muy especiales. ¡No se mueven de su sitio! 🌳<br><br>
+      Tienen <strong style="color:#FFD700">raíces</strong> que las sujetan al suelo y absorben agua y minerales.<br><br>
+      Las hojas <strong style="color:#69f0ae">fabrican su propio alimento</strong> usando la luz del sol ☀️, el agua 💧 y el aire 🌬️. ¡Ese proceso se llama <strong style="color:#FFD700">fotosíntesis</strong>!<br><br>
+      Las plantas viven en <strong style="color:#69f0ae">muchos lugares</strong>: bosques 🌲, mares 🌊, desiertos 🏜️, montañas ⛰️…<br><br>
+      ¡Además producen el oxígeno que respiramos! 😮‍💨
+    </div>
+  </div>
+
+  <div class="scene">
+    <svg width="320" height="200" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sun -->
+      <circle cx="280" cy="38" r="28" fill="#FDD835" opacity=".9"/>
+      <text x="280" y="43" text-anchor="middle" fill="#e65100" font-size="14" font-family="Patrick Hand,cursive" font-weight="bold">☀️</text>
+      <!-- Sun rays to leaf -->
+      <line x1="258" y1="55" x2="190" y2="90" stroke="#FDD835" stroke-width="2" stroke-dasharray="6,3" opacity=".7"/>
+      <!-- Big tree -->
+      <circle cx="130" cy="85"  r="42" fill="#2e7d32" opacity=".9"/>
+      <circle cx="105" cy="100" r="28" fill="#388e3c"/>
+      <circle cx="155" cy="98"  r="30" fill="#1b5e20"/>
+      <rect x="123" y="128" width="14" height="52" fill="#5d4037"/>
+      <!-- Roots -->
+      <path d="M 123 178 Q 100 185 88 195" fill="none" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 130 180 Q 130 190 130 198" fill="none" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 137 178 Q 158 188 168 196" fill="none" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+      <!-- Ground -->
+      <rect x="0" y="195" width="320" height="8" rx="4" fill="#4e342e" opacity=".7"/>
+      <!-- Flower left -->
+      <circle cx="50" cy="155" r="12" fill="#e91e63" opacity=".85"/>
+      <circle cx="38" cy="145" r="8"  fill="#f48fb1" opacity=".8"/>
+      <circle cx="62" cy="145" r="8"  fill="#f48fb1" opacity=".8"/>
+      <circle cx="38" cy="165" r="8"  fill="#f48fb1" opacity=".8"/>
+      <circle cx="62" cy="165" r="8"  fill="#f48fb1" opacity=".8"/>
+      <rect x="48" y="167" width="4" height="26" fill="#388e3c"/>
+      <!-- O2 label -->
+      <text x="60" y="80" fill="#a5d6a7" font-size="14" font-family="Patrick Hand,cursive" font-weight="bold" opacity=".85">O₂ 😮‍💨</text>
+      <path d="M 88 90 Q 72 78 65 72" fill="none" stroke="#a5d6a7" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#ao2)"/>
+      <defs>
+        <marker id="ao2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L7,3.5 Z" fill="#a5d6a7"/>
+        </marker>
+      </defs>
+      <!-- Cactus right -->
+      <rect x="252" y="120" width="16" height="65" rx="8" fill="#388e3c"/>
+      <rect x="238" y="135" width="14" height="30" rx="7" fill="#388e3c"/>
+      <rect x="268" y="148" width="14" height="22" rx="7" fill="#388e3c"/>
+      <circle cx="260" cy="118" r="9" fill="#e91e63" opacity=".8"/>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('Las plantas son seres vivos que fabrican su propio alimento con la luz del sol, el agua y el aire. Ese proceso se llama fotosíntesis. Además producen el oxígeno que respiramos.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 2: ¿Es una planta?</div>
+  <div class="tap-question" id="plantQ">Cargando…</div>
+  <div class="tap-progress" id="plantProg"></div>
+
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#69f0ae" onclick="tapPlant('si')">✅ Sí, es una planta</button>
+    <button class="tap-btn" style="border-color:#ff5252" onclick="tapPlant('no')">❌ No es una planta</button>
+  </div>
+
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Los Animales 🦁 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 3 — LOS ANIMALES
+════════════════════════════════════════ -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🦁 Los Animales: ¡Se Mueven y Sienten!</div>
+    <div class="story-text">
+      Los animales son seres vivos que <strong style="color:#FFD700">se mueven</strong> y tienen <strong style="color:#FFD700">sentidos</strong> para ver, oír, oler…<br><br>
+      Los animales viven en <strong style="color:#ff8a65">muchos hábitats</strong> diferentes:<br><br>
+      🌊 <strong style="color:#64b5f6">Mar</strong> — peces, ballenas, pulpos.<br>
+      🌳 <strong style="color:#69f0ae">Bosque</strong> — osos, pájaros, zorros.<br>
+      🏜️ <strong style="color:#ffcc80">Desierto</strong> — camellos, serpientes.<br>
+      ❄️ <strong style="color:#b3e5fc">Polo</strong> — pingüinos, osos polares.<br><br>
+      ¡Todos los animales son parte de la <span class="bio">biosfera</span>!
+    </div>
+  </div>
+
+  <div class="scene">
+    <svg width="340" height="185" viewBox="0 0 340 185" xmlns="http://www.w3.org/2000/svg">
+      <!-- Mar -->
+      <rect x="0" y="0" width="80" height="130" rx="14" fill="rgba(13,71,161,.55)" stroke="#64b5f6" stroke-width="2"/>
+      <text x="40" y="20" text-anchor="middle" fill="#b3e5fc" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🌊 Mar</text>
+      <text x="40" y="60" text-anchor="middle" font-size="26">🐟</text>
+      <text x="40" y="100" text-anchor="middle" font-size="26">🐙</text>
+      <!-- Bosque -->
+      <rect x="88" y="0" width="80" height="130" rx="14" fill="rgba(27,94,32,.55)" stroke="#69f0ae" stroke-width="2"/>
+      <text x="128" y="20" text-anchor="middle" fill="#c8e6c9" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🌳 Bosque</text>
+      <text x="128" y="60" text-anchor="middle" font-size="26">🦊</text>
+      <text x="128" y="100" text-anchor="middle" font-size="26">🐦</text>
+      <!-- Desierto -->
+      <rect x="176" y="0" width="80" height="130" rx="14" fill="rgba(109,76,20,.55)" stroke="#ffcc80" stroke-width="2"/>
+      <text x="216" y="20" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🏜️ Desierto</text>
+      <text x="216" y="60" text-anchor="middle" font-size="26">🐪</text>
+      <text x="216" y="100" text-anchor="middle" font-size="26">🦎</text>
+      <!-- Polo -->
+      <rect x="264" y="0" width="76" height="130" rx="14" fill="rgba(21,101,192,.4)" stroke="#b3e5fc" stroke-width="2"/>
+      <text x="302" y="20" text-anchor="middle" fill="#e3f2fd" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">❄️ Polo</text>
+      <text x="302" y="60" text-anchor="middle" font-size="26">🐧</text>
+      <text x="302" y="100" text-anchor="middle" font-size="26">🐻‍❄️</text>
+      <!-- Biosfera label -->
+      <rect x="60" y="142" width="220" height="30" rx="15" fill="rgba(10,50,20,.8)"/>
+      <text x="170" y="162" text-anchor="middle" fill="#FFD700" font-size="15" font-family="Patrick Hand,cursive" font-weight="bold">🌍 Todos en la Biosfera</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('Los animales viven en muchos hábitats. En el mar viven los peces y los pulpos. En el bosque los zorros y los pájaros. En el desierto los camellos. En el polo los pingüinos y los osos polares.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 3: ¿Plantas, Animales o Personas?</div>
+  <p style="text-align:center;color:#e8f5e9;font-size:1rem;margin-bottom:4px">Clasifica cada ser vivo</p>
+  <div class="sort-progress-bar" id="sortProg"></div>
+  <div id="sortGameArea">
+    <div class="sort-card-big" id="sortCardBig">
+      <span class="sort-card-emoji" id="sortEmoji"></span>
+      <div class="sort-card-text" id="sortText"></div>
+    </div>
+    <div class="sort-btns">
+      <button class="sort-btn plantas"  onclick="answerSort('plantas')">🌿 Planta</button>
+      <button class="sort-btn animales" onclick="answerSort('animales')">🦁 Animal</button>
+      <button class="sort-btn personas" onclick="answerSort('personas')">👤 Persona</button>
+    </div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Las Personas 👨‍👩‍👧 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 4 — LAS PERSONAS
+════════════════════════════════════════ -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">👨‍👩‍👧 Las Personas: Parte de la Biosfera</div>
+    <div class="story-text">
+      ¿Sabías que <strong style="color:#FFD700">tú también</strong> eres parte de la biosfera? 😊<br><br>
+      Las personas somos seres vivos especiales: <strong style="color:#ce93d8">pensamos</strong>, <strong style="color:#ce93d8">hablamos</strong>, <strong style="color:#ce93d8">construimos</strong> ciudades y <strong style="color:#ce93d8">cuidamos</strong> la naturaleza.<br><br>
+      Pero como todos los seres vivos, necesitamos:<br>
+      💧 <strong style="color:#64b5f6">Agua</strong> para beber.<br>
+      🌿 <strong style="color:#69f0ae">Plantas y animales</strong> para alimentarnos.<br>
+      😮‍💨 <strong style="color:#b3e5fc">Aire</strong> para respirar.<br><br>
+      Por eso es tan importante <strong style="color:#FFD700">cuidar la biosfera</strong>: ¡si la biosfera está sana, nosotros también! ♻️🌍
+    </div>
+  </div>
+
+  <div class="scene">
+    <svg width="320" height="195" viewBox="0 0 320 195" xmlns="http://www.w3.org/2000/svg">
+      <!-- Person -->
+      <circle cx="160" cy="42" r="26" fill="#ffcc80" stroke="#ce93d8" stroke-width="2.5"/>
+      <text x="160" y="49" text-anchor="middle" font-size="22">😊</text>
+      <!-- Body -->
+      <rect x="140" y="70" width="40" height="50" rx="14" fill="#7b1fa2" opacity=".8"/>
+      <!-- Arms -->
+      <line x1="140" y1="82" x2="110" y2="105" stroke="#ce93d8" stroke-width="6" stroke-linecap="round"/>
+      <line x1="180" y1="82" x2="210" y2="105" stroke="#ce93d8" stroke-width="6" stroke-linecap="round"/>
+      <!-- Legs -->
+      <line x1="150" y1="120" x2="142" y2="155" stroke="#7b1fa2" stroke-width="7" stroke-linecap="round"/>
+      <line x1="170" y1="120" x2="178" y2="155" stroke="#7b1fa2" stroke-width="7" stroke-linecap="round"/>
+      <!-- Left hand: plant -->
+      <text x="88" y="115" text-anchor="middle" font-size="28">🌿</text>
+      <!-- Right hand: water -->
+      <text x="218" y="115" text-anchor="middle" font-size="28">💧</text>
+      <!-- Recycle below -->
+      <text x="160" y="190" text-anchor="middle" font-size="15" fill="#FFD700" font-family="Patrick Hand,cursive" font-weight="bold">♻️ ¡Cuidamos la Tierra!</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('Las personas también somos parte de la biosfera. Necesitamos agua, plantas, animales y aire para vivir. Por eso es muy importante cuidar la biosfera.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 4: ¿Verdad o Mentira?</div>
+
+  <div class="sort-progress-bar" id="tfProg"></div>
+  <div class="tf-card" id="tfCardBig">
+    <span class="tf-emoji" id="tfEmoji"></span>
+    <div class="tf-statement" id="tfStatement"></div>
+    <div class="tf-btns">
+      <button class="tf-btn true-btn" onclick="answerTF(true)">✅ Verdad</button>
+      <button class="tf-btn false-btn" onclick="answerTF(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 5 — QUIZ FINAL
+════════════════════════════════════════ -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+
+<script>
+/* ────── Helpers ────── */
+let score = 0;
+const $ = id => document.getElementById(id);
+function flash(c) {
+  const e = $('fov');
+  e.className = 'flash-ov ' + c;
+  setTimeout(() => e.className = 'flash-ov', 280);
+}
+function speak(t) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = 'es-ES'; u.rate = 0.87;
+  speechSynthesis.speak(u);
+}
+function addScore(n) { score += n; $('scoreDisp').textContent = score; }
+function shuffle(a) {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+function goTab(n) {
+  [1,2,3,4,5].forEach(i => {
+    $('phase'+i).classList.remove('active');
+    $('tab'+i).classList.remove('active');
+  });
+  $('phase'+n).classList.add('active');
+  $('tab'+n).classList.add('active');
+  if (n === 2) initPlants();
+  if (n === 3) initSort();
+  if (n === 4) initTF();
+  if (n === 5) buildQuiz();
+}
+function markDone(t) {
+  $('tab'+t).classList.remove('active');
+  $('tab'+t).classList.add('done');
+}
+
+/* ────── FASE 1: ¿Qué significa "bio"? ────── */
+function pickBio(ans, el) {
+  $('bioGrid').querySelectorAll('.hab-card').forEach(e => e.onclick = null);
+  if (ans === 'vida') {
+    flash('g'); addScore(15);
+    el.classList.add('correct');
+    $('fb1').className = 'fb ok';
+    $('fb1').textContent = '✅ ¡Correcto! "Bio" significa VIDA. La biosfera es la capa de la Tierra donde hay vida. 🌱';
+    speak('¡Correcto! Bio significa vida. La biosfera es donde hay vida en la Tierra.');
+    markDone(1);
+    setTimeout(() => $('btn1').disabled = false, 700);
+  } else {
+    flash('r');
+    el.classList.add('wrong');
+    $('fb1').className = 'fb no';
+    $('fb1').textContent = '❌ ¡Casi! "Bio" significa VIDA, no ' + ans + '. ¡Inténtalo!';
+    speak('No exactamente. Bio significa vida.');
+    setTimeout(() => {
+      el.classList.remove('wrong');
+      const cards = $('bioGrid').querySelectorAll('.hab-card');
+      cards[0].onclick = () => pickBio('piedra', cards[0]);
+      cards[1].onclick = () => pickBio('vida',   cards[1]);
+      cards[2].onclick = () => pickBio('agua',   cards[2]);
+      cards[3].onclick = () => pickBio('fuego',  cards[3]);
+    }, 1100);
+  }
+}
+
+/* ────── FASE 2: ¿Es una planta? ────── */
+const PLANT_Qs = [
+  { item: '🌵 Un cactus',         isPlant: true,  hint: '¡El cactus es una planta que vive en el desierto!' },
+  { item: '🐟 Un pez',            isPlant: false, hint: '¡El pez es un animal, no una planta!' },
+  { item: '🌻 Un girasol',        isPlant: true,  hint: '¡El girasol es una planta que sigue la luz del sol!' },
+  { item: '🦋 Una mariposa',      isPlant: false, hint: '¡La mariposa es un animal insecto!' },
+  { item: '🌲 Un pino',           isPlant: true,  hint: '¡El pino es un árbol, y los árboles son plantas!' },
+  { item: '🪨 Una piedra',        isPlant: false, hint: '¡Una piedra no es un ser vivo, no es planta ni animal!' },
+];
+let plantIdx = 0, plantCorrect = 0, plantItems;
+
+function initPlants() {
+  plantItems = shuffle(PLANT_Qs);
+  plantIdx = 0; plantCorrect = 0;
+  $('fb2').textContent = '';
+  $('btn2').disabled = true;
+  renderPlantProg();
+  showPlantQ();
+}
+function renderPlantProg() {
+  $('plantProg').innerHTML = plantItems.map((_, i) => `<div class="pdot" id="pdot_${i}"></div>`).join('');
+}
+function showPlantQ() {
+  if (plantIdx >= plantItems.length) { endPlants(); return; }
+  $('plantQ').innerHTML = plantItems[plantIdx].item;
+  $('fb2').textContent = '';
+  speak(plantItems[plantIdx].item.replace(/[^\w\s]/g, ''));
+}
+function tapPlant(ans) {
+  if (plantIdx >= plantItems.length) return;
+  const q = plantItems[plantIdx];
+  const correct = (ans === 'si') === q.isPlant;
+  const dot = $('pdot_' + plantIdx);
+  if (correct) {
+    flash('g'); addScore(12); plantCorrect++;
+    if (dot) dot.classList.add('ok');
+    $('fb2').className = 'fb ok';
+    $('fb2').textContent = '✅ ' + q.hint;
+    speak('¡Correcto! ' + q.hint);
+    plantIdx++;
+    setTimeout(showPlantQ, 1500);
+  } else {
+    flash('r');
+    if (dot) { dot.classList.add('ng'); setTimeout(() => dot.classList.remove('ng'), 800); }
+    $('fb2').className = 'fb no';
+    $('fb2').textContent = '❌ ¡Ojo! ' + q.hint;
+    speak('No exactamente. ' + q.hint);
+    setTimeout(() => { $('fb2').textContent = ''; }, 1500);
+  }
+}
+function endPlants() {
+  markDone(2);
+  $('fb2').className = 'fb ok';
+  $('fb2').textContent = '🎉 ¡Ya reconoces las plantas! ¡Eres un botánico en miniatura!';
+  speak('¡Ya reconoces las plantas!');
+  setTimeout(() => $('btn2').disabled = false, 700);
+}
+
+/* ────── FASE 3: Clasifica seres vivos ────── */
+const SORT_ITEMS = [
+  { emoji:'🌹', text:'Una rosa con pétalos rojos',           target:'plantas'  },
+  { emoji:'🐘', text:'Un elefante enorme de la sabana',      target:'animales' },
+  { emoji:'👦', text:'Un niño que va al colegio',            target:'personas' },
+  { emoji:'🌾', text:'Un campo de trigo dorado',             target:'plantas'  },
+  { emoji:'🐬', text:'Un delfín que salta en el mar',        target:'animales' },
+  { emoji:'👩‍🌾', text:'Una agricultora que cuida el campo',  target:'personas' },
+  { emoji:'🍄', text:'Un hongo que crece en el bosque',      target:'plantas'  },
+  { emoji:'🦅', text:'Un águila que vuela muy alto',         target:'animales' },
+  { emoji:'👨‍⚕️', text:'Un médico que cura a los enfermos',   target:'personas' },
+];
+let sortItems, sortIdx, sortCorrect;
+
+function initSort() {
+  sortItems   = shuffle(SORT_ITEMS);
+  sortIdx     = 0;
+  sortCorrect = 0;
+  $('fb3').textContent = '';
+  $('btn3').disabled  = true;
+  renderSortProg();
+  showSortItem();
+}
+function renderSortProg() {
+  $('sortProg').innerHTML = sortItems.map((_, i) => `<div class="rpdot" id="spdot_${i}"></div>`).join('');
+}
+function showSortItem() {
+  if (sortIdx >= sortItems.length) { endSort(); return; }
+  const it = sortItems[sortIdx];
+  $('sortEmoji').textContent = it.emoji;
+  $('sortText').textContent  = it.text;
+  $('fb3').textContent = '';
+  renderSortProg();
+  const cur = $('spdot_' + sortIdx);
+  if (cur) cur.style.borderColor = '#FFD700';
+  document.querySelectorAll('.sort-btn').forEach(b => b.disabled = false);
+  speak(it.text);
+}
+function answerSort(choice) {
+  const it = sortItems[sortIdx];
+  document.querySelectorAll('.sort-btn').forEach(b => b.disabled = true);
+  const dot = $('spdot_' + sortIdx);
+  const names = { plantas:'🌿 Planta', animales:'🦁 Animal', personas:'👤 Persona' };
+  if (choice === it.target) {
+    flash('g'); addScore(10); sortCorrect++;
+    if (dot) dot.classList.add('ok');
+    $('fb3').className = 'fb ok';
+    $('fb3').textContent = '✅ ¡Muy bien! Es ' + names[choice] + '.';
+    speak('¡Muy bien!');
+    sortIdx++;
+    setTimeout(showSortItem, 1300);
+  } else {
+    flash('r');
+    if (dot) dot.classList.add('ng');
+    $('fb3').className = 'fb no';
+    $('fb3').textContent = '❌ ¡Casi! Es ' + names[it.target] + '. ¡Inténtalo de nuevo!';
+    speak('No exactamente. Inténtalo de nuevo.');
+    setTimeout(() => {
+      if (dot) { dot.classList.remove('ng'); dot.style.borderColor = '#FFD700'; }
+      $('fb3').textContent = '';
+      document.querySelectorAll('.sort-btn').forEach(b => b.disabled = false);
+    }, 1400);
+  }
+}
+function endSort() {
+  markDone(3);
+  $('fb3').className = 'fb ok';
+  $('fb3').textContent = '🎉 ¡Clasificaste todos los seres vivos! ¡Eres un biólogo fantástico!';
+  speak('¡Clasificaste todos los seres vivos!');
+  setTimeout(() => $('btn3').disabled = false, 700);
+}
+
+/* ────── FASE 4: Verdad o Mentira ────── */
+const TF_ITEMS = [
+  { emoji:'🌍', statement:'La biosfera es la capa de la Tierra donde hay vida.',         answer: true  },
+  { emoji:'🌿', statement:'Las plantas fabrican su alimento con la luz del sol.',         answer: true  },
+  { emoji:'🐟', statement:'Los peces son plantas que viven en el mar.',                   answer: false },
+  { emoji:'😮‍💨', statement:'Las plantas producen el oxígeno que respiramos.',            answer: true  },
+  { emoji:'👦', statement:'Las personas no somos parte de la biosfera.',                  answer: false },
+  { emoji:'🐧', statement:'Los pingüinos son animales que viven en el Polo Sur.',         answer: true  },
+  { emoji:'🌵', statement:'El cactus es un animal del desierto.',                         answer: false },
+  { emoji:'♻️', statement:'Cuidar la biosfera es importante para todos los seres vivos.', answer: true  },
+];
+let tfItems, tfIdx, tfCorrect;
+
+function initTF() {
+  tfItems = shuffle(TF_ITEMS);
+  tfIdx = 0; tfCorrect = 0;
+  $('fb4').textContent = '';
+  $('btn4').disabled = true;
+  renderTFProg();
+  showTFItem();
+}
+function renderTFProg() {
+  $('tfProg').innerHTML = tfItems.map((_, i) => `<div class="rpdot" id="tfdot_${i}"></div>`).join('');
+}
+function showTFItem() {
+  if (tfIdx >= tfItems.length) { endTF(); return; }
+  const it = tfItems[tfIdx];
+  $('tfEmoji').textContent     = it.emoji;
+  $('tfStatement').textContent = it.statement;
+  $('fb4').textContent = '';
+  renderTFProg();
+  const cur = $('tfdot_' + tfIdx);
+  if (cur) cur.style.borderColor = '#FFD700';
+  document.querySelectorAll('.tf-btn').forEach(b => b.disabled = false);
+  speak(it.statement);
+}
+function answerTF(choice) {
+  const it = tfItems[tfIdx];
+  document.querySelectorAll('.tf-btn').forEach(b => b.disabled = true);
+  const dot = $('tfdot_' + tfIdx);
+  if (choice === it.answer) {
+    flash('g'); addScore(10); tfCorrect++;
+    if (dot) dot.classList.add('ok');
+    $('fb4').className = 'fb ok';
+    $('fb4').textContent = '✅ ¡Correcto! Es ' + (it.answer ? 'verdad' : 'mentira') + '.';
+    speak('¡Correcto!');
+    tfIdx++;
+    setTimeout(showTFItem, 1300);
+  } else {
+    flash('r');
+    if (dot) dot.classList.add('ng');
+    $('fb4').className = 'fb no';
+    $('fb4').textContent = '❌ ¡Ojo! Es ' + (it.answer ? '✅ VERDAD' : '❌ MENTIRA') + '. ¡Inténtalo de nuevo!';
+    speak('No exactamente. Inténtalo de nuevo.');
+    setTimeout(() => {
+      if (dot) { dot.classList.remove('ng'); dot.style.borderColor = '#FFD700'; }
+      $('fb4').textContent = '';
+      document.querySelectorAll('.tf-btn').forEach(b => b.disabled = false);
+    }, 1400);
+  }
+}
+function endTF() {
+  markDone(4);
+  $('fb4').className = 'fb ok';
+  $('fb4').textContent = '🎉 ¡Eres un experto en la biosfera! ¡Increíble!';
+  speak('¡Eres un experto en la biosfera!');
+  setTimeout(() => $('btn4').disabled = false, 700);
+}
+
+/* ────── FASE 5: Quiz Final ────── */
+const QUIZ = [
+  { q:'¿Cómo se llama la capa de la Tierra donde hay vida?',
+    opts:['Atmósfera 💨','Biosfera 🌍','Litosfera 🪨','Hidrósfera 💧'],
+    ans:1, emoji:'🌍' },
+  { q:'¿Qué significa la palabra "bio"?',
+    opts:['Agua','Fuego','Vida','Tierra'],
+    ans:2, emoji:'🌱' },
+  { q:'¿Cuáles son los tres grupos de seres vivos de la biosfera?',
+    opts:['Nubes, ríos y montañas','Plantas, animales y personas','Tierra, agua y fuego','Sol, luna y estrellas'],
+    ans:1, emoji:'🌿' },
+  { q:'¿Cómo fabrican su alimento las plantas?',
+    opts:['Comiendo otros animales','Con la luz del sol, el agua y el aire 🌞','Bebiendo zumo de frutas','Durmiendo mucho'],
+    ans:1, emoji:'🌻' },
+  { q:'¿Qué gas producen las plantas que nosotros necesitamos para respirar?',
+    opts:['Dióxido de carbono','Hidrógeno','Oxígeno 😮‍💨','Nitrógeno'],
+    ans:2, emoji:'😮‍💨' },
+  { q:'¿Dónde viven los pingüinos?',
+    opts:['En el desierto 🏜️','En el bosque 🌳','En el Polo Sur ❄️','En el mar tropical 🌊'],
+    ans:2, emoji:'🐧' },
+  { q:'¿Son las personas parte de la biosfera?',
+    opts:['No, las personas no somos seres vivos','Sí, las personas somos seres vivos 😊','Solo los científicos','Solo los niños pequeños'],
+    ans:1, emoji:'👤' },
+  { q:'¿Cuál de estos es un ser vivo?',
+    opts:['Una piedra 🪨','Una nube ☁️','Un árbol 🌲','Una mesa 🪑'],
+    ans:2, emoji:'❓' },
+  { q:'¿Qué necesitan los animales para vivir?',
+    opts:['Solo luz solar','Alimento, agua y aire 🌊','Solo tierra','Solo calor'],
+    ans:1, emoji:'🦁' },
+  { q:'¿Por qué es importante cuidar la biosfera?',
+    opts:['Para que los robots funcionen','Porque si la biosfera está sana, todos los seres vivos estamos bien ♻️','Solo para los científicos','No es importante'],
+    ans:1, emoji:'♻️' },
+];
+
+let quizItems, qi, quizCorrect;
+function buildQuiz() {
+  quizItems = shuffle(QUIZ);
+  qi = 0; quizCorrect = 0;
+  $('quizDone').style.display  = 'none';
+  $('finishRow').style.display = 'none';
+  $('fb5').textContent = '';
+  $('quizCard').style.display  = '';
+  showQuizQ();
+}
+function showQuizQ() {
+  if (qi >= quizItems.length) { endQuiz(); return; }
+  const q = quizItems[qi];
+  $('quizProg').textContent  = `Pregunta ${qi + 1} / ${quizItems.length}`;
+  $('quizEmoji').textContent = q.emoji;
+  $('quizQ').textContent     = q.q;
+  $('quizOpts').innerHTML    = q.opts.map((o, i) =>
+    `<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`
+  ).join('');
+  speak(q.q);
+}
+function quizAnswer(i) {
+  const q = quizItems[qi];
+  const btns = $('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b => b.disabled = true);
+  if (i === q.ans) {
+    flash('g'); addScore(10); quizCorrect++;
+    btns[i].classList.add('correct-ans');
+    $('fb5').className = 'fb ok';
+    $('fb5').textContent = '✅ ¡Muy bien!';
+    speak('¡Muy bien!');
+  } else {
+    flash('r');
+    btns[i].classList.add('wrong-ans');
+    btns[q.ans].classList.add('correct-ans');
+    $('fb5').className = 'fb no';
+    $('fb5').textContent = '❌ La respuesta correcta es: ' + q.opts[q.ans];
+    speak('La respuesta correcta es: ' + q.opts[q.ans]);
+  }
+  qi++;
+  setTimeout(() => { $('fb5').textContent = ''; showQuizQ(); }, 2000);
+}
+function endQuiz() {
+  markDone(5);
+  $('quizCard').style.display = 'none';
+  const pct = Math.round(quizCorrect / quizItems.length * 100);
+  let msg, emoji;
+  if      (pct === 100) { msg = '¡PERFECTO! ¡Eres un Guardián de la Biosfera!';                   emoji = '🏆🌍🏆'; }
+  else if (pct >= 75)   { msg = '¡Genial! Casi perfecto, ¡sigue cuidando la naturaleza!';          emoji = '🌟🌿🌟'; }
+  else if (pct >= 50)   { msg = '¡Buen trabajo! Repasa un poquito más y lo conseguirás.';          emoji = '👍🌱';    }
+  else                  { msg = '¡Sigue aprendiendo! La biosfera te espera con los brazos abiertos.'; emoji = '💪🌍';    }
+  $('quizDone').style.display = '';
+  $('quizDone').innerHTML = `
+    <div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div>
+    <strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>
+    Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> preguntas (${pct}%)<br>
+    Puntuación total: <strong style="color:#FFD700">⭐ ${score}</strong><br><br>
+    <span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display = 'flex';
+  speak(msg);
+}
+
+/* ── Init ── */
+speak('¡Bienvenido! Hoy vamos a descubrir la biosfera: el lugar de la Tierra donde hay vida.');
+</script>
+</body>
+</html>

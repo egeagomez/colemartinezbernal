@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💥 ¿Cómo se creó la Tierra? El Big Bang</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#03001a 0%,#0a0030 55%,#050018 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'✦ ⭐ 💫 ✨ ✦ ⭐ 💫 ✨ ✦ ⭐ 💫 ✨ ✦ ⭐ 💫 ✨ ✦ ⭐ 💫 ✨';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.1);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(40,0,80,.7);color:#FFD700;border:2px solid #ce93d8;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#ce93d8;color:#03001a}
+.score-box{background:rgba(40,0,80,.7);color:#FFD700;border:2px solid #ce93d8;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #ce93d8;background:rgba(20,0,40,.8);color:#e1bee7;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#ce93d8;color:#03001a;font-weight:bold}
+.p-tab.done{background:#6a1b9a;border-color:#ab47bc;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(20,0,45,.92),rgba(35,5,70,.92));border:3px solid #ce93d8;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(150,0,250,.25);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#f3e5f5;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#ce93d8;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s}
+.btn-next:hover{background:#9c27b0}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(60,0,100,.8),rgba(40,0,70,.8));color:#fff;border:2px solid #ce93d8;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#ce93d8;color:#03001a}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(20,0,45,.85);border:3px solid #ce93d8;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.5rem;display:block}.pick-card .pc-label{font-size:.9rem;color:#f3e5f5;margin-top:6px;line-height:1.3}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #ce93d8;background:rgba(20,0,45,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:12px 18px;border-radius:16px;font-family:inherit;font-size:1rem;cursor:pointer;border:3px solid #ce93d8;background:rgba(20,0,45,.8);color:#f3e5f5;transition:transform .12s;backdrop-filter:blur(2px);min-width:105px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(35,5,70,.92),rgba(20,0,45,.9));border:3px solid #ce93d8;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#f3e5f5;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 16px;border-radius:18px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:90px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-btn.antes{background:linear-gradient(135deg,#1a237e,#283593);color:#FFD700;border-color:#90caf9}
+.sort-btn.despues{background:linear-gradient(135deg,#4a148c,#6a1b9a);color:#FFD700;border-color:#ce93d8}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #ce93d8;background:rgba(20,0,45,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(35,5,70,.92),rgba(20,0,45,.9));border:3px solid #ce93d8;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(20,0,45,.9);border:2px solid #ce93d8;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#e1bee7;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(50,5,90,.8),rgba(20,0,45,.8));border:2px solid #ce93d8;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(80,10,140,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(20,0,45,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">💥 El Big Bang</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">💥 El Big Bang</div>
+  <div class="p-tab"        id="tab2">⭐ Estrellas</div>
+  <div class="p-tab"        id="tab3">🌍 La Tierra</div>
+  <div class="p-tab"        id="tab4">🌕 La Luna y el Mar</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+<!-- FASE 1 -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">💥 El Big Bang: ¡El Inicio de Todo!</div>
+    <div class="story-text">
+      ¿Sabes cómo empezó el Universo? ¡Con una <strong style="color:#FFD700">gran explosión</strong> llamada <strong style="color:#ce93d8">Big Bang</strong>! 💥<br><br>
+      Hace <strong style="color:#FFD700">13.800 millones de años</strong>, todo el Universo estaba comprimido en un punto <strong style="color:#ce93d8">¡más pequeño que un grano de arena!</strong> De repente… ¡BUM! 💥 Se expandió muy muy rápido.<br><br>
+      Después de la explosión apareció todo: la luz ✨, el calor 🔥, las estrellas ⭐ y los planetas 🪐. ¡Todo lo que existe nació en ese momento!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="320" height="210" viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bbGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FFD700" stop-opacity=".9"/>
+          <stop offset="40%" stop-color="#ff8f00" stop-opacity=".7"/>
+          <stop offset="100%" stop-color="#6a1b9a" stop-opacity=".2"/>
+        </radialGradient>
+      </defs>
+      <!-- Explosion glow -->
+      <circle cx="160" cy="105" r="95" fill="url(#bbGrad)"/>
+      <!-- Rays -->
+      <line x1="160" y1="105" x2="60"  y2="20"  stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="260" y2="20"  stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="30"  y2="105" stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="290" y2="105" stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="60"  y2="190" stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="260" y2="190" stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="160" y2="10"  stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <line x1="160" y1="105" x2="160" y2="200" stroke="#FFD700" stroke-width="3" opacity=".7"/>
+      <!-- Center explosion -->
+      <circle cx="160" cy="105" r="22" fill="#FFD700"/>
+      <text x="160" y="112" text-anchor="middle" fill="#03001a" font-size="16" font-family="Patrick Hand,cursive" font-weight="bold">💥</text>
+      <!-- Stars scattered -->
+      <text x="55"  y="28"  font-size="18">⭐</text>
+      <text x="248" y="28"  font-size="18">⭐</text>
+      <text x="18"  y="115" font-size="18">🪐</text>
+      <text x="282" y="115" font-size="18">🪐</text>
+      <text x="55"  y="198" font-size="18">💫</text>
+      <text x="248" y="198" font-size="18">💫</text>
+      <!-- Timeline arrow -->
+      <rect x="52" y="195" width="216" height="14" rx="7" fill="rgba(40,0,80,.7)"/>
+      <text x="160" y="206" text-anchor="middle" fill="#ce93d8" font-size="10" font-family="Patrick Hand,cursive">Hace 13.800 millones de años</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Hace trece mil ochocientos millones de años todo el Universo estaba comprimido en un punto muy pequeño. De repente hubo una gran explosión llamada Big Bang. Así nació todo el Universo.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: ¿Cómo se llama la gran explosión que creó el Universo?</div>
+  <div class="pick-grid" id="bbGrid">
+    <div class="pick-card" onclick="pickBB('tornado',this)"><span class="pc-emoji">🌪️</span><div class="pc-label">El Gran Tornado</div></div>
+    <div class="pick-card" onclick="pickBB('bigbang',this)"><span class="pc-emoji">💥</span><div class="pc-label">El Big Bang</div></div>
+    <div class="pick-card" onclick="pickBB('dragon',this)"><span class="pc-emoji">🐉</span><div class="pc-label">El Dragón del Espacio</div></div>
+    <div class="pick-card" onclick="pickBB('rayo',this)"><span class="pc-emoji">⚡</span><div class="pc-label">El Gran Rayo</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Las Estrellas ⭐ →</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">⭐ Se Forman las Estrellas y los Planetas</div>
+    <div class="story-text">
+      Después del Big Bang, el Universo estaba lleno de <strong style="color:#ce93d8">nubes de gas</strong> muy calientes ☁️🔥.<br><br>
+      Poco a poco esas nubes se <strong style="color:#FFD700">comprimieron</strong> tanto que se encendieron… ¡y así nacieron las primeras <strong style="color:#FFD700">estrellas</strong> ⭐!<br><br>
+      Alrededor de las estrellas quedaron trozos de roca y polvo que fueron <strong style="color:#ce93d8">juntándose</strong> y formaron los <strong style="color:#FFD700">planetas</strong> 🪐. ¡Así se formó también nuestro <strong style="color:#4dd0e1">Sistema Solar</strong> con el Sol ☀️ y todos sus planetas!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="185" viewBox="0 0 340 185" xmlns="http://www.w3.org/2000/svg">
+      <!-- Step 1: gas cloud -->
+      <ellipse cx="55" cy="92" rx="48" ry="40" fill="#6a1b9a" opacity=".5" stroke="#ce93d8" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <text x="55" y="80" text-anchor="middle" fill="#e1bee7" font-size="11" font-family="Patrick Hand,cursive">nube de gas</text>
+      <text x="55" y="100" text-anchor="middle" font-size="22">☁️</text>
+      <text x="55" y="145" text-anchor="middle" fill="#b39ddb" font-size="11" font-family="Patrick Hand,cursive">1. Gas</text>
+      <!-- Arrow -->
+      <path d="M105 92 L130 92" stroke="#FFD700" stroke-width="2.5" marker-end="url(#abb)"/>
+      <defs><marker id="abb" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 Z" fill="#FFD700"/></marker></defs>
+      <!-- Step 2: star -->
+      <circle cx="175" cy="92" r="36" fill="#FF8F00" opacity=".85" stroke="#FFD700" stroke-width="2"/>
+      <text x="175" y="99" text-anchor="middle" font-size="28">⭐</text>
+      <text x="175" y="145" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive">2. Estrella</text>
+      <!-- Arrow -->
+      <path d="M213 92 L238 92" stroke="#FFD700" stroke-width="2.5" marker-end="url(#abb)"/>
+      <!-- Step 3: planet -->
+      <circle cx="282" cy="92" r="32" fill="#1565c0" opacity=".85" stroke="#4dd0e1" stroke-width="2"/>
+      <ellipse cx="272" cy="82" rx="14" ry="10" fill="#2e7d32" transform="rotate(-10,272,82)"/>
+      <ellipse cx="290" cy="100" rx="12" ry="8" fill="#2e7d32"/>
+      <text x="282" y="145" text-anchor="middle" fill="#4dd0e1" font-size="11" font-family="Patrick Hand,cursive">3. Planeta</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Después del Big Bang había nubes de gas calientes. Las nubes se comprimieron y se encendieron formando las estrellas. Alrededor de las estrellas se formaron los planetas.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿En qué orden ocurrió todo?</div>
+  <div class="tap-q" id="orderQ">Cargando…</div>
+  <div class="tap-prog" id="orderProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#b39ddb" onclick="tapOrder('primero')">1️⃣ Ocurrió primero</button>
+    <button class="tap-btn" style="border-color:#FFD700" onclick="tapOrder('segundo')">2️⃣ Ocurrió después</button>
+    <button class="tap-btn" style="border-color:#4dd0e1" onclick="tapOrder('tercero')">3️⃣ Ocurrió al final</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: La Tierra se forma 🌍 →</button>
+</div>
+
+<!-- FASE 3 -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🌍 Nace la Tierra</div>
+    <div class="story-text">
+      Hace <strong style="color:#FFD700">4.600 millones de años</strong> se formó nuestro planeta Tierra 🌍.<br><br>
+      Al principio la Tierra era una <strong style="color:#ef9a9a">bola de roca ardiente</strong>, como un enorme volcán. ¡Hacía un calor increíble! 🔥<br><br>
+      Con el tiempo la superficie se fue <strong style="color:#4dd0e1">enfriando</strong> y formando una <strong style="color:#bcaaa4">corteza sólida</strong> (como la piel de una naranja). ¡La geosfera empezaba a formarse! 🪨<br><br>
+      Los volcanes expulsaban <strong style="color:#ce93d8">gases</strong> que poco a poco formaron la <strong style="color:#FFD700">atmósfera</strong> (la capa de aire que rodea la Tierra). 💨
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="320" height="200" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Early hot Earth left -->
+      <circle cx="90" cy="100" r="72" fill="#b71c1c" opacity=".85"/>
+      <circle cx="90" cy="100" r="68" fill="#e64a19" opacity=".7"/>
+      <!-- Lava flows -->
+      <path d="M58 42 Q45 25 38 12" fill="none" stroke="#FF8F00" stroke-width="4" opacity=".8"/>
+      <path d="M90 28 Q90 12 90 5"    fill="none" stroke="#FFD700" stroke-width="3" opacity=".8"/>
+      <path d="M122 42 Q135 25 142 12" fill="none" stroke="#FF8F00" stroke-width="4" opacity=".8"/>
+      <text x="90" y="108" text-anchor="middle" fill="#FFD700" font-size="24">🔥</text>
+      <text x="90" y="185" text-anchor="middle" fill="#ef9a9a" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">Tierra caliente</text>
+      <!-- Arrow -->
+      <path d="M168 100 L192 100" stroke="#FFD700" stroke-width="2.5" fill="none" marker-end="url(#arr3)"/>
+      <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 Z" fill="#FFD700"/></marker></defs>
+      <text x="180" y="90" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive">millones</text>
+      <text x="180" y="115" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive">de años</text>
+      <!-- Cool Earth right -->
+      <circle cx="258" cy="100" r="55" fill="#1565c0" opacity=".85"/>
+      <ellipse cx="244" cy="82" rx="28" ry="20" fill="#2e7d32" transform="rotate(-10,244,82)"/>
+      <ellipse cx="268" cy="112" rx="22" ry="16" fill="#2e7d32"/>
+      <ellipse cx="238" cy="120" rx="16" ry="12" fill="#2e7d32"/>
+      <ellipse cx="258" cy="48" rx="28" ry="10" fill="#b3e5fc" opacity=".8"/>
+      <text x="258" y="185" text-anchor="middle" fill="#4dd0e1" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">Tierra hoy 🌍</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('La Tierra se formó hace cuatro mil seiscientos millones de años. Al principio era una bola de roca ardiente. Con el tiempo se fue enfriando y formó la corteza sólida.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 3: ¿Antes o Después de que la Tierra se enfriara?</div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns">
+    <button class="sort-btn antes"   onclick="ansSort3('antes')">🔥 Tierra caliente (ANTES)</button>
+    <button class="sort-btn despues" onclick="ansSort3('despues')">🌍 Tierra fría (DESPUÉS)</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: La Luna y el Mar 🌕 →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">🌕 La Luna y los Primeros Mares</div>
+    <div class="story-text">
+      Hace mucho tiempo, una roca enorme chocó contra la Tierra 💥. ¡Con ese impacto salió un trozo que se convirtió en la <strong style="color:#FFD700">Luna</strong> 🌕!<br><br>
+      Poco después, asteroides y cometas llenos de <strong style="color:#4dd0e1">hielo</strong> 🧊 chocaron con la Tierra y ese hielo se fundió, formando los primeros <strong style="color:#4dd0e1">océanos</strong> 🌊.<br><br>
+      Hace unos <strong style="color:#ce93d8">3.800 millones de años</strong> apareció la primera <strong style="color:#69f0ae">vida</strong> en el mar: ¡unos seres vivos tan pequeños que no se ven! 🦠<br><br>
+      ¡De esos seres tan pequeños venimos todos! 🌿🦁👤
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="320" height="195" viewBox="0 0 320 195" xmlns="http://www.w3.org/2000/svg">
+      <!-- Space bg -->
+      <rect x="0" y="0" width="320" height="195" rx="12" fill="rgba(3,0,26,.6)"/>
+      <!-- Earth -->
+      <circle cx="130" cy="115" r="65" fill="#1565c0" opacity=".85"/>
+      <ellipse cx="116" cy="96" rx="28" ry="20" fill="#2e7d32"/>
+      <ellipse cx="142" cy="128" rx="22" ry="16" fill="#2e7d32"/>
+      <!-- Ocean waves on earth -->
+      <path d="M82 115 Q98 108 114 115 Q130 122 146 115 Q162 108 178 115" fill="none" stroke="#4dd0e1" stroke-width="2" opacity=".7"/>
+      <!-- Moon -->
+      <circle cx="252" cy="62" r="40" fill="#e0e0e0"/>
+      <circle cx="238" cy="52" r="9" fill="#bdbdbd"/>
+      <circle cx="258" cy="72" r="7" fill="#bdbdbd"/>
+      <circle cx="248" cy="46" r="5" fill="#bdbdbd"/>
+      <!-- Impact arrow -->
+      <path d="M200 55 L218 58" stroke="#FFD700" stroke-width="2.5" stroke-dasharray="5,3" marker-end="url(#arr4)"/>
+      <defs><marker id="arr4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 Z" fill="#FFD700"/></marker></defs>
+      <text x="195" y="48" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive">¡Impacto!</text>
+      <!-- Labels -->
+      <text x="130" y="192" text-anchor="middle" fill="#4dd0e1" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌍 Tierra con océanos</text>
+      <text x="252" y="115" text-anchor="middle" fill="#ffe082" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌕 La Luna</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Una roca enorme chocó con la Tierra y se formó la Luna. Los cometas de hielo trajeron agua y se formaron los océanos. Y hace tres mil ochocientos millones de años apareció la primera vida en el mar.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 4: ¿Verdad o Mentira?</div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initOrder();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickBB(ans,el){
+  $('bbGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='bigbang'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! El BIG BANG fue la gran explosión que creó todo el Universo hace 13.800 millones de años. 💥';
+    speak('¡Correcto! El Big Bang fue la gran explosión que creó todo el Universo.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! Se llama el BIG BANG. ¡Inténtalo!';speak('No exactamente. Se llama el Big Bang.');
+    setTimeout(()=>{
+      el.classList.remove('wrong');
+      const c=$('bbGrid').querySelectorAll('.pick-card');
+      c[0].onclick=()=>pickBB('tornado',c[0]);c[1].onclick=()=>pickBB('bigbang',c[1]);
+      c[2].onclick=()=>pickBB('dragon',c[2]);c[3].onclick=()=>pickBB('rayo',c[3]);
+    },1100);
+  }
+}
+
+/* Fase 2: Order */
+const ORDER_Qs=[
+  {ask:'El Big Bang: la gran explosión que lo inició todo 💥',correct:'primero',hint:'¡El Big Bang fue lo primero de todo, el inicio del Universo!'},
+  {ask:'Se forman nubes de gas calientes después de la explosión ☁️🔥',correct:'segundo',hint:'¡Las nubes de gas se formaron después del Big Bang!'},
+  {ask:'Las nubes de gas se comprimen y nacen las estrellas ⭐',correct:'tercero',hint:'¡Las estrellas nacen cuando las nubes de gas se comprimen, eso ocurre al final!'},
+];
+let orderItems,orderIdx;
+function initOrder(){orderItems=shuffle(ORDER_Qs);orderIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderOrderProg();showOrderQ()}
+function renderOrderProg(){$('orderProg').innerHTML=orderItems.map((_,i)=>`<div class="pdot" id="op_${i}"></div>`).join('')}
+function showOrderQ(){
+  if(orderIdx>=orderItems.length){endOrder();return}
+  $('orderQ').textContent=orderItems[orderIdx].ask;$('fb2').textContent='';speak(orderItems[orderIdx].ask);
+}
+function tapOrder(ans){
+  if(orderIdx>=orderItems.length)return;
+  const q=orderItems[orderIdx],dot=$('op_'+orderIdx);
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');orderIdx++;setTimeout(showOrderQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! '+q.hint;speak('No exactamente.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endOrder(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Conoces el orden del Universo! ¡Eres un astrónomo!';speak('¡Conoces el orden del Universo!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3 Sort: antes/después de que la Tierra se enfriara */
+const SORT3=[
+  {emoji:'🔥',text:'La Tierra era una bola de roca ardiente',target:'antes'},
+  {emoji:'🌊',text:'Se formaron los océanos con agua líquida',target:'despues'},
+  {emoji:'💨',text:'Los volcanes formaban gases pero sin atmósfera',target:'antes'},
+  {emoji:'🌿',text:'Aparecieron las primeras plantas y animales',target:'despues'},
+  {emoji:'🌋',text:'Toda la superficie estaba cubierta de lava',target:'antes'},
+  {emoji:'🌍',text:'La corteza sólida podía soportar montañas',target:'despues'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={antes:'🔥 Tierra caliente (ANTES)',despues:'🌍 Tierra fría (DESPUÉS)'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Conoces la historia de la Tierra! ¡Eres un científico!';speak('¡Conoces la historia de la Tierra!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 TF */
+const TF4=[
+  {emoji:'💥',stmt:'El Big Bang fue la gran explosión que creó el Universo.',ans:true},
+  {emoji:'⭐',stmt:'Las estrellas existían antes del Big Bang.',ans:false},
+  {emoji:'🌍',stmt:'La Tierra se formó hace 4.600 millones de años.',ans:true},
+  {emoji:'🔥',stmt:'La Tierra siempre ha sido fría como hoy.',ans:false},
+  {emoji:'🌕',stmt:'La Luna se formó cuando una roca chocó con la Tierra.',ans:true},
+  {emoji:'🌊',stmt:'Los océanos siempre han existido en la Tierra.',ans:false},
+  {emoji:'🦠',stmt:'La primera vida en la Tierra apareció en el mar.',ans:true},
+  {emoji:'🪐',stmt:'Los planetas se formaron antes que las estrellas.',ans:false},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Eres un experto en el origen del Universo!';speak('¡Eres un experto en el origen del Universo!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 Quiz */
+const QUIZ=[
+  {q:'¿Cómo se llama la gran explosión que creó el Universo?',opts:['El Gran Trueno','El Big Bang 💥','La Gran Burbuja','El Superrayo'],ans:1,emoji:'💥'},
+  {q:'¿Hace cuánto tiempo ocurrió el Big Bang?',opts:['Hace 100 años','Hace 1.000 años','Hace 4.600 millones de años','Hace 13.800 millones de años'],ans:3,emoji:'⏳'},
+  {q:'¿Qué se formó primero después del Big Bang?',opts:['Los planetas 🪐','Los animales 🦁','Nubes de gas calientes ☁️','Los océanos 🌊'],ans:2,emoji:'☁️'},
+  {q:'¿De qué están hechas las estrellas?',opts:['De roca fría','De gas comprimido muy caliente ⭐','De hielo','De agua'],ans:1,emoji:'⭐'},
+  {q:'¿Hace cuánto tiempo se formó la Tierra?',opts:['Hace 100 millones de años','Hace 4.600 millones de años 🌍','Hace 13.800 millones de años','Hace 1.000 años'],ans:1,emoji:'🌍'},
+  {q:'¿Cómo era la Tierra cuando se formó?',opts:['Fría y con océanos 🌊','Llena de plantas y animales 🌿','Una bola ardiente de roca 🔥','Igual que hoy'],ans:2,emoji:'🔥'},
+  {q:'¿Cómo se formó la Luna?',opts:['Siempre estuvo ahí','Se cayó del Sol ☀️','Una roca enorme chocó con la Tierra 💥','La hicieron los astronautas'],ans:2,emoji:'🌕'},
+  {q:'¿De dónde vino el agua de los océanos?',opts:['Siempre estuvo ahí','De cometas y asteroides de hielo 🧊','Del Sol','De la Luna'],ans:1,emoji:'🌊'},
+  {q:'¿Dónde apareció la primera vida en la Tierra?',opts:['En la montaña ⛰️','En el desierto 🏜️','En el mar 🌊','En el aire 💨'],ans:2,emoji:'🦠'},
+  {q:'¿Qué es el Sistema Solar?',opts:['El Sol más los planetas que giran a su alrededor ☀️','Solo la Tierra y la Luna','Solo el Sol','Los océanos de la Tierra'],ans:0,emoji:'☀️'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Astrónomo Galáctico!';emoji='🏆💥🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, sigue explorando el espacio!';emoji='🌟⭐🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa un poco más el Big Bang.';emoji='👍🌍';}
+  else{msg='¡Sigue aprendiendo! El Universo tiene muchos secretos.';emoji='💪💥';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a descubrir cómo se creó el Universo con el Big Bang.');
+</script>
+</body>
+</html>

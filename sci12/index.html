@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌍 Los Continentes del Mundo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#001028 0%,#001e40 55%,#001028 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌍 🌎 🌏 🗺️ 🌍 🌎 🌏 🗺️ 🌍 🌎 🌏 🗺️ 🌍 🌎 🌏 🗺️ 🌍 🌎 🌏 🗺️';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.07);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(0,16,40,.7);color:#FFD700;border:2px solid #42a5f5;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#42a5f5;color:#001028}
+.score-box{background:rgba(0,16,40,.7);color:#FFD700;border:2px solid #42a5f5;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #42a5f5;background:rgba(0,20,50,.8);color:#bbdefb;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#42a5f5;color:#001028;font-weight:bold}
+.p-tab.done{background:#1565c0;border-color:#1e88e5;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(0,20,50,.92),rgba(0,32,72,.92));border:3px solid #42a5f5;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(30,100,220,.25);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e3f2fd;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#42a5f5;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s}
+.btn-next:hover{background:#42a5f5}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(0,40,90,.8),rgba(0,24,60,.8));color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#42a5f5;color:#001028}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(0,20,50,.85);border:3px solid #42a5f5;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.6rem;display:block}.pick-card .pc-label{font-size:.9rem;color:#e3f2fd;margin-top:6px;line-height:1.3}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #42a5f5;background:rgba(0,20,50,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:10px 14px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #42a5f5;background:rgba(0,20,50,.8);color:#e3f2fd;transition:transform .12s;backdrop-filter:blur(2px);min-width:95px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(0,32,72,.92),rgba(0,20,50,.9));border:3px solid #42a5f5;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#e3f2fd;line-height:1.5}
+.sort-btns{display:flex;gap:7px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:9px 12px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:80px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-btn.europa{background:linear-gradient(135deg,#1565c0,#1976d2);color:#FFD700;border-color:#90caf9}
+.sort-btn.africa{background:linear-gradient(135deg,#e65100,#bf360c);color:#FFD700;border-color:#ffcc80}
+.sort-btn.asia{background:linear-gradient(135deg,#6a1b9a,#7b1fa2);color:#FFD700;border-color:#ce93d8}
+.sort-btn.america{background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#FFD700;border-color:#a5d6a7}
+.sort-btn.oceania{background:linear-gradient(135deg,#006064,#00838f);color:#FFD700;border-color:#80deea}
+.sort-btn.antartida{background:linear-gradient(135deg,#37474f,#455a64);color:#FFD700;border-color:#b0bec5}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #42a5f5;background:rgba(0,20,50,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(0,32,72,.92),rgba(0,20,50,.9));border:3px solid #42a5f5;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(0,20,50,.9);border:2px solid #42a5f5;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#bbdefb;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(0,40,90,.8),rgba(0,20,50,.8));border:2px solid #42a5f5;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(0,60,140,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(0,20,50,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌍 Los Continentes</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌍 ¿Cuántos?</div>
+  <div class="p-tab"        id="tab2">🗺️ Características</div>
+  <div class="p-tab"        id="tab3">🃏 Clasifica</div>
+  <div class="p-tab"        id="tab4">✅ V/Mentira</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+<!-- FASE 1 -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌍 Los 6 Continentes del Mundo</div>
+    <div class="story-text">
+      Un <strong style="color:#FFD700">continente</strong> es una gran extensión de tierra. ¡En el mundo hay <strong style="color:#42a5f5">6 continentes</strong>!<br><br>
+      🌍 <strong style="color:#90caf9">Europa</strong> — Donde está España. ¡Pequeño pero con muchos países!<br>
+      🌍 <strong style="color:#ffcc80">África</strong> — El continente de los leones 🦁, las jirafas 🦒 y el desierto del Sahara 🏜️.<br>
+      🌏 <strong style="color:#ce93d8">Asia</strong> — ¡El más grande! Con la Muralla China, tigres 🐯 y pandas 🐼.<br>
+      🌎 <strong style="color:#a5d6a7">América</strong> — Con el río Amazonas, el cóndor y la Estatua de la Libertad 🗽.<br>
+      🌏 <strong style="color:#80deea">Oceanía</strong> — Con los canguros 🦘, los koalas 🐨 y Australia.<br>
+      ❄️ <strong style="color:#b0bec5">Antártida</strong> — ¡El polo Sur! Cubierto de hielo, con pingüinos 🐧.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="195" viewBox="0 0 340 195" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ocean background -->
+      <rect x="0" y="0" width="340" height="195" rx="12" fill="rgba(13,71,161,.5)" stroke="#42a5f5" stroke-width="1.5"/>
+      <!-- Europe -->
+      <ellipse cx="145" cy="45" rx="24" ry="20" fill="#1565c0" opacity=".9"/>
+      <text x="145" y="49" text-anchor="middle" fill="#ffe082" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Europa</text>
+      <!-- Africa -->
+      <ellipse cx="158" cy="108" rx="26" ry="42" fill="#e65100" opacity=".85"/>
+      <text x="158" y="112" text-anchor="middle" fill="#ffcc80" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">África</text>
+      <!-- Asia -->
+      <ellipse cx="240" cy="62" rx="52" ry="38" fill="#7b1fa2" opacity=".75"/>
+      <text x="240" y="66" text-anchor="middle" fill="#ce93d8" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Asia</text>
+      <!-- America -->
+      <ellipse cx="60" cy="95" rx="36" ry="60" fill="#2e7d32" opacity=".85"/>
+      <text x="60" y="98" text-anchor="middle" fill="#a5d6a7" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <!-- Oceania -->
+      <ellipse cx="280" cy="140" rx="32" ry="22" fill="#006064" opacity=".85"/>
+      <text x="280" y="144" text-anchor="middle" fill="#80deea" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Oceanía</text>
+      <!-- Antarctica -->
+      <ellipse cx="170" cy="188" rx="80" ry="10" fill="#607d8b" opacity=".7"/>
+      <text x="170" y="192" text-anchor="middle" fill="#eceff1" font-size="9" font-family="Patrick Hand,cursive">Antártida ❄️</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('En el mundo hay seis continentes: Europa, África, Asia, América, Oceanía y Antártida. España está en Europa.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: ¿Cuántos continentes hay en el mundo?</div>
+  <div class="pick-grid" id="contGrid">
+    <div class="pick-card" onclick="pickCont('4',this)"><span class="pc-emoji">4️⃣</span><div class="pc-label">Cuatro</div></div>
+    <div class="pick-card" onclick="pickCont('5',this)"><span class="pc-emoji">5️⃣</span><div class="pc-label">Cinco</div></div>
+    <div class="pick-card" onclick="pickCont('6',this)"><span class="pc-emoji">6️⃣</span><div class="pc-label">Seis</div></div>
+    <div class="pick-card" onclick="pickCont('7',this)"><span class="pc-emoji">7️⃣</span><div class="pc-label">Siete</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Características 🗺️ →</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🗺️ Pistas de Cada Continente</div>
+    <div class="story-text">
+      Cada continente tiene animales, monumentos y paisajes especiales:<br><br>
+      🏰 <strong style="color:#90caf9">Europa</strong>: La Torre Eiffel 🗼, muchos países juntos, castillos medievales.<br>
+      🦁 <strong style="color:#ffcc80">África</strong>: Los leones 🦁, las pirámides de Egipto 🔺, el desierto del Sahara.<br>
+      🐯 <strong style="color:#ce93d8">Asia</strong>: La Muralla China 🧱, los tigres 🐯, los pandas 🐼, ¡el más grande!<br>
+      🌿 <strong style="color:#a5d6a7">América</strong>: El Amazonas 🌿, la Estatua de la Libertad 🗽, el cóndor 🦅.<br>
+      🦘 <strong style="color:#80deea">Oceanía</strong>: Los canguros 🦘, los koalas 🐨, la Gran Barrera de Coral.<br>
+      🐧 <strong style="color:#b0bec5">Antártida</strong>: Los pingüinos 🐧, hielo por todas partes ❄️, nadie vive allí.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="185" viewBox="0 0 340 185" xmlns="http://www.w3.org/2000/svg">
+      <!-- 6 continent badges -->
+      <rect x="5" y="5" width="100" height="52" rx="12" fill="rgba(21,101,192,.6)" stroke="#90caf9" stroke-width="1.5"/>
+      <text x="55" y="22" text-anchor="middle" font-size="16">🗼</text>
+      <text x="55" y="38" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Europa</text>
+      <text x="55" y="51" text-anchor="middle" fill="#bbdefb" font-size="9" font-family="Patrick Hand,cursive">Torre Eiffel</text>
+      <rect x="120" y="5" width="100" height="52" rx="12" fill="rgba(229,81,0,.6)" stroke="#ffcc80" stroke-width="1.5"/>
+      <text x="170" y="22" text-anchor="middle" font-size="16">🦁</text>
+      <text x="170" y="38" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">África</text>
+      <text x="170" y="51" text-anchor="middle" fill="#ffcc80" font-size="9" font-family="Patrick Hand,cursive">Pirámides</text>
+      <rect x="235" y="5" width="100" height="52" rx="12" fill="rgba(123,31,162,.6)" stroke="#ce93d8" stroke-width="1.5"/>
+      <text x="285" y="22" text-anchor="middle" font-size="16">🐯</text>
+      <text x="285" y="38" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Asia</text>
+      <text x="285" y="51" text-anchor="middle" fill="#ce93d8" font-size="9" font-family="Patrick Hand,cursive">Muralla China</text>
+      <rect x="5" y="70" width="100" height="52" rx="12" fill="rgba(46,125,50,.6)" stroke="#a5d6a7" stroke-width="1.5"/>
+      <text x="55" y="87" text-anchor="middle" font-size="16">🗽</text>
+      <text x="55" y="103" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <text x="55" y="116" text-anchor="middle" fill="#a5d6a7" font-size="9" font-family="Patrick Hand,cursive">Amazonas</text>
+      <rect x="120" y="70" width="100" height="52" rx="12" fill="rgba(0,96,100,.6)" stroke="#80deea" stroke-width="1.5"/>
+      <text x="170" y="87" text-anchor="middle" font-size="16">🦘</text>
+      <text x="170" y="103" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Oceanía</text>
+      <text x="170" y="116" text-anchor="middle" fill="#80deea" font-size="9" font-family="Patrick Hand,cursive">Canguros</text>
+      <rect x="235" y="70" width="100" height="52" rx="12" fill="rgba(55,71,79,.6)" stroke="#b0bec5" stroke-width="1.5"/>
+      <text x="285" y="87" text-anchor="middle" font-size="16">🐧</text>
+      <text x="285" y="103" text-anchor="middle" fill="#ffe082" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Antártida</text>
+      <text x="285" y="116" text-anchor="middle" fill="#b0bec5" font-size="9" font-family="Patrick Hand,cursive">Pingüinos ❄️</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Europa tiene la Torre Eiffel. África tiene leones y las pirámides. Asia tiene la Muralla China y es el continente más grande. América tiene el río Amazonas y la Estatua de la Libertad. Oceanía tiene canguros y koalas. La Antártida tiene pingüinos y está cubierta de hielo.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿A qué continente pertenece?</div>
+  <div class="tap-q" id="charQ">Cargando…</div>
+  <div class="tap-prog" id="charProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#90caf9"  onclick="tapChar('europa')">🌍 Europa</button>
+    <button class="tap-btn" style="border-color:#ffcc80"  onclick="tapChar('africa')">🌍 África</button>
+    <button class="tap-btn" style="border-color:#ce93d8"  onclick="tapChar('asia')">🌏 Asia</button>
+    <button class="tap-btn" style="border-color:#a5d6a7"  onclick="tapChar('america')">🌎 América</button>
+    <button class="tap-btn" style="border-color:#80deea"  onclick="tapChar('oceania')">🌏 Oceanía</button>
+    <button class="tap-btn" style="border-color:#b0bec5"  onclick="tapChar('antartida')">❄️ Antártida</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Clasifica 🃏 →</button>
+</div>
+
+<!-- FASE 3 -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🃏 ¡Clasifica en tu Continente!</div>
+    <div class="story-text">
+      Vamos a clasificar animales, monumentos y lugares según su continente. ¡Presta atención! 🧠<br><br>
+      Recuerda:<br>
+      🏰 <strong style="color:#90caf9">Europa</strong>: España, Francia, Big Ben, castillos<br>
+      🦁 <strong style="color:#ffcc80">África</strong>: Sahara, Nilo, leones, jirafas<br>
+      🐯 <strong style="color:#ce93d8">Asia</strong>: China, India, tigres, pandas, arroz<br>
+      🌿 <strong style="color:#a5d6a7">América</strong>: Estados Unidos, Brasil, Amazonas, cóndor<br>
+      🦘 <strong style="color:#80deea">Oceanía</strong>: Australia, canguros, koalas<br>
+      🐧 <strong style="color:#b0bec5">Antártida</strong>: Polo Sur, pingüinos, hielo
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('Vamos a clasificar cada pista en su continente. Recuerda: Europa tiene España y Francia. África tiene leones y jirafas. Asia tiene tigres y pandas. América tiene el Amazonas. Oceanía tiene canguros. La Antártida tiene pingüinos.')">🔊 ¡Recordatorio!</button>
+  <div class="mini-title">🎮 ¡Clasifica cada pista!</div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns">
+    <button class="sort-btn europa"    onclick="ansSort3('europa')">🌍 Europa</button>
+    <button class="sort-btn africa"    onclick="ansSort3('africa')">🌍 África</button>
+    <button class="sort-btn asia"      onclick="ansSort3('asia')">🌏 Asia</button>
+    <button class="sort-btn america"   onclick="ansSort3('america')">🌎 América</button>
+    <button class="sort-btn oceania"   onclick="ansSort3('oceania')">🌏 Oceanía</button>
+    <button class="sort-btn antartida" onclick="ansSort3('antartida')">❄️ Antártida</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: V/Mentira ✅ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">✅ ¿Verdad o Mentira?</div>
+    <div class="story-text">
+      Vamos a comprobar lo que has aprendido sobre los continentes. 🧠<br><br>
+      ¡Lee bien cada frase antes de contestar!
+    </div>
+  </div>
+  <div class="mini-title">🎮 Mini-juego 4: ¿Verdad o Mentira?</div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initChar();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickCont(ans,el){
+  $('contGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='6'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! Hay 6 continentes: Europa, África, Asia, América, Oceanía y Antártida. 🌍';
+    speak('¡Correcto! Hay seis continentes: Europa, África, Asia, América, Oceanía y Antártida.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! Son SEIS continentes. ¡Inténtalo!';speak('No exactamente. Son seis continentes.');
+    setTimeout(()=>{
+      el.classList.remove('wrong');
+      const c=$('contGrid').querySelectorAll('.pick-card');
+      c[0].onclick=()=>pickCont('4',c[0]);c[1].onclick=()=>pickCont('5',c[1]);
+      c[2].onclick=()=>pickCont('6',c[2]);c[3].onclick=()=>pickCont('7',c[3]);
+    },1100);
+  }
+}
+
+/* Fase 2: Características */
+const CHAR_Qs=[
+  {ask:'La Torre Eiffel 🗼 está en Paris, en este continente',correct:'europa',hint:'¡La Torre Eiffel está en París, la capital de Francia, que está en Europa!'},
+  {ask:'Los leones 🦁 y las jirafas 🦒 viven en las sabanas de este continente',correct:'africa',hint:'¡Los leones y las jirafas viven en África!'},
+  {ask:'La Muralla China 🧱 es el monumento de este continente',correct:'asia',hint:'¡La Muralla China está en Asia, el continente más grande!'},
+  {ask:'El río Amazonas 🌿, el más grande del mundo, está aquí',correct:'america',hint:'¡El río Amazonas está en América del Sur, en Brasil!'},
+  {ask:'Los canguros 🦘 y los koalas 🐨 son animales de este continente',correct:'oceania',hint:'¡Los canguros y koalas son de Oceanía, donde está Australia!'},
+  {ask:'Los pingüinos 🐧 viven en el Polo Sur, en este continente',correct:'antartida',hint:'¡Los pingüinos viven en la Antártida, el continente helado del Polo Sur!'},
+];
+const contNames={europa:'🌍 Europa',africa:'🌍 África',asia:'🌏 Asia',america:'🌎 América',oceania:'🌏 Oceanía',antartida:'❄️ Antártida'};
+let charItems,charIdx;
+function initChar(){charItems=shuffle(CHAR_Qs);charIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderCharProg();showCharQ()}
+function renderCharProg(){$('charProg').innerHTML=charItems.map((_,i)=>`<div class="pdot" id="cp_${i}"></div>`).join('')}
+function showCharQ(){
+  if(charIdx>=charItems.length){endChar();return}
+  $('charQ').textContent=charItems[charIdx].ask;$('fb2').textContent='';speak(charItems[charIdx].ask);
+}
+function tapChar(ans){
+  if(charIdx>=charItems.length)return;
+  const q=charItems[charIdx],dot=$('cp_'+charIdx);
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');charIdx++;setTimeout(showCharQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es '+contNames[q.correct]+'. '+q.hint;speak('No exactamente.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endChar(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Conoces las características de todos los continentes!';speak('¡Conoces las características de todos los continentes!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3 Sort: 6 continentes */
+const SORT3=[
+  {emoji:'🗼',text:'La Torre Eiffel está en París',target:'europa'},
+  {emoji:'🦁',text:'Los leones y las jirafas viven en la sabana',target:'africa'},
+  {emoji:'🐼',text:'El oso panda vive en los bosques de bambú de China',target:'asia'},
+  {emoji:'🗽',text:'La Estatua de la Libertad está en Nueva York',target:'america'},
+  {emoji:'🦘',text:'El canguro salta por los campos de Australia',target:'oceania'},
+  {emoji:'🐧',text:'Los pingüinos viven en el polo Sur, entre el hielo',target:'antartida'},
+  {emoji:'🔺',text:'Las pirámides de Egipto son muy famosas',target:'africa'},
+  {emoji:'🧱',text:'La Muralla China fue construida hace miles de años',target:'asia'},
+  {emoji:'🌿',text:'El río Amazonas pasa por Brasil',target:'america'},
+  {emoji:'🏰',text:'En España y Francia hay muchos castillos medievales',target:'europa'},
+  {emoji:'🐨',text:'Los koalas se abrazan a los eucaliptos de Australia',target:'oceania'},
+  {emoji:'❄️',text:'Aquí hay hielo por todas partes y nadie puede vivir',target:'antartida'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+contNames[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+contNames[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Increíble! ¡Conoces todos los continentes!';speak('¡Increíble! ¡Conoces todos los continentes!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 TF */
+const TF4=[
+  {emoji:'🌍',stmt:'En el mundo hay seis continentes.',ans:true},
+  {emoji:'🇪🇸',stmt:'España está en el continente africano.',ans:false},
+  {emoji:'🌏',stmt:'Asia es el continente más grande del mundo.',ans:true},
+  {emoji:'🐧',stmt:'Los pingüinos viven en el Polo Norte, en el Ártico.',ans:false},
+  {emoji:'🌎',stmt:'El río Amazonas está en el continente americano.',ans:true},
+  {emoji:'🐨',stmt:'Los koalas son de Europa.',ans:false},
+  {emoji:'❄️',stmt:'Nadie vive de forma permanente en la Antártida.',ans:true},
+  {emoji:'🗽',stmt:'La Torre Eiffel está en América.',ans:false},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Eres un experto en geografía!';speak('¡Perfecto! ¡Eres un experto en geografía!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 Quiz */
+const QUIZ=[
+  {q:'¿Cuántos continentes hay en el mundo?',opts:['4','5','6 🌍','8'],ans:2,emoji:'🌍'},
+  {q:'¿En qué continente está España?',opts:['África 🌍','Asia 🌏','Europa 🌍','América 🌎'],ans:2,emoji:'🇪🇸'},
+  {q:'¿Cuál es el continente más grande del mundo?',opts:['América 🌎','Europa 🌍','África 🌍','Asia 🌏'],ans:3,emoji:'🌏'},
+  {q:'¿Dónde viven los leones y las jirafas en estado salvaje?',opts:['Europa 🌍','Asia 🌏','África 🌍','Oceanía 🌏'],ans:2,emoji:'🦁'},
+  {q:'¿En qué continente están los canguros y los koalas?',opts:['América 🌎','Oceanía 🌏','Antártida ❄️','Asia 🌏'],ans:1,emoji:'🦘'},
+  {q:'¿Qué hay en la Antártida?',opts:['Leones y desiertos','Bosques de bambú','Hielo y pingüinos ❄️🐧','Pirámides'],ans:2,emoji:'🐧'},
+  {q:'¿Dónde está el río Amazonas?',opts:['Europa, en España','Asia, en China','América, en Brasil 🌿','África, en Egipto'],ans:2,emoji:'🌿'},
+  {q:'¿En qué continente está la Muralla China?',opts:['Europa','América','Oceanía','Asia 🌏'],ans:3,emoji:'🧱'},
+  {q:'¿Dónde están las pirámides de Egipto?',opts:['Europa 🌍','Asia 🌏','África 🌍','América 🌎'],ans:2,emoji:'🔺'},
+  {q:'¿Qué continente tiene el Polo Sur?',opts:['América ❄️','Europa','Antártida ❄️','Oceanía'],ans:2,emoji:'❄️'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Geógrafo del Mundo!';emoji='🏆🌍🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, gran explorador!';emoji='🌟🌎🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa los continentes un poco más.';emoji='👍🌏';}
+  else{msg='¡Sigue aprendiendo! El mundo tiene muchos secretos.';emoji='💪🌍';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a descubrir los seis continentes del mundo.');
+</script>
+</body>
+</html>

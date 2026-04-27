@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌊 Los Océanos y el Ciclo del Agua</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#000d1a 0%,#001f3f 55%,#000d1a 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌊 💧 🐟 ☁️ 🌊 💧 🐟 ☁️ 🌊 💧 🐟 ☁️ 🌊 💧 🐟 ☁️ 🌊 💧 🐟 ☁️';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.07);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(0,13,26,.7);color:#FFD700;border:2px solid #00bcd4;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#00bcd4;color:#000d1a}
+.score-box{background:rgba(0,13,26,.7);color:#FFD700;border:2px solid #00bcd4;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #00bcd4;background:rgba(0,18,36,.8);color:#b2ebf2;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#00bcd4;color:#000d1a;font-weight:bold}
+.p-tab.done{background:#00838f;border-color:#00acc1;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(0,18,36,.92),rgba(0,30,60,.92));border:3px solid #00bcd4;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(0,180,210,.22);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e0f7fa;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#00bcd4;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#00838f,#00bcd4);color:#000d1a;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s;font-weight:bold}
+.btn-next:hover{background:#4dd0e1}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(0,40,72,.8),rgba(0,24,48,.8));color:#fff;border:2px solid #00bcd4;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#00bcd4;color:#000d1a}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(0,18,36,.85);border:3px solid #00bcd4;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.6rem;display:block}.pick-card .pc-label{font-size:.9rem;color:#e0f7fa;margin-top:6px;line-height:1.3}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #00bcd4;background:rgba(0,18,36,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #00bcd4;background:rgba(0,18,36,.8);color:#e0f7fa;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(0,30,60,.92),rgba(0,18,36,.9));border:3px solid #00bcd4;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#e0f7fa;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-btn.pacifico{background:linear-gradient(135deg,#1a237e,#283593);color:#FFD700;border-color:#90caf9}
+.sort-btn.atlantico{background:linear-gradient(135deg,#0d47a1,#1565c0);color:#FFD700;border-color:#42a5f5}
+.sort-btn.indico{background:linear-gradient(135deg,#006064,#00838f);color:#FFD700;border-color:#80deea}
+.sort-btn.artico{background:linear-gradient(135deg,#4fc3f7,#29b6f6);color:#000d1a;border-color:#b3e5fc}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #00bcd4;background:rgba(0,18,36,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(0,30,60,.92),rgba(0,18,36,.9));border:3px solid #00bcd4;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(0,18,36,.9);border:2px solid #00bcd4;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#b2ebf2;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(0,40,80,.8),rgba(0,18,36,.8));border:2px solid #00bcd4;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(0,60,120,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(0,18,36,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌊 Los Océanos</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌊 Los Océanos</div>
+  <div class="p-tab"        id="tab2">💧 El Ciclo</div>
+  <div class="p-tab"        id="tab3">🗺️ Los 5 Océanos</div>
+  <div class="p-tab"        id="tab4">♾️ ¿Infinita?</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+<!-- FASE 1 -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌊 El Agua en la Tierra</div>
+    <div class="story-text">
+      ¿Sabes que el <strong style="color:#FFD700">71% de la Tierra</strong> está cubierta de agua? ¡Más de la mitad del planeta es mar! 🌍<br><br>
+      Esa agua está en los <strong style="color:#00bcd4">océanos</strong>, que son las grandes masas de agua salada 🧂. ¡En el mundo hay <strong style="color:#FFD700">5 océanos</strong>!<br><br>
+      🌊 <strong style="color:#90caf9">Pacífico</strong> — ¡El más grande y profundo del mundo!<br>
+      🌊 <strong style="color:#42a5f5">Atlántico</strong> — Separa Europa y África de América.<br>
+      🌊 <strong style="color:#80deea">Índico</strong> — Está entre África, Asia y Oceanía.<br>
+      🌊 <strong style="color:#b3e5fc">Ártico</strong> — ¡El del Polo Norte, con mucho hielo! ❄️<br>
+      🌊 <strong style="color:#e0f7fa">Antártico</strong> — Rodea la Antártida, el más frío ❄️
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="205" viewBox="0 0 330 205" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ocean background -->
+      <rect x="0" y="0" width="330" height="205" rx="14" fill="rgba(13,71,161,.5)" stroke="#00bcd4" stroke-width="1.5"/>
+      <!-- Wave lines -->
+      <path d="M0 50 Q42 38 82 50 Q122 62 165 50 Q208 38 248 50 Q288 62 330 50" fill="none" stroke="#4dd0e1" stroke-width="1.5" opacity=".5"/>
+      <path d="M0 80 Q42 68 82 80 Q122 92 165 80 Q208 68 248 80 Q288 92 330 80" fill="none" stroke="#00bcd4" stroke-width="1.5" opacity=".4"/>
+      <!-- Continents in ocean -->
+      <ellipse cx="130" cy="90" rx="44" ry="32" fill="#2e7d32" opacity=".8"/>
+      <text x="130" y="94" text-anchor="middle" fill="#a5d6a7" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <ellipse cx="220" cy="68" rx="22" ry="18" fill="#1565c0" opacity=".9"/>
+      <text x="220" y="72" text-anchor="middle" fill="#ffe082" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">Europa</text>
+      <ellipse cx="238" cy="110" rx="26" ry="36" fill="#e65100" opacity=".8"/>
+      <text x="238" y="114" text-anchor="middle" fill="#ffcc80" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">África</text>
+      <ellipse cx="295" cy="75" rx="30" ry="24" fill="#7b1fa2" opacity=".75"/>
+      <text x="295" y="79" text-anchor="middle" fill="#ce93d8" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">Asia</text>
+      <!-- Ocean labels -->
+      <text x="60" y="100" text-anchor="middle" fill="#90caf9" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Pacífico</text>
+      <text x="183" y="105" text-anchor="middle" fill="#42a5f5" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Atlántico</text>
+      <text x="295" y="150" text-anchor="middle" fill="#80deea" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Índico</text>
+      <text x="165" y="22" text-anchor="middle" fill="#b3e5fc" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">❄️ Ártico</text>
+      <text x="165" y="196" text-anchor="middle" fill="#e0f7fa" font-size="10" font-family="Patrick Hand,cursive">❄️ Antártico</text>
+      <!-- 71% label -->
+      <rect x="5" y="157" width="130" height="20" rx="10" fill="rgba(0,13,26,.7)"/>
+      <text x="70" y="171" text-anchor="middle" fill="#FFD700" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">71% de la Tierra = 🌊</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('El setenta y uno por ciento de la Tierra está cubierto de agua. En el mundo hay cinco océanos: Pacífico, Atlántico, Índico, Ártico y Antártico. El Pacífico es el más grande.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: ¿Cuántos océanos hay en el mundo?</div>
+  <div class="pick-grid" id="oceGrid">
+    <div class="pick-card" onclick="pickOce('3',this)"><span class="pc-emoji">3️⃣</span><div class="pc-label">Tres océanos</div></div>
+    <div class="pick-card" onclick="pickOce('5',this)"><span class="pc-emoji">5️⃣</span><div class="pc-label">Cinco océanos</div></div>
+    <div class="pick-card" onclick="pickOce('6',this)"><span class="pc-emoji">6️⃣</span><div class="pc-label">Seis océanos</div></div>
+    <div class="pick-card" onclick="pickOce('2',this)"><span class="pc-emoji">2️⃣</span><div class="pc-label">Dos océanos</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: El Ciclo del Agua 💧 →</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">💧 El Ciclo del Agua</div>
+    <div class="story-text">
+      El agua de la Tierra siempre está <strong style="color:#FFD700">viajando</strong>! Hace un ciclo que nunca para, como una noria. ¡Por eso el agua parece infinita! ♾️<br><br>
+      ☀️ El Sol <strong style="color:#FFD700">calienta</strong> el agua del mar → el agua sube como vapor → forma <strong style="color:#90caf9">nubes</strong> ☁️<br><br>
+      ☁️ Las nubes se enfrían → caen gotas de agua → ¡<strong style="color:#4dd0e1">lluvia</strong>! 🌧️<br><br>
+      🌧️ La lluvia forma <strong style="color:#00bcd4">ríos</strong> 🏞️ que van al mar → ¡el ciclo empieza otra vez!<br><br>
+      ¡Es <strong style="color:#FFD700">siempre el mismo agua</strong> que viaja una y otra vez! 🔄
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="210" viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sky -->
+      <rect x="0" y="0" width="340" height="210" rx="12" fill="rgba(13,71,161,.35)"/>
+      <!-- Sun -->
+      <circle cx="290" cy="35" r="28" fill="#FF8F00" opacity=".85"/>
+      <text x="290" y="42" text-anchor="middle" font-size="22">☀️</text>
+      <!-- Sun rays to sea -->
+      <path d="M270 55 Q240 80 200 92" fill="none" stroke="#FFD700" stroke-width="2" stroke-dasharray="5,3" opacity=".8"/>
+      <!-- Cloud -->
+      <ellipse cx="120" cy="28" rx="52" ry="22" fill="#90a4ae" opacity=".9"/>
+      <ellipse cx="96"  cy="34" rx="32" ry="18" fill="#b0bec5" opacity=".85"/>
+      <ellipse cx="145" cy="34" rx="32" ry="16" fill="#90a4ae" opacity=".85"/>
+      <text x="120" y="34" text-anchor="middle" font-size="18">☁️</text>
+      <!-- Rain drops -->
+      <line x1="100" y1="50" x2="93"  y2="68" stroke="#4dd0e1" stroke-width="2"/>
+      <line x1="115" y1="50" x2="108" y2="68" stroke="#4dd0e1" stroke-width="2"/>
+      <line x1="130" y1="50" x2="123" y2="68" stroke="#4dd0e1" stroke-width="2"/>
+      <!-- Mountain -->
+      <polygon points="50,175 110,90 170,175" fill="#6d4c41"/>
+      <polygon points="95,105 110,90 125,105 118,116 102,116" fill="#e3f2fd" opacity=".9"/>
+      <!-- River -->
+      <path d="M160 170 Q200 160 220 155 Q260 148 300 155" fill="none" stroke="#4dd0e1" stroke-width="4" opacity=".85"/>
+      <!-- Sea -->
+      <rect x="0" y="175" width="340" height="35" rx="0" fill="rgba(13,71,161,.75)"/>
+      <path d="M0 175 Q42 168 82 175 Q122 182 165 175 Q208 168 248 175 Q288 182 330 175" fill="none" stroke="#00bcd4" stroke-width="2" opacity=".7"/>
+      <text x="170" y="195" text-anchor="middle" fill="#b2ebf2" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌊 El Mar</text>
+      <!-- Evaporation arrows (sea to cloud) -->
+      <path d="M200 170 Q170 110 140 52" fill="none" stroke="#b2ebf2" stroke-width="2" stroke-dasharray="4,4" opacity=".8" marker-end="url(#cyc)"/>
+      <defs><marker id="cyc" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#b2ebf2"/></marker></defs>
+      <text x="183" y="118" fill="#b2ebf2" font-size="10" font-family="Patrick Hand,cursive" transform="rotate(-55,183,118)">evaporación</text>
+      <!-- Labels -->
+      <text x="68"  y="145" text-anchor="middle" fill="#bcaaa4" font-size="10" font-family="Patrick Hand,cursive">montaña</text>
+      <text x="115" y="182" fill="#4dd0e1"  font-size="10" font-family="Patrick Hand,cursive">río →</text>
+      <text x="112" y="72"  fill="#90caf9"  font-size="10" font-family="Patrick Hand,cursive">🌧️ lluvia</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('El ciclo del agua nunca para. El Sol calienta el agua del mar y sube como vapor. Se forman nubes. Las nubes se enfrían y cae la lluvia. La lluvia forma ríos que van al mar. Y el ciclo empieza de nuevo. ¡Siempre es la misma agua viajando!')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿Qué paso del ciclo es?</div>
+  <div class="tap-q" id="cicloQ">Cargando…</div>
+  <div class="tap-prog" id="cicloProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#FFD700" onclick="tapCiclo('evaporacion')">☀️ Evaporación</button>
+    <button class="tap-btn" style="border-color:#90a4ae" onclick="tapCiclo('nubes')">☁️ Nubes</button>
+    <button class="tap-btn" style="border-color:#4dd0e1" onclick="tapCiclo('lluvia')">🌧️ Lluvia</button>
+    <button class="tap-btn" style="border-color:#00bcd4" onclick="tapCiclo('rios')">🏞️ Ríos</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Los 5 Océanos 🗺️ →</button>
+</div>
+
+<!-- FASE 3 -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🗺️ Los 5 Océanos del Mundo</div>
+    <div class="story-text">
+      Cada océano tiene sus características especiales:<br><br>
+      🌊 <strong style="color:#90caf9">Pacífico</strong>: ¡El MÁS GRANDE y MÁS PROFUNDO! Cubre un tercio de la Tierra. En él está la Fosa de las Marianas, el punto más profundo.<br>
+      🌊 <strong style="color:#42a5f5">Atlántico</strong>: El segundo más grande. Separa Europa y África de América.<br>
+      🌊 <strong style="color:#80deea">Índico</strong>: Está en el sur de Asia, entre África y Australia.<br>
+      🌊 <strong style="color:#b3e5fc">Ártico</strong>: El más pequeño. ¡Está en el Polo Norte y tiene mucho hielo! ❄️<br>
+      🌊 <strong style="color:#e0f7fa">Antártico</strong>: Rodea la Antártida. ¡Muy frío y con tormentas!
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('El océano Pacífico es el más grande y profundo. El Atlántico separa Europa de América. El Índico está entre África y Australia. El Ártico está en el Polo Norte y tiene mucho hielo. El Antártico rodea la Antártida.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 3: ¿A qué océano pertenece esta pista?</div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns">
+    <button class="sort-btn pacifico"  onclick="ansSort3('pacifico')">🌊 Pacífico</button>
+    <button class="sort-btn atlantico" onclick="ansSort3('atlantico')">🌊 Atlántico</button>
+    <button class="sort-btn indico"    onclick="ansSort3('indico')">🌊 Índico</button>
+    <button class="sort-btn artico"    onclick="ansSort3('artico')">❄️ Ártico</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: ¿Es infinita? ♾️ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">♾️ ¿Por qué el Agua es "Infinita"?</div>
+    <div class="story-text">
+      El agua de la Tierra <strong style="color:#FFD700">no desaparece</strong>. Siempre está aquí, pero <strong style="color:#00bcd4">cambiando de lugar</strong>. ¡Por eso parece infinita! ♾️<br><br>
+      El agua del mar se <strong style="color:#FFD700">evapora</strong> → sube al cielo → forma <strong style="color:#90caf9">nubes</strong> → cae como <strong style="color:#4dd0e1">lluvia o nieve</strong> → va por los <strong style="color:#00bcd4">ríos</strong> → vuelve al mar. ¡Y otra vez! 🔄<br><br>
+      ¡El agua que bebes hoy quizás la bebió un <strong style="color:#FFD700">dinosaurio</strong> 🦕 hace millones de años! ¡Es la MISMA agua!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="310" height="185" viewBox="0 0 310 185" xmlns="http://www.w3.org/2000/svg">
+      <!-- Circular water cycle diagram -->
+      <circle cx="155" cy="92" r="78" fill="none" stroke="rgba(0,188,212,.3)" stroke-width="2" stroke-dasharray="6,3"/>
+      <!-- Steps around the circle -->
+      <!-- Step 1: Sea (bottom) -->
+      <rect x="100" y="154" width="110" height="28" rx="14" fill="rgba(13,71,161,.8)" stroke="#00bcd4" stroke-width="2"/>
+      <text x="155" y="172" text-anchor="middle" fill="#b2ebf2" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🌊 Mar</text>
+      <!-- Step 2: Evaporation (right) -->
+      <rect x="240" y="76" width="68" height="28" rx="14" fill="rgba(255,143,0,.7)" stroke="#FFD700" stroke-width="2"/>
+      <text x="274" y="94" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">☀️ Vapor</text>
+      <!-- Step 3: Cloud (top) -->
+      <rect x="92" y="5" width="126" height="28" rx="14" fill="rgba(144,164,174,.8)" stroke="#b0bec5" stroke-width="2"/>
+      <text x="155" y="23" text-anchor="middle" fill="#fff" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">☁️ Nubes</text>
+      <!-- Step 4: Rain (left) -->
+      <rect x="2" y="76" width="72" height="28" rx="14" fill="rgba(0,150,180,.7)" stroke="#4dd0e1" stroke-width="2"/>
+      <text x="38" y="94" text-anchor="middle" fill="#e0f7fa" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🌧️ Lluvia</text>
+      <!-- Step 5: River (bottom-left) -->
+      <rect x="5" y="135" width="80" height="28" rx="14" fill="rgba(0,131,143,.7)" stroke="#00bcd4" stroke-width="2"/>
+      <text x="45" y="153" text-anchor="middle" fill="#e0f7fa" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🏞️ Ríos</text>
+      <!-- Arrows -->
+      <path d="M210 162 Q238 145 248 108" fill="none" stroke="#FFD700" stroke-width="2" marker-end="url(#cya)"/>
+      <path d="M252 72 Q222 28 188 20" fill="none" stroke="#b2ebf2" stroke-width="2" marker-end="url(#cya)"/>
+      <path d="M100 18 Q62 28 40 72" fill="none" stroke="#90a4ae" stroke-width="2" marker-end="url(#cya)"/>
+      <path d="M36 108 Q38 122 42 134" fill="none" stroke="#4dd0e1" stroke-width="2" marker-end="url(#cya)"/>
+      <path d="M84 151 Q96 156 100 157" fill="none" stroke="#00bcd4" stroke-width="2" marker-end="url(#cya)"/>
+      <defs><marker id="cya" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#4dd0e1"/></marker></defs>
+      <!-- Center: infinity -->
+      <text x="155" y="98" text-anchor="middle" font-size="28">♾️</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('El agua no desaparece nunca. Siempre está viajando: del mar sube como vapor, forma nubes, cae como lluvia, va por los ríos y vuelve al mar. ¡Es siempre la misma agua, por eso parece infinita!')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 4: ¿Verdad o Mentira?</div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initCiclo();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickOce(ans,el){
+  $('oceGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='5'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! Hay 5 océanos: Pacífico, Atlántico, Índico, Ártico y Antártico. 🌊';
+    speak('¡Correcto! Hay cinco océanos: Pacífico, Atlántico, Índico, Ártico y Antártico.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! Son CINCO océanos. ¡Inténtalo!';speak('No exactamente. Son cinco océanos.');
+    setTimeout(()=>{
+      el.classList.remove('wrong');
+      const c=$('oceGrid').querySelectorAll('.pick-card');
+      c[0].onclick=()=>pickOce('3',c[0]);c[1].onclick=()=>pickOce('5',c[1]);
+      c[2].onclick=()=>pickOce('6',c[2]);c[3].onclick=()=>pickOce('2',c[3]);
+    },1100);
+  }
+}
+
+/* Fase 2: Ciclo del agua */
+const CICLO_Qs=[
+  {ask:'El Sol calienta el mar y el agua sube al cielo como vapor invisible 💨',correct:'evaporacion',hint:'¡Eso es la evaporación! El calor del sol convierte el agua en vapor.'},
+  {ask:'El vapor de agua se enfría y forma pequeñas gotas que flotan en el cielo ☁️',correct:'nubes',hint:'¡Eso es la formación de nubes! El vapor se convierte en gotitas de agua.'},
+  {ask:'Las nubes dejan caer el agua en pequeñas gotas sobre la tierra 🌧️',correct:'lluvia',hint:'¡Eso es la lluvia! Las nubes sueltan el agua cuando se enfrían mucho.'},
+  {ask:'El agua que cae va bajando por las montañas hacia el mar 🏞️',correct:'rios',hint:'¡Eso son los ríos! El agua de lluvia baja por las montañas formando ríos.'},
+  {ask:'Cuando hace mucho calor en verano, el mar "suda" agua hacia arriba ☀️',correct:'evaporacion',hint:'¡Eso es la evaporación! El calor hace que el agua del mar suba.'},
+];
+let cicloItems,cicloIdx;
+function initCiclo(){cicloItems=shuffle(CICLO_Qs);cicloIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderCicloProg();showCicloQ()}
+function renderCicloProg(){$('cicloProg').innerHTML=cicloItems.map((_,i)=>`<div class="pdot" id="cyp_${i}"></div>`).join('')}
+function showCicloQ(){
+  if(cicloIdx>=cicloItems.length){endCiclo();return}
+  $('cicloQ').textContent=cicloItems[cicloIdx].ask;$('fb2').textContent='';speak(cicloItems[cicloIdx].ask);
+}
+function tapCiclo(ans){
+  if(cicloIdx>=cicloItems.length)return;
+  const q=cicloItems[cicloIdx],dot=$('cyp_'+cicloIdx);
+  const names={evaporacion:'☀️ Evaporación',nubes:'☁️ Nubes',lluvia:'🌧️ Lluvia',rios:'🏞️ Ríos'};
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');cicloIdx++;setTimeout(showCicloQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es '+names[q.correct]+'. '+q.hint;speak('No exactamente.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endCiclo(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Genial! ¡Ya conoces el ciclo del agua!';speak('¡Ya conoces el ciclo del agua!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3 Sort: 4 océanos */
+const SORT3=[
+  {emoji:'🌊',text:'El océano más grande del mundo, cubre un tercio de la Tierra',target:'pacifico'},
+  {emoji:'🌊',text:'El océano que separa Europa y África de América',target:'atlantico'},
+  {emoji:'🐋',text:'En este océano viven las ballenas azules y hay mucho calor',target:'indico'},
+  {emoji:'❄️',text:'El océano del Polo Norte, pequeño y muy frío con mucho hielo',target:'artico'},
+  {emoji:'🐠',text:'El océano donde están los peces más coloridos de los arrecifes tropicales de Asia',target:'pacifico'},
+  {emoji:'🛳️',text:'Los barcos que van de España a América cruzan este océano',target:'atlantico'},
+  {emoji:'🦈',text:'Este océano está entre África, India y Australia',target:'indico'},
+  {emoji:'🐻‍❄️',text:'El oso polar vive en el hielo de este océano del Polo Norte',target:'artico'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={pacifico:'🌊 Pacífico',atlantico:'🌊 Atlántico',indico:'🌊 Índico',artico:'❄️ Ártico'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es el '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es el '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';document.querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Conoces todos los océanos!';speak('¡Fantástico! ¡Conoces todos los océanos!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 TF */
+const TF4=[
+  {emoji:'🌍',stmt:'El 71% de la superficie de la Tierra está cubierta de agua.',ans:true},
+  {emoji:'🌊',stmt:'En el mundo hay seis océanos.',ans:false},
+  {emoji:'🌊',stmt:'El océano Pacífico es el más grande del mundo.',ans:true},
+  {emoji:'💧',stmt:'El agua desaparece cuando se evapora.',ans:false},
+  {emoji:'☁️',stmt:'Las nubes están formadas por agua en forma de gotitas muy pequeñas.',ans:true},
+  {emoji:'🌧️',stmt:'La lluvia crea agua nueva que no existía antes.',ans:false},
+  {emoji:'🦕',stmt:'El agua que bebes hoy es la misma que bebieron los dinosaurios.',ans:true},
+  {emoji:'❄️',stmt:'El océano Ártico está en el Polo Sur.',ans:false},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Ya entiendes el ciclo del agua!';speak('¡Ya entiendes el ciclo del agua!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 Quiz */
+const QUIZ=[
+  {q:'¿Cuántos océanos hay en el mundo?',opts:['3','4','5 🌊','6'],ans:2,emoji:'🌊'},
+  {q:'¿Qué porcentaje de la Tierra está cubierto de agua?',opts:['20%','50%','71% 🌍','99%'],ans:2,emoji:'💧'},
+  {q:'¿Cuál es el océano más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico 🌊'],ans:3,emoji:'🌊'},
+  {q:'¿Qué es la evaporación?',opts:['El agua cayendo como lluvia','El agua subiendo al cielo como vapor ☀️','Las nubes formándose','Los ríos yendo al mar'],ans:1,emoji:'☀️'},
+  {q:'¿Qué se forma cuando el vapor de agua se enfría en el cielo?',opts:['Lluvia directamente','Ríos','Nubes ☁️','Océanos'],ans:2,emoji:'☁️'},
+  {q:'¿El agua del planeta desaparece?',opts:['Sí, cada vez hay menos','Solo si hace mucho calor','No, siempre viaja en un ciclo ♾️','Solo desaparece en el polo'],ans:2,emoji:'♾️'},
+  {q:'¿Qué océano está en el Polo Norte?',opts:['Antártico','Pacífico','Índico','Ártico ❄️'],ans:3,emoji:'❄️'},
+  {q:'¿Por dónde va el agua de lluvia de regreso al mar?',opts:['Por el aire','Por los ríos 🏞️','Por los volcanes','Por las nubes'],ans:1,emoji:'🏞️'},
+  {q:'¿Qué océano separa a América de Europa?',opts:['Índico','Pacífico','Ártico','Atlántico 🌊'],ans:3,emoji:'🗺️'},
+  {q:'¿Por qué se dice que el agua es "infinita"?',opts:['Porque hay mucha en los lagos','Porque se crea nueva cada día','Porque viaja en un ciclo sin parar 🔄','Porque viene del espacio'],ans:2,emoji:'🔄'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){
+  quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;
+  $('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ();
+}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Oceanógrafo Experto!';emoji='🏆🌊🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, explorador del mar!';emoji='🌟💧🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa los océanos un poco más.';emoji='👍🌊';}
+  else{msg='¡Sigue aprendiendo! Los océanos guardan muchos secretos.';emoji='💪🐋';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a descubrir los océanos del mundo y el ciclo del agua.');
+</script>
+</body>
+</html>
