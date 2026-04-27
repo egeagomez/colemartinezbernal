@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌍 ¿Por qué hay más calor en el Ecuador?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#000d1a 0%,#001f3f 55%,#002a50 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+
+/* ── Stars bg ── */
+body::before{content:'✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧';position:fixed;inset:0;font-size:.7rem;line-height:2.2rem;color:rgba(255,255,255,.12);overflow:hidden;pointer-events:none;letter-spacing:2.5rem;word-spacing:1rem;z-index:0}
+
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(0,50,100,.7);color:#FFD700;border:2px solid #4dd0e1;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#4dd0e1;color:#001a2e}
+.score-box{background:rgba(0,50,100,.7);color:#FFD700;border:2px solid #4dd0e1;border-radius:20px;padding:4px 16px;font-size:1rem}
+
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #4dd0e1;background:rgba(0,30,60,.8);color:#80deea;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#4dd0e1;color:#001a2e;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+
+.story-card{background:linear-gradient(145deg,rgba(0,20,50,.9),rgba(0,40,80,.9));border:3px solid #4dd0e1;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(0,100,200,.35);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e0f7fa;line-height:1.6}
+
+.mini-title{font-size:1.15rem;color:#4dd0e1;text-align:center;margin:12px 0 10px;font-weight:bold}
+
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;transition:background .15s}
+.btn-next:hover{background:#4CAF50}
+.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(0,105,92,.8),rgba(0,77,64,.8));color:#fff;border:2px solid #4dd0e1;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#4dd0e1;color:#001a2e}
+
+.earth-scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+
+/* ── Phase 1: shapes ── */
+.shapes-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.shape-opt{background:rgba(0,30,70,.8);border:3px solid #4dd0e1;border-radius:18px;padding:18px 22px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;min-width:105px;backdrop-filter:blur(2px)}
+.shape-opt:hover{transform:scale(1.06);border-color:#FFD700}
+.shape-opt .sh-emoji{font-size:3rem;display:block}
+.shape-opt .sh-label{font-size:.95rem;color:#e0f7fa;margin-top:6px}
+.shape-opt.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.shape-opt.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+
+/* ── Phase 2: pole tap ── */
+.pole-question{font-size:1.2rem;color:#FFD700;text-align:center;margin-bottom:10px}
+.pole-progress{display:flex;gap:10px;justify-content:center;margin:8px 0}
+.pdot2{width:18px;height:18px;border-radius:50%;border:2px solid #4dd0e1;background:rgba(0,30,60,.8)}
+.pdot2.ok{background:#4CAF50;border-color:#4CAF50}
+.pdot2.ng{background:#f44336;border-color:#f44336}
+
+/* ── Phase 3: belt ── */
+.belt-choices{display:flex;gap:12px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.belt-btn{padding:10px 20px;border-radius:16px;font-family:inherit;font-size:1rem;cursor:pointer;border:2px solid #4dd0e1;background:rgba(0,30,70,.8);color:#e0f7fa;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.belt-btn:hover{transform:scale(1.05);border-color:#FFD700}
+
+/* ── Phase 4: ray sort (one at a time) ── */
+.ray-card-big{background:linear-gradient(145deg,rgba(0,40,80,.9),rgba(0,20,50,.9));border:3px solid #4dd0e1;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.ray-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.ray-card-text{font-size:1.15rem;color:#e0f7fa;line-height:1.5}
+.ray-btns{display:flex;gap:14px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.ray-btn{padding:11px 22px;border-radius:18px;font-family:inherit;font-size:1.05rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.ray-btn:hover{transform:scale(1.06)}
+.ray-btn.ecuador{background:linear-gradient(135deg,#7b1010,#b71c1c);color:#FFD700;border-color:#ef5350}
+.ray-btn.polos{background:linear-gradient(135deg,#0d2a5e,#1565c0);color:#FFD700;border-color:#42a5f5}
+.ray-progress-bar{display:flex;gap:6px;justify-content:center;margin:8px 0}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #4dd0e1;background:rgba(0,30,60,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}
+.rpdot.ng{background:#f44336;border-color:#f44336}
+
+/* ── Phase 5: quiz ── */
+.quiz-card{width:100%;max-width:540px;background:rgba(0,20,50,.9);border:2px solid #4dd0e1;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-progress{color:#80deea;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-question{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(0,40,80,.8),rgba(0,20,50,.8));border:2px solid #4dd0e1;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(0,60,110,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(0,20,50,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px;backdrop-filter:blur(4px)}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌍 El Ecuador y el Calor</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🍊 La Tierra</div>
+  <div class="p-tab"        id="tab2">❄️ Los Polos</div>
+  <div class="p-tab"        id="tab3">🎀 El Ecuador</div>
+  <div class="p-tab"        id="tab4">☀️ Los Rayos</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz Final</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     FASE 1 — LA TIERRA ES UNA NARANJA GIGANTE
+════════════════════════════════════════════ -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🍊 La Tierra es como una Naranja Gigante</div>
+    <div class="story-text">
+      ¿Sabías que la Tierra tiene forma de <strong style="color:#FFD700">bola redonda</strong>, como una naranja gigante? 🌍<br><br>
+      Pero tiene un secreto: ¡está un poquito <strong style="color:#4dd0e1">inclinada</strong>! Es como si estuviera durmiendo un poco de lado mientras da vueltas y vueltas alrededor del Sol. 😴🌞<br><br>
+      ¡Por eso a veces unos sitios reciben más calor que otros!
+    </div>
+  </div>
+
+  <div class="earth-scene">
+    <svg width="320" height="270" viewBox="0 0 320 270" xmlns="http://www.w3.org/2000/svg">
+      <!-- Space glow -->
+      <radialGradient id="spaceGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#1a4080" stop-opacity=".4"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+      <ellipse cx="160" cy="135" rx="115" ry="115" fill="url(#spaceGlow)"/>
+      <!-- Tilt axis -->
+      <line x1="138" y1="18" x2="182" y2="252" stroke="#FFD700" stroke-width="2" stroke-dasharray="7,5" opacity=".65"/>
+      <text x="120" y="14" fill="#FFD700" font-size="12" font-family="Patrick Hand,cursive" opacity=".8">eje inclinado</text>
+      <!-- Earth -->
+      <circle cx="160" cy="135" r="100" fill="#1565c0"/>
+      <!-- Continents -->
+      <ellipse cx="138" cy="104" rx="36" ry="26" fill="#2e7d32" transform="rotate(-18,138,104)"/>
+      <ellipse cx="175" cy="148" rx="28" ry="20" fill="#2e7d32" transform="rotate(12,175,148)"/>
+      <ellipse cx="128" cy="158" rx="20" ry="16" fill="#2e7d32"/>
+      <ellipse cx="185" cy="110" rx="14" ry="10" fill="#2e7d32" transform="rotate(-5,185,110)"/>
+      <!-- Ice caps -->
+      <ellipse cx="160" cy="38" rx="40" ry="16" fill="#b3e5fc" opacity=".88"/>
+      <ellipse cx="160" cy="232" rx="40" ry="16" fill="#b3e5fc" opacity=".88"/>
+      <!-- Ecuador dashed -->
+      <ellipse cx="160" cy="135" rx="100" ry="22" fill="none" stroke="#ef5350" stroke-width="2.5" stroke-dasharray="9,5"/>
+      <!-- Rotation arrow -->
+      <path d="M268,108 Q288,135 268,162" fill="none" stroke="#4dd0e1" stroke-width="2.5" marker-end="url(#rotArr)"/>
+      <defs>
+        <marker id="rotArr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L0,9 L9,4.5 Z" fill="#4dd0e1"/>
+        </marker>
+      </defs>
+      <text x="278" y="100" fill="#4dd0e1" font-size="10" font-family="Patrick Hand,cursive">gira</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('La Tierra tiene forma de bola redonda, como una naranja gigante. Y está un poquito inclinada, como si durmiera de lado.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 1: ¿Qué forma tiene la Tierra?</div>
+  <p style="text-align:center;color:#e0f7fa;font-size:1rem;margin-bottom:8px">Toca la respuesta correcta</p>
+
+  <div class="shapes-row" id="shapeRow">
+    <div class="shape-opt" onclick="pickShape('sphere',this)">
+      <span class="sh-emoji">🌍</span>
+      <div class="sh-label">Bola redonda</div>
+    </div>
+    <div class="shape-opt" onclick="pickShape('cube',this)">
+      <span class="sh-emoji">📦</span>
+      <div class="sh-label">Cubo</div>
+    </div>
+    <div class="shape-opt" onclick="pickShape('flat',this)">
+      <span class="sh-emoji">🍕</span>
+      <div class="sh-label">Plana</div>
+    </div>
+  </div>
+
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Los Polos ❄️ →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 2 — LOS POLOS
+════════════════════════════════════════ -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">❄️ El Polo Norte y el Polo Sur</div>
+    <div class="story-text">
+      La Tierra tiene dos puntos muy especiales: el <strong style="color:#b3e5fc">Polo Norte</strong> (¡arriba del todo! ⬆️) y el <strong style="color:#b3e5fc">Polo Sur</strong> (¡abajo del todo! ⬇️).<br><br>
+      En los dos polos hace <strong style="color:#4dd0e1">mucho frío</strong> porque son como las dos puntas de la naranja gigante. ¡Están tan lejos del Ecuador que casi no les llega calor!<br><br>
+      🐻‍❄️ Los osos polares viven en el <strong style="color:#b3e5fc">Polo Norte</strong>.<br>
+      🐧 Los pingüinos viven en el <strong style="color:#b3e5fc">Polo Sur</strong>.
+    </div>
+  </div>
+
+  <div class="earth-scene">
+    <svg width="300" height="265" viewBox="0 0 300 265" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="133" r="100" fill="#1565c0"/>
+      <ellipse cx="132" cy="103" rx="36" ry="26" fill="#2e7d32" transform="rotate(-18,132,103)"/>
+      <ellipse cx="168" cy="146" rx="28" ry="20" fill="#2e7d32"/>
+      <ellipse cx="122" cy="156" rx="20" ry="15" fill="#2e7d32"/>
+      <!-- Ecuador -->
+      <ellipse cx="150" cy="133" rx="100" ry="22" fill="none" stroke="#ef5350" stroke-width="2" stroke-dasharray="8,5" opacity=".55"/>
+      <!-- Ice caps -->
+      <ellipse cx="150" cy="36" rx="42" ry="17" fill="#b3e5fc" opacity=".9"/>
+      <ellipse cx="150" cy="230" rx="42" ry="17" fill="#b3e5fc" opacity=".9"/>
+      <!-- Labels -->
+      <rect x="75" y="5" width="150" height="22" rx="11" fill="rgba(0,30,80,.75)"/>
+      <text x="150" y="20" text-anchor="middle" fill="#b3e5fc" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🐻‍❄️ Polo Norte</text>
+      <rect x="75" y="240" width="150" height="22" rx="11" fill="rgba(0,30,80,.75)"/>
+      <text x="150" y="255" text-anchor="middle" fill="#b3e5fc" font-size="13" font-family="Patrick Hand,cursive" font-weight="bold">🐧 Polo Sur</text>
+      <!-- Equator label -->
+      <rect x="205" y="125" width="80" height="18" rx="9" fill="rgba(80,0,0,.6)"/>
+      <text x="245" y="138" text-anchor="middle" fill="#ef9a9a" font-size="11" font-family="Patrick Hand,cursive">Ecuador</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('El Polo Norte está arriba del todo y el Polo Sur está abajo del todo. En los dos polos hace muchísimo frío.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 2: ¡Toca el polo correcto!</div>
+  <div class="pole-question" id="poleQ">Cargando…</div>
+  <div class="pole-progress" id="poleProg"></div>
+
+  <div class="earth-scene" style="margin-top:4px">
+    <svg width="270" height="270" viewBox="0 0 270 270" xmlns="http://www.w3.org/2000/svg">
+      <!-- Earth body — wrong zone -->
+      <circle cx="135" cy="135" r="100" fill="#1565c0" onclick="tapPole('middle')" style="cursor:pointer"/>
+      <!-- Continents (no click) -->
+      <ellipse cx="118" cy="107" rx="34" ry="24" fill="#2e7d32" transform="rotate(-15,118,107)" style="pointer-events:none"/>
+      <ellipse cx="152" cy="148" rx="27" ry="19" fill="#2e7d32" style="pointer-events:none"/>
+      <ellipse cx="110" cy="157" rx="19" ry="14" fill="#2e7d32" style="pointer-events:none"/>
+      <!-- Equator guide -->
+      <ellipse cx="135" cy="135" rx="100" ry="22" fill="none" stroke="#ef5350" stroke-width="2" stroke-dasharray="8,5" style="pointer-events:none"/>
+      <!-- Ice cap Norte — clickable -->
+      <ellipse cx="135" cy="38" rx="40" ry="17" fill="#b3e5fc" opacity=".9" onclick="tapPole('north')" style="cursor:pointer"/>
+      <text x="135" y="19" text-anchor="middle" fill="#fff" font-size="11" font-family="Patrick Hand,cursive" opacity=".7" style="pointer-events:none">arriba ⬆️</text>
+      <!-- Ice cap Sur — clickable -->
+      <ellipse cx="135" cy="232" rx="40" ry="17" fill="#b3e5fc" opacity=".9" onclick="tapPole('south')" style="cursor:pointer"/>
+      <text x="135" y="256" text-anchor="middle" fill="#fff" font-size="11" font-family="Patrick Hand,cursive" opacity=".7" style="pointer-events:none">abajo ⬇️</text>
+    </svg>
+  </div>
+
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: El Ecuador 🎀 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 3 — EL ECUADOR (EL CINTURÓN)
+════════════════════════════════════════ -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🎀 El Ecuador: el Cinturón de la Tierra</div>
+    <div class="story-text">
+      ¿Has visto alguna vez un <strong style="color:#FFD700">muñeco de nieve</strong>? ⛄<br><br>
+      El <strong style="color:#ef5350">Ecuador</strong> es como el <strong style="color:#ef5350">cinturón del muñeco de nieve</strong>: una línea imaginaria que rodea la Tierra <strong style="color:#FFD700">justo por el medio</strong>, separando el Polo Norte (arriba) del Polo Sur (abajo).<br><br>
+      🌡️ Cerca del Ecuador hace <strong style="color:#ff9800">mucho calor</strong> todo el año. ¡Casi siempre hay selvas y playas tropicales por allí! 🌴🦜
+    </div>
+  </div>
+
+  <div class="earth-scene">
+    <svg width="340" height="230" viewBox="0 0 340 230" xmlns="http://www.w3.org/2000/svg">
+      <!-- ── Snowman ── -->
+      <!-- Body -->
+      <circle cx="85" cy="162" r="52" fill="#e3f2fd" stroke="#90caf9" stroke-width="2"/>
+      <!-- Head -->
+      <circle cx="85" cy="74" r="38" fill="#e3f2fd" stroke="#90caf9" stroke-width="2"/>
+      <!-- Eyes -->
+      <circle cx="72" cy="66" r="4" fill="#37474f"/>
+      <circle cx="98" cy="66" r="4" fill="#37474f"/>
+      <!-- Smile -->
+      <path d="M 72 84 Q 85 95 98 84" fill="none" stroke="#37474f" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Carrot nose -->
+      <polygon points="85,76 95,80 85,84" fill="#ff9800"/>
+      <!-- Buttons -->
+      <circle cx="85" cy="130" r="4" fill="#37474f"/>
+      <circle cx="85" cy="148" r="4" fill="#37474f"/>
+      <circle cx="85" cy="166" r="4" fill="#37474f"/>
+      <!-- Arms -->
+      <line x1="33" y1="140" x2="80" y2="155" stroke="#795548" stroke-width="5" stroke-linecap="round"/>
+      <line x1="137" y1="140" x2="90" y2="155" stroke="#795548" stroke-width="5" stroke-linecap="round"/>
+      <!-- Belt in the MIDDLE of body -->
+      <rect x="33" y="148" width="104" height="16" rx="8" fill="#ef5350" stroke="#b71c1c" stroke-width="1.5"/>
+      <text x="85" y="160" text-anchor="middle" fill="#fff" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">cinturón</text>
+      <!-- Arrow -->
+      <path d="M 148 158 L 185 158" stroke="#FFD700" stroke-width="2.5" fill="none" marker-end="url(#arrBelt)" stroke-dasharray="5,3"/>
+      <defs>
+        <marker id="arrBelt" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L0,8 L8,4 Z" fill="#FFD700"/>
+        </marker>
+      </defs>
+      <!-- ── Earth ── -->
+      <circle cx="260" cy="115" r="75" fill="#1565c0"/>
+      <ellipse cx="244" cy="92" rx="28" ry="20" fill="#2e7d32" transform="rotate(-15,244,92)"/>
+      <ellipse cx="273" cy="125" rx="22" ry="16" fill="#2e7d32"/>
+      <ellipse cx="238" cy="136" rx="16" ry="12" fill="#2e7d32"/>
+      <!-- Poles -->
+      <ellipse cx="260" cy="43" rx="32" ry="13" fill="#b3e5fc" opacity=".88"/>
+      <ellipse cx="260" cy="187" rx="32" ry="13" fill="#b3e5fc" opacity=".88"/>
+      <!-- Ecuador — red belt on Earth -->
+      <ellipse cx="260" cy="115" rx="75" ry="17" fill="none" stroke="#ef5350" stroke-width="3.5" stroke-dasharray="0"/>
+      <!-- Ecuador label -->
+      <rect x="283" y="106" width="72" height="18" rx="9" fill="rgba(80,0,0,.75)"/>
+      <text x="319" y="119" text-anchor="middle" fill="#ef9a9a" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">← Ecuador</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('El Ecuador es como el cinturón del muñeco de nieve. Rodea la Tierra justo por el medio. Cerca del Ecuador hace mucho calor todo el año.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 3: ¿Dónde está el Ecuador en la Tierra?</div>
+  <p style="text-align:center;color:#e0f7fa;font-size:1rem;margin-bottom:6px">El Ecuador rodea la Tierra por el…</p>
+
+  <div class="belt-choices">
+    <button class="belt-btn" onclick="pickBelt('top',this)">⬆️ Arriba del todo</button>
+    <button class="belt-btn" onclick="pickBelt('middle',this)">➡️ Por el medio</button>
+    <button class="belt-btn" onclick="pickBelt('bottom',this)">⬇️ Abajo del todo</button>
+  </div>
+
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Los Rayos ☀️ →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 4 — LOS RAYOS DEL SOL
+════════════════════════════════════════ -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">☀️ Los Rayos del Sol</div>
+    <div class="story-text">
+      Imagina que el Sol lanza pelotitas de calor a la Tierra. 🏀<br><br>
+      En el <strong style="color:#ef5350">Ecuador</strong>, las pelotitas caen <strong style="color:#FFD700">derechas</strong> —como cuando te apunta una linterna a la cara— ¡todo el calor va a un punto muy pequeño! 🔦🔥<br><br>
+      En los <strong style="color:#b3e5fc">Polos</strong>, las pelotitas llegan <strong style="color:#4dd0e1">inclinadas</strong> —como cuando la linterna apunta de lado— el calor se reparte por un área <em>muuucho más grande</em> y llega muy poquito calor. ❄️
+    </div>
+  </div>
+
+  <div class="earth-scene">
+    <svg width="370" height="230" viewBox="0 0 370 230" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="rA1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 Z" fill="#FDD835"/></marker>
+        <marker id="rA2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#FDD835" opacity=".65"/></marker>
+        <marker id="rA3" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#FDD835" opacity=".65"/></marker>
+        <radialGradient id="sunGrad" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#fff9c4"/>
+          <stop offset="100%" stop-color="#f9a825"/>
+        </radialGradient>
+      </defs>
+      <!-- Sun -->
+      <circle cx="48" cy="115" r="36" fill="url(#sunGrad)"/>
+      <text x="48" y="111" text-anchor="middle" fill="#e65100" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">El</text>
+      <text x="48" y="124" text-anchor="middle" fill="#e65100" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Sol</text>
+      <!-- Ray to Ecuador (direct / horizontal) -->
+      <line x1="84" y1="115" x2="182" y2="115" stroke="#FDD835" stroke-width="5" marker-end="url(#rA1)"/>
+      <text x="135" y="107" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Patrick Hand,cursive">recto 🔥</text>
+      <!-- Ray to North (inclined) -->
+      <line x1="78" y1="87" x2="188" y2="45" stroke="#FDD835" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#rA2)"/>
+      <text x="132" y="55" text-anchor="middle" fill="#b3e5fc" font-size="10" font-family="Patrick Hand,cursive">inclinado ❄️</text>
+      <!-- Ray to South (inclined) -->
+      <line x1="78" y1="143" x2="188" y2="185" stroke="#FDD835" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#rA3)"/>
+      <text x="132" y="182" text-anchor="middle" fill="#b3e5fc" font-size="10" font-family="Patrick Hand,cursive">inclinado ❄️</text>
+      <!-- Earth -->
+      <circle cx="265" cy="115" r="90" fill="#1565c0"/>
+      <ellipse cx="248" cy="90" rx="30" ry="22" fill="#2e7d32" transform="rotate(-15,248,90)"/>
+      <ellipse cx="278" cy="128" rx="24" ry="18" fill="#2e7d32"/>
+      <ellipse cx="238" cy="138" rx="18" ry="13" fill="#2e7d32"/>
+      <!-- Poles -->
+      <ellipse cx="265" cy="28" rx="36" ry="14" fill="#b3e5fc" opacity=".9"/>
+      <ellipse cx="265" cy="202" rx="36" ry="14" fill="#b3e5fc" opacity=".9"/>
+      <!-- Ecuador -->
+      <ellipse cx="265" cy="115" rx="90" ry="20" fill="none" stroke="#ef5350" stroke-width="3" stroke-dasharray="0"/>
+      <!-- Labels -->
+      <text x="265" y="19" text-anchor="middle" fill="#b3e5fc" font-size="11" font-family="Patrick Hand,cursive">❄️ Polo Norte</text>
+      <text x="265" y="220" text-anchor="middle" fill="#b3e5fc" font-size="11" font-family="Patrick Hand,cursive">❄️ Polo Sur</text>
+      <text x="362" y="118" text-anchor="middle" fill="#ef9a9a" font-size="11" font-family="Patrick Hand,cursive">Ec.</text>
+    </svg>
+  </div>
+
+  <button class="speak-btn" onclick="speak('En el Ecuador los rayos del Sol caen derechos y hacen mucho calor. En los Polos los rayos llegan inclinados y hace frío.')">🔊 ¡Escuchar!</button>
+
+  <div class="mini-title">🎮 Mini-juego 4: ¿A dónde corresponde cada tarjeta?</div>
+  <div class="ray-progress-bar" id="rayProg"></div>
+  <div id="rayGameArea">
+    <div class="ray-card-big" id="rayCardBig">
+      <span class="ray-card-emoji" id="rayEmoji"></span>
+      <div class="ray-card-text" id="rayText"></div>
+    </div>
+    <div class="ray-btns">
+      <button class="ray-btn ecuador" onclick="answerRay('ecuador')">🔴 Ecuador<br><small style="font-weight:normal">hace calor</small></button>
+      <button class="ray-btn polos" onclick="answerRay('polos')">🔵 Polos<br><small style="font-weight:normal">hace frío</small></button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     FASE 5 — QUIZ FINAL
+════════════════════════════════════════ -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-progress" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-question" id="quizQ"></div>
+    <div class="quiz-options" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+
+<script>
+/* ────── Helpers ────── */
+let score = 0;
+const $ = id => document.getElementById(id);
+function flash(c) {
+  const e = $('fov');
+  e.className = 'flash-ov ' + c;
+  setTimeout(() => e.className = 'flash-ov', 280);
+}
+function speak(t) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang = 'es-ES';
+  u.rate = 0.87;
+  speechSynthesis.speak(u);
+}
+function addScore(n) { score += n; $('scoreDisp').textContent = score; }
+function shuffle(a) {
+  const r = [...a];
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+function goTab(n) {
+  [1,2,3,4,5].forEach(i => {
+    $('phase'+i).classList.remove('active');
+    $('tab'+i).classList.remove('active');
+  });
+  $('phase'+n).classList.add('active');
+  $('tab'+n).classList.add('active');
+  if (n === 2) initPoles();
+  if (n === 4) initRays();
+  if (n === 5) buildQuiz();
+}
+function markDone(t) {
+  $('tab'+t).classList.remove('active');
+  $('tab'+t).classList.add('done');
+}
+
+/* ────── FASE 1: Forma de la Tierra ────── */
+function pickShape(ans, el) {
+  $('shapeRow').querySelectorAll('.shape-opt').forEach(e => e.onclick = null);
+  if (ans === 'sphere') {
+    flash('g'); addScore(15);
+    el.classList.add('correct');
+    $('fb1').className = 'fb ok';
+    $('fb1').textContent = '✅ ¡Muy bien! La Tierra tiene forma de bola redonda, igual que una naranja gigante. 🍊';
+    speak('¡Muy bien! La Tierra tiene forma de bola redonda.');
+    markDone(1);
+    setTimeout(() => $('btn1').disabled = false, 700);
+  } else {
+    flash('r');
+    el.classList.add('wrong');
+    $('fb1').className = 'fb no';
+    $('fb1').textContent = '❌ ¡Casi! La Tierra no es ' + (ans === 'cube' ? 'un cubo' : 'plana') + '. ¡Es una bola redonda! 🌍';
+    speak('No exactamente. La Tierra tiene forma de bola redonda.');
+    setTimeout(() => {
+      el.classList.remove('wrong');
+      $('shapeRow').querySelectorAll('.shape-opt').forEach(e => {
+        e.onclick = () => pickShape(e.dataset.val || ans, e);
+      });
+      // Re-wire all three
+      const opts = $('shapeRow').querySelectorAll('.shape-opt');
+      opts[0].onclick = () => pickShape('sphere', opts[0]);
+      opts[1].onclick = () => pickShape('cube',   opts[1]);
+      opts[2].onclick = () => pickShape('flat',   opts[2]);
+    }, 1100);
+  }
+}
+
+/* ────── FASE 2: Los Polos ────── */
+const POLE_Qs = [
+  { ask: 'Polo Norte 🐻‍❄️', correct: 'north', label: 'El Polo Norte está arriba del todo.' },
+  { ask: 'Polo Sur 🐧',      correct: 'south', label: 'El Polo Sur está abajo del todo.' },
+];
+let poleIdx = 0, poleCorrect = 0;
+
+function initPoles() {
+  poleIdx = 0; poleCorrect = 0;
+  $('fb2').textContent = '';
+  $('btn2').disabled = true;
+  renderPoleProg();
+  showPoleQ();
+}
+function renderPoleProg() {
+  $('poleProg').innerHTML = POLE_Qs.map((_, i) => `<div class="pdot2" id="pdot2_${i}"></div>`).join('');
+}
+function showPoleQ() {
+  if (poleIdx >= POLE_Qs.length) { endPoles(); return; }
+  const q = POLE_Qs[poleIdx];
+  $('poleQ').innerHTML = `Toca el <strong style="color:#FFD700">${q.ask}</strong> en el mapa`;
+  $('fb2').textContent = '';
+}
+function tapPole(zone) {
+  if (poleIdx >= POLE_Qs.length) return;
+  const q = POLE_Qs[poleIdx];
+  if (zone === q.correct) {
+    flash('g'); addScore(15); poleCorrect++;
+    $('fb2').className = 'fb ok';
+    $('fb2').textContent = '✅ ¡Correcto! ' + q.label;
+    speak('¡Correcto! ' + q.label);
+    const dot = $('pdot2_' + poleIdx);
+    if (dot) dot.classList.add('ok');
+    poleIdx++;
+    setTimeout(showPoleQ, 1300);
+  } else {
+    flash('r');
+    $('fb2').className = 'fb no';
+    const hint = q.correct === 'north' ? 'arriba del todo ⬆️' : 'abajo del todo ⬇️';
+    $('fb2').textContent = '❌ ¡Ese no es! Busca ' + hint + '.';
+    speak('No exactamente. Busca ' + (q.correct === 'north' ? 'arriba' : 'abajo') + '.');
+  }
+}
+function endPoles() {
+  markDone(2);
+  $('fb2').className = 'fb ok';
+  $('fb2').textContent = '🎉 ¡Encontraste los dos polos! ¡Eres un explorador polar!';
+  speak('¡Encontraste los dos polos! ¡Eres un explorador polar!');
+  setTimeout(() => $('btn2').disabled = false, 700);
+}
+
+/* ────── FASE 3: El Ecuador ────── */
+function pickBelt(pos, el) {
+  document.querySelectorAll('.belt-btn').forEach(b => b.onclick = null);
+  if (pos === 'middle') {
+    flash('g'); addScore(15);
+    el.style.borderColor = '#4CAF50';
+    el.style.background  = 'rgba(27,90,32,.7)';
+    $('fb3').className = 'fb ok';
+    $('fb3').textContent = '✅ ¡Perfecto! El Ecuador rodea la Tierra justo por el medio, igual que el cinturón del muñeco de nieve. 🎀';
+    speak('¡Perfecto! El Ecuador rodea la Tierra justo por el medio.');
+    markDone(3);
+    setTimeout(() => $('btn3').disabled = false, 700);
+  } else {
+    flash('r');
+    el.style.borderColor = '#f44336';
+    el.style.background  = 'rgba(90,16,16,.6)';
+    $('fb3').className = 'fb no';
+    $('fb3').textContent = '❌ El cinturón va justo por el medio, ni arriba ni abajo. ¡Inténtalo de nuevo!';
+    speak('No exactamente. El cinturón va por el medio.');
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.background  = '';
+      const btns = document.querySelectorAll('.belt-btn');
+      btns[0].onclick = () => pickBelt('top',    btns[0]);
+      btns[1].onclick = () => pickBelt('middle', btns[1]);
+      btns[2].onclick = () => pickBelt('bottom', btns[2]);
+    }, 1200);
+  }
+}
+
+/* ────── FASE 4: Los Rayos (one at a time) ────── */
+const RAY_ITEMS = [
+  { emoji: '🔥', text: 'Los rayos del Sol llegan derechos',         target: 'ecuador' },
+  { emoji: '❄️', text: 'Los rayos del Sol llegan muy inclinados',   target: 'polos'   },
+  { emoji: '🌴', text: 'Hay selvas y playas tropicales',             target: 'ecuador' },
+  { emoji: '🌨️', text: 'Hace mucho frío todo el año',               target: 'polos'   },
+  { emoji: '☀️', text: 'El calor se concentra en un punto',         target: 'ecuador' },
+  { emoji: '🐧', text: 'Los pingüinos y osos polares viven aquí',   target: 'polos'   },
+];
+let rayItems, rayIdx, rayCorrect;
+
+function initRays() {
+  rayItems  = shuffle(RAY_ITEMS);
+  rayIdx    = 0;
+  rayCorrect = 0;
+  $('fb4').textContent = '';
+  $('btn4').disabled  = true;
+  renderRayProg();
+  showRayItem();
+}
+function renderRayProg() {
+  $('rayProg').innerHTML = rayItems.map((_, i) => `<div class="rpdot" id="rpdot_${i}"></div>`).join('');
+}
+function showRayItem() {
+  if (rayIdx >= rayItems.length) { endRays(); return; }
+  const it = rayItems[rayIdx];
+  $('rayEmoji').textContent = it.emoji;
+  $('rayText').textContent  = it.text;
+  $('fb4').textContent = '';
+  renderRayProg();
+  const cur = $('rpdot_' + rayIdx);
+  if (cur) cur.style.borderColor = '#FFD700';
+  // Re-enable buttons
+  document.querySelectorAll('.ray-btn').forEach(b => b.disabled = false);
+  speak(it.text);
+}
+function answerRay(choice) {
+  const it = rayItems[rayIdx];
+  document.querySelectorAll('.ray-btn').forEach(b => b.disabled = true);
+  const dot = $('rpdot_' + rayIdx);
+  if (choice === it.target) {
+    flash('g'); addScore(10); rayCorrect++;
+    if (dot) dot.classList.add('ok');
+    $('fb4').className = 'fb ok';
+    $('fb4').textContent = '✅ ¡Correcto! ' + (choice === 'ecuador' ? '¡El Ecuador recibe los rayos derechos y hace calor! 🔥' : '¡En los Polos los rayos llegan inclinados y hace frío! ❄️');
+    speak('¡Correcto!');
+    rayIdx++;
+    setTimeout(showRayItem, 1300);
+  } else {
+    flash('r');
+    if (dot) dot.classList.add('ng');
+    $('fb4').className = 'fb no';
+    $('fb4').textContent = '❌ ¡Casi! Piénsalo: ' + it.text + (it.target === 'ecuador' ? ' → Ecuador 🔥' : ' → Polos ❄️');
+    speak('Casi. Inténtalo de nuevo.');
+    // Allow retry
+    setTimeout(() => {
+      if (dot) { dot.classList.remove('ng'); dot.style.borderColor = '#FFD700'; }
+      $('fb4').textContent = '';
+      document.querySelectorAll('.ray-btn').forEach(b => b.disabled = false);
+    }, 1400);
+  }
+}
+function endRays() {
+  markDone(4);
+  $('fb4').className = 'fb ok';
+  $('fb4').textContent = '🎉 ¡Genial! Has clasificado todos los rayos. ¡Eres un científico solar!';
+  speak('¡Genial! Has clasificado todos los rayos. ¡Eres un científico solar!');
+  setTimeout(() => $('btn4').disabled = false, 700);
+}
+
+/* ────── FASE 5: Quiz Final ────── */
+const QUIZ = [
+  { q: '¿Qué forma tiene la Tierra?',
+    opts: ['Plana como una pizza 🍕', 'Redonda como una naranja 🍊', 'Cuadrada como una caja 📦'],
+    ans: 1, emoji: '🌍' },
+  { q: '¿Dónde está el Polo Norte?',
+    opts: ['En el medio de la Tierra', 'Abajo del todo ⬇️', 'Arriba del todo ⬆️'],
+    ans: 2, emoji: '❄️' },
+  { q: '¿Dónde está el Polo Sur?',
+    opts: ['Arriba del todo ⬆️', 'En el medio de la Tierra', 'Abajo del todo ⬇️'],
+    ans: 2, emoji: '🐧' },
+  { q: '¿Qué es el Ecuador?',
+    opts: ['Una montaña muy alta', 'Una línea imaginaria que rodea la Tierra por el medio', 'El nombre del Polo Norte'],
+    ans: 1, emoji: '🎀' },
+  { q: '¿A qué se parece el Ecuador en la Tierra?',
+    opts: ['A las orejas del muñeco de nieve', 'Al cinturón del muñeco de nieve ⛄', 'A la cabeza del muñeco de nieve'],
+    ans: 1, emoji: '⛄' },
+  { q: '¿Por qué hace más calor cerca del Ecuador?',
+    opts: ['Porque el Ecuador está muy alto', 'Porque los rayos del Sol llegan derechos y concentrados 🔥', 'Porque hay más nubes'],
+    ans: 1, emoji: '☀️' },
+  { q: '¿Qué pasa con los rayos del Sol en los Polos?',
+    opts: ['Llegan derechos y hacen mucho calor', 'No llegan nunca', 'Llegan muy inclinados y el calor se reparte mucho ❄️'],
+    ans: 2, emoji: '🌨️' },
+  { q: '¿Dónde hace más frío?',
+    opts: ['En el Ecuador 🌴', 'En el centro de la Tierra', 'En el Polo Norte o en el Polo Sur ❄️'],
+    ans: 2, emoji: '🥶' },
+  { q: 'La Tierra está un poco inclinada. ¿A qué se parece?',
+    opts: ['A alguien durmiendo de lado 😴', 'A una pelota perfectamente recta', 'A un cubo'],
+    ans: 0, emoji: '🌎' },
+  { q: '¿Qué animal vive en el Polo Sur?',
+    opts: ['El oso polar 🐻‍❄️', 'El loro 🦜', 'El pingüino 🐧'],
+    ans: 2, emoji: '🐧' },
+];
+
+let quizItems, qi, quizCorrect;
+function buildQuiz() {
+  quizItems = shuffle(QUIZ);
+  qi = 0; quizCorrect = 0;
+  $('quizDone').style.display = 'none';
+  $('finishRow').style.display = 'none';
+  $('fb5').textContent = '';
+  $('quizCard').style.display = '';
+  showQuizQ();
+}
+function showQuizQ() {
+  if (qi >= quizItems.length) { endQuiz(); return; }
+  const q = quizItems[qi];
+  $('quizProg').textContent  = `Pregunta ${qi + 1} / ${quizItems.length}`;
+  $('quizEmoji').textContent = q.emoji;
+  $('quizQ').textContent     = q.q;
+  $('quizOpts').innerHTML    = q.opts.map((o, i) =>
+    `<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`
+  ).join('');
+  speak(q.q);
+}
+function quizAnswer(i) {
+  const q = quizItems[qi];
+  const btns = $('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b => b.disabled = true);
+  if (i === q.ans) {
+    flash('g'); addScore(10); quizCorrect++;
+    btns[i].classList.add('correct-ans');
+    $('fb5').className = 'fb ok';
+    $('fb5').textContent = '✅ ¡Muy bien!';
+    speak('¡Muy bien!');
+  } else {
+    flash('r');
+    btns[i].classList.add('wrong-ans');
+    btns[q.ans].classList.add('correct-ans');
+    $('fb5').className = 'fb no';
+    $('fb5').textContent = '❌ La respuesta correcta es: ' + q.opts[q.ans];
+    speak('La respuesta correcta es: ' + q.opts[q.ans]);
+  }
+  qi++;
+  setTimeout(() => { $('fb5').textContent = ''; showQuizQ(); }, 2000);
+}
+function endQuiz() {
+  markDone(5);
+  $('quizCard').style.display = 'none';
+  const pct = Math.round(quizCorrect / quizItems.length * 100);
+  let msg, emoji;
+  if      (pct === 100) { msg = '¡PERFECTO! ¡Eres un Científico Planetario!';           emoji = '🏆🌍🏆'; }
+  else if (pct >= 75)   { msg = '¡Genial! Casi perfecto, ¡sigue así!';                  emoji = '🌟🌍🌟'; }
+  else if (pct >= 50)   { msg = '¡Buen trabajo! Repasa un poco más y lo conseguirás.';  emoji = '👍🌍';    }
+  else                  { msg = '¡Sigue aprendiendo, poco a poco lo dominarás!';         emoji = '💪🌍';    }
+  $('quizDone').style.display = '';
+  $('quizDone').innerHTML = `
+    <div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div>
+    <strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>
+    Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> preguntas (${pct}%)<br>
+    Puntuación total: <strong style="color:#FFD700">⭐ ${score}</strong><br><br>
+    <span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display = 'flex';
+  speak(msg);
+}
+
+/* ── Init ── */
+speak('¡Bienvenido! Hoy vamos a descubrir por qué hace más calor cerca del Ecuador.');
+</script>
+</body>
+</html>
