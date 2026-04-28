@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>✖️ Los Grupos Mágicos — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:620px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:18px; height:18px; border-radius:50%;
+      background:#1a0533; border:2px solid #7c43bd; transition:background .3s;
+    }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Main card ─────────────────────────────────── */
+    .main-card {
+      background:linear-gradient(160deg,#2d004a,#1a0533);
+      border:2px solid #7c43bd; border-radius:20px;
+      padding:18px 20px; width:100%; max-width:600px;
+      font-family:'Patrick Hand',cursive;
+    }
+
+    /* ── Multiplication statement ─────────────────── */
+    .mult-stmt {
+      text-align:center; font-size:2.2rem; color:#FFD700;
+      letter-spacing:4px; margin-bottom:6px;
+      text-shadow:0 0 16px rgba(255,215,0,.55);
+    }
+    .mult-hint {
+      text-align:center; font-size:1rem; color:#ce93d8; margin-bottom:14px;
+    }
+
+    /* ── Groups visual ───────────────────────────── */
+    .groups-area {
+      display:flex; flex-wrap:wrap; gap:10px;
+      justify-content:center; margin:0 0 16px;
+    }
+    .group-box {
+      background:rgba(124,67,189,.15); border:2px solid #7c43bd;
+      border-radius:14px; padding:10px 12px;
+      display:flex; flex-wrap:wrap; gap:4px;
+      justify-content:center; align-items:center;
+      min-width:56px; max-width:120px;
+      transition:box-shadow .2s;
+    }
+    .group-box:hover { box-shadow:0 0 12px rgba(255,215,0,.4); }
+    .item-emoji { font-size:1.55rem; line-height:1; }
+
+    /* ── Repeated addition ───────────────────────── */
+    .rep-add {
+      text-align:center; font-size:1.2rem; color:#e1bee7;
+      margin-bottom:14px; background:rgba(255,255,255,.05);
+      border-radius:10px; padding:8px 12px;
+      line-height:1.6;
+    }
+    .rep-add span.hi { color:#FFD700; font-size:1.35rem; }
+
+    /* ── Answer area ─────────────────────────────── */
+    .ans-label {
+      text-align:center; font-size:1.1rem; color:#e1bee7; margin-bottom:10px;
+    }
+    .answers {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    }
+    @media(max-width:380px){ .answers { grid-template-columns:1fr 1fr; } }
+    .ans-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:14px;
+      padding:14px 4px; font-size:1.3rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s;
+    }
+    .ans-btn:hover:not(:disabled) { transform:scale(1.07); }
+    .ans-btn:disabled { opacity:.4; cursor:default; transform:none; }
+    .ans-btn.correct {
+      background:linear-gradient(135deg,#1b5e20,#388E3C) !important;
+      border-color:#4CAF50 !important; color:#fff !important;
+    }
+    .ans-btn.wrong {
+      background:linear-gradient(135deg,#b71c1c,#c62828) !important;
+      border-color:#ef9a9a !important; color:#fff !important;
+    }
+
+    #msgBox {
+      min-height:1.4em; font-size:1rem; text-align:center;
+      color:#FFD700; font-family:'Patrick Hand',cursive; margin:6px 0;
+    }
+    .btn-next {
+      background:#FFD700; color:#2d004a; border:none; border-radius:20px;
+      padding:10px 30px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; font-weight:bold; transition:transform .1s;
+    }
+    .btn-next:hover { transform:scale(1.05); }
+    @keyframes pop {
+      0%{transform:scale(0) translateX(-50%);opacity:0}
+      60%{transform:scale(1.3) translateX(-50%);opacity:1}
+      100%{transform:scale(1) translateX(-50%);opacity:1}
+    }
+    .pop-anim {
+      position:fixed; top:20%; left:50%; transform:translateX(-50%);
+      font-size:4rem; z-index:999; pointer-events:none;
+      animation:pop .7s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">✖️ Los Grupos Mágicos</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar" id="streakBar"></div>
+  </div>
+
+  <div class="main-card">
+    <div class="mult-stmt" id="multStmt">3 × 4 = ?</div>
+    <div class="mult-hint" id="multHint">3 grupos de 4 elementos</div>
+    <div class="groups-area" id="groupsArea"></div>
+    <div class="rep-add" id="repAdd"></div>
+    <div class="ans-label">¿Cuántos hay en total?</div>
+    <div class="answers" id="answersArea"></div>
+  </div>
+
+  <p id="msgBox"></p>
+  <div style="text-align:center">
+    <button class="btn-next" id="nextBtn" style="display:none" onclick="newQuestion()">✨ Siguiente operación</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ─── Levels ──────────────────────────────────────────────────────────────
+  // Each level defines which multipliers can appear and max factor
+  const LEVELS = [
+    {name:'🎓 Aprendiz',     tables:[2],          maxFactor:5},
+    {name:'⚡ Mago',          tables:[2,5],         maxFactor:5},
+    {name:'🌟 Archimago',    tables:[2,3,4],       maxFactor:5},
+    {name:'🧙 Brujo Experto',tables:[2,3,4,5,10], maxFactor:5},
+  ];
+
+  const ITEM_EMOJIS = ['⭐','🍎','🐸','🪄','🐱','🦋','🌸','🍬','💎','🔮','🧪','🌙'];
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat14_level')||'0');
+  let streak = 0, score = 0;
+  const STREAK_NEEDED = 3;
+
+  function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){const j=rnd(0,i);[r[i],r[j]]=[r[j],r[i]];} return r; }
+
+  function newQuestion() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('msgBox').textContent = '';
+
+    const lv = LEVELS[levelIdx];
+    const b = lv.tables[rnd(0, lv.tables.length-1)]; // multiplicand (group size)
+    const a = rnd(1, lv.maxFactor);                    // number of groups
+    const product = a * b;
+    const emoji = ITEM_EMOJIS[rnd(0, ITEM_EMOJIS.length-1)];
+
+    // Render multiplication statement
+    document.getElementById('multStmt').textContent = `${a} × ${b} = ?`;
+    document.getElementById('multHint').textContent =
+      `${a} grupo${a>1?'s':''} de ${b} ${emoji}`;
+
+    // Render groups
+    const groupsArea = document.getElementById('groupsArea');
+    groupsArea.innerHTML = Array.from({length:a}, () => {
+      const items = Array.from({length:b}, () =>
+        `<span class="item-emoji">${emoji}</span>`).join('');
+      return `<div class="group-box">${items}</div>`;
+    }).join('');
+
+    // Render repeated addition
+    const addParts = Array.from({length:a}, () => `<span class="hi">${b}</span>`).join(' + ');
+    document.getElementById('repAdd').innerHTML =
+      `${addParts} = <span class="hi">?</span>`;
+
+    // Generate answer choices
+    const correct = product;
+    const dist = new Set([correct]);
+    while (dist.size < 4) {
+      // Plausible wrong answers: nearby multiples or off-by-group errors
+      const wrongs = [
+        a * b + b,        // one group too many
+        a * b - b,        // one group too few
+        a * b + 1,        // off by 1
+        a * b - 1,
+        (a+1) * b,
+        (a-1) * b,
+        a * (b+1),
+        a * (b-1),
+      ].filter(n => n > 0 && n !== correct);
+      const d = wrongs[rnd(0, wrongs.length-1)];
+      dist.add(d);
+    }
+    const opts = shuffle([...dist]);
+
+    document.getElementById('answersArea').innerHTML = opts.map(o =>
+      `<button class="ans-btn" data-val="${o}" onclick="checkAns(this,${correct})">${o}</button>`
+    ).join('');
+  }
+
+  function checkAns(btn, correct) {
+    document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+    const ok = parseInt(btn.dataset.val) === correct;
+    btn.classList.add(ok ? 'correct' : 'wrong');
+
+    // Reveal correct answer
+    document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => {
+      if (parseInt(b.dataset.val) === correct) b.classList.add('correct');
+    });
+
+    // Update repeated addition with answer
+    const repAdd = document.getElementById('repAdd');
+    repAdd.innerHTML = repAdd.innerHTML.replace(
+      /<span class="hi">\?<\/span>/,
+      `<span class="hi" style="color:${ok?'#a5d6a7':'#ef9a9a'}">${correct}</span>`
+    );
+
+    if (ok) {
+      // Also highlight the multiplication statement
+      document.getElementById('multStmt').textContent =
+        document.getElementById('multStmt').textContent.replace('?', correct);
+      score += (levelIdx+1)*10;
+      document.getElementById('scoreDisp').textContent = score;
+      streak++; updateStreak(); showPop(); Sound.fanfare();
+      if (streak >= STREAK_NEEDED && levelIdx < 3) {
+        levelIdx++; streak = 0;
+        sessionStorage.setItem('mat14_level', levelIdx);
+        document.getElementById('msgBox').textContent =
+          `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Muy bien contado! ⭐','¡Genial! 🌟','¡Fantástico! ⚡','¡Eres un experto! 🧙'][levelIdx];
+      }
+    } else {
+      streak = 0; Sound.wrong();
+      document.getElementById('msgBox').textContent =
+        `🌙 Cuenta los grupos: cada grupo tiene ${document.getElementById('multHint').textContent.split('de ')[1].split(' ')[0]} ${document.getElementById('multHint').textContent.split(' ').pop()}`;
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function showPop() {
+    const h = document.createElement('div');
+    h.className = 'pop-anim'; h.textContent = '✖️';
+    document.body.appendChild(h); setTimeout(() => h.remove(), 800);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent = LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML =
+      Array.from({length:STREAK_NEEDED}, (_,i) =>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  // Init
+  updateLevelBadge(); updateStreak(); newQuestion();
+  </script>
+</body>
+</html>

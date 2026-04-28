@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>🔮 La Esfera de la Verdad — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:620px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:18px; height:18px; border-radius:50%;
+      background:#1a0533; border:2px solid #7c43bd; transition:background .3s;
+    }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Esfera (crystal ball visual) ────────────── */
+    .esfera-wrap {
+      display:flex; flex-direction:column; align-items:center;
+      margin-bottom:14px;
+    }
+    .esfera {
+      width:140px; height:140px; border-radius:50%;
+      background:radial-gradient(circle at 38% 38%,
+        rgba(255,255,255,.3) 0%, #6a1b9a 45%, #1a0533 100%);
+      box-shadow:
+        0 0 30px rgba(160,32,240,.6),
+        0 0 60px rgba(160,32,240,.3),
+        inset 0 0 20px rgba(255,215,0,.1);
+      display:flex; align-items:center; justify-content:center;
+      font-size:4rem; transition:all .4s ease;
+    }
+    .esfera.correct { background:radial-gradient(circle at 38% 38%,rgba(255,255,255,.4) 0%,#2e7d32 45%,#1b5e20 100%); box-shadow:0 0 40px rgba(76,175,80,.8); }
+    .esfera.wrong   { background:radial-gradient(circle at 38% 38%,rgba(255,255,255,.4) 0%,#b71c1c 45%,#7f0000 100%); box-shadow:0 0 40px rgba(239,83,80,.8); animation:shake .35s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+    /* ── Scenario card ───────────────────────────── */
+    .scenario-card {
+      background:linear-gradient(160deg,#2d004a,#1a0533);
+      border:2px solid #7c43bd; border-radius:20px;
+      padding:20px 22px 16px; width:100%; max-width:580px;
+      text-align:center; font-family:'Patrick Hand',cursive;
+      box-shadow:0 4px 18px rgba(160,32,240,.35);
+      min-height:80px;
+    }
+    .scenario-text {
+      font-size:1.25rem; color:#fff; line-height:1.4;
+      margin-bottom:4px;
+    }
+    .scenario-hint {
+      font-size:.9rem; color:#ce93d8;
+      min-height:1.3em;
+    }
+
+    /* ── Choice buttons ───────────────────────────── */
+    .choices {
+      display:grid; grid-template-columns:1fr 1fr 1fr;
+      gap:10px; width:100%; max-width:580px; margin-top:14px;
+    }
+    @media(max-width:400px){ .choices { grid-template-columns:1fr; } }
+
+    .choice-btn {
+      border:3px solid transparent; border-radius:18px;
+      padding:16px 8px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s, box-shadow .15s;
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+    }
+    .choice-btn:hover:not(:disabled) {
+      transform:scale(1.06);
+      box-shadow:0 6px 20px rgba(255,215,0,.4);
+    }
+    .choice-btn:disabled { opacity:.5; cursor:default; transform:none; }
+
+    .btn-imposible {
+      background:linear-gradient(135deg,#b71c1c,#e53935);
+      color:#fff; border-color:#ef9a9a;
+    }
+    .btn-posible {
+      background:linear-gradient(135deg,#f57f17,#fb8c00);
+      color:#fff; border-color:#ffe082;
+    }
+    .btn-seguro {
+      background:linear-gradient(135deg,#1b5e20,#388E3C);
+      color:#fff; border-color:#a5d6a7;
+    }
+
+    .choice-btn.correct { box-shadow:0 0 0 4px #FFD700, 0 0 24px rgba(255,215,0,.7); }
+    .choice-btn.wrong   { box-shadow:0 0 0 4px #ef5350 !important; opacity:.6; }
+
+    .choice-icon { font-size:1.8rem; }
+    .choice-label { font-weight:bold; letter-spacing:.5px; }
+    .choice-desc  { font-size:.78rem; opacity:.9; }
+
+    /* ── Explanation ─────────────────────────────── */
+    .explanation {
+      background:rgba(255,255,255,.06); border:1px solid #7c43bd;
+      border-radius:12px; padding:10px 16px;
+      font-family:'Patrick Hand',cursive; font-size:.95rem;
+      color:#e1bee7; text-align:center; width:100%; max-width:580px;
+      min-height:1.4em;
+    }
+
+    #msgBox {
+      min-height:1.4em; font-size:1rem; text-align:center;
+      color:#FFD700; font-family:'Patrick Hand',cursive; margin:4px 0;
+    }
+    .btn-next {
+      background:#FFD700; color:#2d004a; border:none; border-radius:20px;
+      padding:10px 30px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; font-weight:bold; transition:transform .1s;
+    }
+    .btn-next:hover { transform:scale(1.05); }
+    @keyframes pop {
+      0%{transform:scale(0) translateX(-50%);opacity:0}
+      60%{transform:scale(1.3) translateX(-50%);opacity:1}
+      100%{transform:scale(1) translateX(-50%);opacity:1}
+    }
+    .pop-anim {
+      position:fixed; top:18%; left:50%; transform:translateX(-50%);
+      font-size:4rem; z-index:999; pointer-events:none;
+      animation:pop .7s ease forwards;
+    }
+
+    /* ── Legend bar ──────────────────────────────── */
+    .legend-bar {
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+      font-family:'Patrick Hand',cursive; font-size:.82rem;
+      margin-bottom:10px;
+    }
+    .legend-item {
+      padding:3px 12px; border-radius:20px; color:#fff;
+      display:flex; align-items:center; gap:5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">🔮 La Esfera de la Verdad</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar" id="streakBar"></div>
+  </div>
+
+  <div class="legend-bar">
+    <div class="legend-item" style="background:#b71c1c">❌ IMPOSIBLE — No puede pasar nunca</div>
+    <div class="legend-item" style="background:#e65100">🌟 POSIBLE — Puede pasar o no</div>
+    <div class="legend-item" style="background:#1b5e20">✅ SEGURO — Siempre pasa</div>
+  </div>
+
+  <div class="esfera-wrap">
+    <div class="esfera" id="esfera">🔮</div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-text" id="scenarioText">Cargando…</div>
+    <div class="scenario-hint" id="scenarioHint"></div>
+  </div>
+
+  <div class="choices">
+    <button class="choice-btn btn-imposible" id="btnImposible" onclick="checkAnswer('imposible')">
+      <span class="choice-icon">❌</span>
+      <span class="choice-label">IMPOSIBLE</span>
+      <span class="choice-desc">No puede pasar</span>
+    </button>
+    <button class="choice-btn btn-posible" id="btnPosible" onclick="checkAnswer('posible')">
+      <span class="choice-icon">🌟</span>
+      <span class="choice-label">POSIBLE</span>
+      <span class="choice-desc">Puede pasar</span>
+    </button>
+    <button class="choice-btn btn-seguro" id="btnSeguro" onclick="checkAnswer('seguro')">
+      <span class="choice-icon">✅</span>
+      <span class="choice-label">SEGURO</span>
+      <span class="choice-desc">Siempre pasa</span>
+    </button>
+  </div>
+
+  <div class="explanation" id="explanation"></div>
+  <p id="msgBox"></p>
+  <div style="text-align:center">
+    <button class="btn-next" id="nextBtn" style="display:none" onclick="nextScenario()">🔮 Siguiente pregunta</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ─── Scenario bank ────────────────────────────────────────────────────────
+  // Each: { text, emoji, answer:'imposible'|'posible'|'seguro', explain, difficulty }
+  const SCENARIOS = [
+    // IMPOSIBLE – difficulty 1 (very clear)
+    {text:'Un pez sube a su bicicleta y va al colegio.',
+     emoji:'🐟', answer:'imposible', difficulty:1,
+     explain:'Los peces no pueden montar en bicicleta. ¡Es imposible!'},
+
+    {text:'Un árbol camina solo por el parque.',
+     emoji:'🌲', answer:'imposible', difficulty:1,
+     explain:'Los árboles tienen raíces y no pueden moverse. ¡Es imposible!'},
+
+    {text:'Sumo 2 + 2 y me da 9.',
+     emoji:'➕', answer:'imposible', difficulty:1,
+     explain:'2 + 2 siempre es 4, nunca puede ser 9. ¡Es imposible!'},
+
+    {text:'Una hormiga levanta un autobús ella sola.',
+     emoji:'🐜', answer:'imposible', difficulty:1,
+     explain:'Una hormiga es demasiado pequeña para levantar un autobús. ¡Es imposible!'},
+
+    {text:'Un elefante se mete dentro de mi mochila.',
+     emoji:'🐘', answer:'imposible', difficulty:1,
+     explain:'Un elefante es enorme y jamás cabría en una mochila. ¡Es imposible!'},
+
+    {text:'Un bebé recién nacido gana una maratón corriendo.',
+     emoji:'👶', answer:'imposible', difficulty:1,
+     explain:'Los bebés no saben caminar ni correr. ¡Es imposible!'},
+
+    {text:'Llueve agua de color rosa desde las nubes.',
+     emoji:'🌧️', answer:'imposible', difficulty:2,
+     explain:'El agua de la lluvia es transparente, nunca rosa. ¡Es imposible!'},
+
+    {text:'Las piedras flotan solas en el agua.',
+     emoji:'🪨', answer:'imposible', difficulty:2,
+     explain:'Las piedras son más densas que el agua y se hunden. ¡Es imposible!'},
+
+    {text:'Un gato escribe una carta con su pluma.',
+     emoji:'🐱', answer:'imposible', difficulty:2,
+     explain:'Los gatos no tienen manos ni pueden escribir. ¡Es imposible!'},
+
+    // POSIBLE – difficulty 1 (clear)
+    {text:'Mañana lloverá.',
+     emoji:'🌧️', answer:'posible', difficulty:1,
+     explain:'Puede llover o puede no llover. Es posible, ¡pero no seguro!'},
+
+    {text:'Sacaré un sobresaliente en el próximo examen.',
+     emoji:'📝', answer:'posible', difficulty:1,
+     explain:'Si estudias mucho, puede que sí o puede que no. ¡Es posible!'},
+
+    {text:'Esta semana comeré pizza.',
+     emoji:'🍕', answer:'posible', difficulty:1,
+     explain:'Puedes comer pizza o no comerla esta semana. ¡Es posible!'},
+
+    {text:'Encontraré una moneda en la calle hoy.',
+     emoji:'🪙', answer:'posible', difficulty:1,
+     explain:'Puede que encuentres una moneda o puede que no. ¡Es posible!'},
+
+    {text:'Mi equipo ganará el próximo partido.',
+     emoji:'⚽', answer:'posible', difficulty:1,
+     explain:'Tu equipo puede ganar o puede perder. ¡Es posible!'},
+
+    {text:'Esta tarde veremos una mariposa en el jardín.',
+     emoji:'🦋', answer:'posible', difficulty:2,
+     explain:'Las mariposas existen, puede que la veas o no. ¡Es posible!'},
+
+    {text:'Nevará en nuestra ciudad este invierno.',
+     emoji:'❄️', answer:'posible', difficulty:2,
+     explain:'En algunos lugares nieva en invierno y en otros no. ¡Es posible!'},
+
+    {text:'Me tocaré la nariz en los próximos 5 minutos.',
+     emoji:'👃', answer:'posible', difficulty:2,
+     explain:'Puedes tocarte la nariz o no hacerlo. ¡Es posible!'},
+
+    {text:'Mañana habrá sol en el recreo.',
+     emoji:'☀️', answer:'posible', difficulty:2,
+     explain:'El sol puede salir mañana o puede estar nublado. ¡Es posible!'},
+
+    // SEGURO – difficulty 1 (very clear)
+    {text:'Después de la noche viene el día.',
+     emoji:'🌙', answer:'seguro', difficulty:1,
+     explain:'El día siempre llega después de la noche. ¡Es seguro!'},
+
+    {text:'Si dejo caer una pelota, bajará al suelo.',
+     emoji:'🎾', answer:'seguro', difficulty:1,
+     explain:'La gravedad hace que todo lo que cae llegue al suelo. ¡Es seguro!'},
+
+    {text:'El año tiene 12 meses.',
+     emoji:'📅', answer:'seguro', difficulty:1,
+     explain:'Todos los años tienen exactamente 12 meses. ¡Es seguro!'},
+
+    {text:'Las personas necesitamos comer para vivir.',
+     emoji:'🍽️', answer:'seguro', difficulty:1,
+     explain:'Todos los seres humanos necesitan comer para sobrevivir. ¡Es seguro!'},
+
+    {text:'El fuego quema si lo tocas.',
+     emoji:'🔥', answer:'seguro', difficulty:1,
+     explain:'El fuego siempre quema cuando lo tocas. ¡Es seguro!'},
+
+    {text:'Dos más dos son cuatro.',
+     emoji:'➕', answer:'seguro', difficulty:1,
+     explain:'2 + 2 siempre es 4, sin excepción. ¡Es seguro!'},
+
+    {text:'El invierno tiene días más fríos que el verano.',
+     emoji:'🌨️', answer:'seguro', difficulty:2,
+     explain:'El invierno es siempre más frío que el verano. ¡Es seguro!'},
+
+    {text:'Si mezclo pintura azul y amarilla, obtendré verde.',
+     emoji:'🎨', answer:'seguro', difficulty:2,
+     explain:'Azul + amarillo = verde. ¡Siempre! Es seguro.'},
+
+    {text:'Una semana tiene 7 días.',
+     emoji:'📆', answer:'seguro', difficulty:2,
+     explain:'Todas las semanas tienen 7 días exactos. ¡Es seguro!'},
+  ];
+
+  // ─── Levels ───────────────────────────────────────────────────────────────
+  const LEVELS = [
+    {name:'🎓 Aprendiz',     maxDiff:1, allowedTypes:['imposible','seguro']},
+    {name:'⚡ Mago',          maxDiff:1, allowedTypes:['imposible','posible','seguro']},
+    {name:'🌟 Archimago',    maxDiff:2, allowedTypes:['imposible','posible','seguro']},
+    {name:'🧙 Brujo Experto',maxDiff:2, allowedTypes:['imposible','posible','seguro']},
+  ];
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat16_level')||'0');
+  let streak = 0, score = 0;
+  const STREAK_NEEDED = 3;
+  let usedIdx = new Set();
+  let currentAnswer = '';
+
+  function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+
+  function nextScenario() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('msgBox').textContent = '';
+    document.getElementById('explanation').textContent = '';
+    // Re-enable buttons
+    ['btnImposible','btnPosible','btnSeguro'].forEach(id => {
+      const b = document.getElementById(id);
+      b.disabled = false;
+      b.classList.remove('correct','wrong');
+    });
+    document.getElementById('esfera').className = 'esfera';
+    document.getElementById('esfera').textContent = '🔮';
+    loadScenario();
+  }
+
+  function loadScenario() {
+    const lv = LEVELS[levelIdx];
+    const valid = SCENARIOS
+      .map((s,i) => ({s,i}))
+      .filter(({s}) => s.difficulty <= lv.maxDiff && lv.allowedTypes.includes(s.answer));
+
+    const fresh = valid.filter(({i}) => !usedIdx.has(i));
+    const pool = fresh.length > 0 ? fresh : valid;
+    if (fresh.length === 0) usedIdx.clear();
+
+    const {s, i} = pool[rnd(0, pool.length-1)];
+    usedIdx.add(i);
+    currentAnswer = s.answer;
+
+    document.getElementById('esfera').textContent = s.emoji;
+    document.getElementById('scenarioText').textContent = s.text;
+    document.getElementById('scenarioHint').textContent = '';
+
+    // Show/hide POSIBLE button based on level
+    document.getElementById('btnPosible').style.display =
+      lv.allowedTypes.includes('posible') ? '' : 'none';
+  }
+
+  function checkAnswer(chosen) {
+    ['btnImposible','btnPosible','btnSeguro'].forEach(id => {
+      document.getElementById(id).disabled = true;
+    });
+
+    const esfera = document.getElementById('esfera');
+    const ok = chosen === currentAnswer;
+
+    // Highlight correct answer button
+    const idMap = {imposible:'btnImposible', posible:'btnPosible', seguro:'btnSeguro'};
+    document.getElementById(idMap[currentAnswer]).classList.add('correct');
+
+    if (!ok) {
+      document.getElementById(idMap[chosen]).classList.add('wrong');
+    }
+
+    esfera.className = 'esfera ' + (ok ? 'correct' : 'wrong');
+    esfera.textContent = ok ? '✨' : '💨';
+
+    // Show explanation
+    const scenario = SCENARIOS.find(s => s.answer === currentAnswer &&
+      document.getElementById('scenarioText').textContent === s.text);
+    if (scenario) {
+      document.getElementById('explanation').textContent = scenario.explain;
+    }
+
+    if (ok) {
+      score += (levelIdx+1)*10;
+      document.getElementById('scoreDisp').textContent = score;
+      streak++; updateStreak(); showPop(); Sound.fanfare();
+      if (streak >= STREAK_NEEDED && levelIdx < 3) {
+        levelIdx++; streak = 0; usedIdx.clear();
+        sessionStorage.setItem('mat16_level', levelIdx);
+        document.getElementById('msgBox').textContent =
+          `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Muy bien pensado! ⭐','¡Genial! 🌟','¡Fantástico! ⚡','¡Eres un experto! 🧙'][levelIdx];
+      }
+    } else {
+      streak = 0; Sound.wrong();
+      const labels = {imposible:'IMPOSIBLE ❌', posible:'POSIBLE 🌟', seguro:'SEGURO ✅'};
+      document.getElementById('msgBox').textContent =
+        `🌙 Era ${labels[currentAnswer]}. ¡Piensa bien antes de responder!`;
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function showPop() {
+    const h = document.createElement('div');
+    h.className = 'pop-anim'; h.textContent = '🔮';
+    document.body.appendChild(h); setTimeout(() => h.remove(), 800);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent = LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML =
+      Array.from({length:STREAK_NEEDED}, (_,i) =>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  // Init
+  updateLevelBadge(); updateStreak(); loadScenario();
+  </script>
+</body>
+</html>

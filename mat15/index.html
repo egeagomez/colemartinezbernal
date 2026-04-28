@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>📜 Los Enigmas del Mago — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:620px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:18px; height:18px; border-radius:50%;
+      background:#1a0533; border:2px solid #7c43bd; transition:background .3s;
+    }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Problem card ────────────────────────────── */
+    .problem-card {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:3px solid #b8860b; border-radius:20px;
+      padding:20px 22px 16px; width:100%; max-width:600px;
+      box-shadow:0 0 32px rgba(160,32,240,.4);
+      font-family:'Patrick Hand',cursive;
+    }
+    .problem-type {
+      display:inline-block; font-size:.82rem; background:#4a0072;
+      color:#FFD700; border:1px solid #7c43bd; border-radius:10px;
+      padding:2px 12px; margin-bottom:10px;
+    }
+    .problem-emoji { font-size:3rem; display:block; text-align:center; margin-bottom:8px; }
+    .problem-text {
+      font-size:1.15rem; color:#3e2000; text-align:center;
+      line-height:1.5; margin-bottom:16px;
+    }
+    .problem-question {
+      font-size:1.1rem; color:#4a0072; text-align:center;
+      font-weight:bold; margin-bottom:16px;
+    }
+
+    /* ── Answers ─────────────────────────────────── */
+    .answers {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .ans-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:14px;
+      padding:14px 8px; font-size:1.2rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s;
+    }
+    .ans-btn:hover:not(:disabled) { transform:scale(1.05); }
+    .ans-btn:disabled { opacity:.4; cursor:default; transform:none; }
+    .ans-btn.correct {
+      background:linear-gradient(135deg,#1b5e20,#388E3C) !important;
+      border-color:#4CAF50 !important; color:#fff !important;
+    }
+    .ans-btn.wrong {
+      background:linear-gradient(135deg,#b71c1c,#c62828) !important;
+      border-color:#ef9a9a !important; color:#fff !important;
+    }
+
+    #msgBox {
+      min-height:1.4em; font-size:1rem; text-align:center;
+      color:#FFD700; font-family:'Patrick Hand',cursive; margin:6px 0;
+    }
+    .btn-next {
+      background:#FFD700; color:#2d004a; border:none; border-radius:20px;
+      padding:10px 30px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; font-weight:bold; transition:transform .1s;
+    }
+    .btn-next:hover { transform:scale(1.05); }
+    @keyframes pop {
+      0%{transform:scale(0) translateX(-50%);opacity:0}
+      60%{transform:scale(1.3) translateX(-50%);opacity:1}
+      100%{transform:scale(1) translateX(-50%);opacity:1}
+    }
+    .pop-anim {
+      position:fixed; top:20%; left:50%; transform:translateX(-50%);
+      font-size:4rem; z-index:999; pointer-events:none;
+      animation:pop .7s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">📜 Los Enigmas del Mago</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar" id="streakBar"></div>
+  </div>
+
+  <div class="problem-card" id="problemCard">
+    <div>
+      <span class="problem-type" id="problemType">⏰ Horas</span>
+    </div>
+    <span class="problem-emoji" id="problemEmoji">🧙</span>
+    <div class="problem-text" id="problemText">Cargando…</div>
+    <div class="problem-question" id="problemQuestion"></div>
+    <div class="answers" id="answersArea"></div>
+  </div>
+
+  <p id="msgBox"></p>
+  <div style="text-align:center">
+    <button class="btn-next" id="nextBtn" style="display:none" onclick="nextProblem()">✨ Siguiente enigma</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ─── Problem bank ─────────────────────────────────────────────────────────
+  // Each problem: { type, emoji, text, question, correct, opts, difficulty }
+  const PROBLEMS = [
+
+    // ── HORAS ─────────────────────────────────────────────────────────────
+    {type:'⏰ Horas', emoji:'🧙', difficulty:1,
+     text:'La clase de magia empieza a las 9 en punto y dura 2 horas.',
+     question:'¿A qué hora termina la clase?',
+     correct:'las 11', opts:['las 10','las 11','las 12','las 8']},
+
+    {type:'⏰ Horas', emoji:'📚', difficulty:1,
+     text:'María empieza a leer a las 3 en punto y lee durante 1 hora.',
+     question:'¿A qué hora termina de leer?',
+     correct:'las 4', opts:['las 2','las 3','las 4','las 5']},
+
+    {type:'⏰ Horas', emoji:'🚌', difficulty:1,
+     text:'El autobús mágico sale a las 8 en punto y llega 2 horas después.',
+     question:'¿A qué hora llega el autobús?',
+     correct:'las 10', opts:['las 9','las 10','las 11','las 12']},
+
+    {type:'⏰ Horas', emoji:'⚽', difficulty:2,
+     text:'Un partido de quidditch empieza a las 4 en punto y dura 2 horas.',
+     question:'¿A qué hora acaba el partido?',
+     correct:'las 6', opts:['las 5','las 6','las 7','las 8']},
+
+    {type:'⏰ Horas', emoji:'🌙', difficulty:2,
+     text:'Pedro estudia desde las 5 en punto hasta las 7 en punto.',
+     question:'¿Cuántas horas estudia Pedro?',
+     correct:'2 horas', opts:['1 hora','2 horas','3 horas','4 horas']},
+
+    {type:'⏰ Horas', emoji:'🏰', difficulty:2,
+     text:'Ana entra al castillo a las 10 en punto y sale a las 12 en punto.',
+     question:'¿Cuánto tiempo estuvo Ana dentro del castillo?',
+     correct:'2 horas', opts:['1 hora','2 horas','3 horas','10 horas']},
+
+    {type:'⏰ Horas', emoji:'🍽️', difficulty:3,
+     text:'La cena mágica empieza a las 7 en punto y dura 1 hora y media.',
+     question:'¿A qué hora termina la cena?',
+     correct:'las 8 y media', opts:['las 8 en punto','las 8 y media','las 9 en punto','las 7 y media']},
+
+    {type:'⏰ Horas', emoji:'🔮', difficulty:3,
+     text:'El conjuro tarda 3 horas. El mago empieza a las 9 en punto.',
+     question:'¿A qué hora termina el conjuro?',
+     correct:'las 12', opts:['las 11','las 12','las 1','las 3']},
+
+    // ── BILLETES / DINERO ─────────────────────────────────────────────────
+    {type:'💶 Billetes', emoji:'🧙', difficulty:1,
+     text:'Tengo un billete de 10€. Compro una varita mágica por 4€.',
+     question:'¿Cuánto dinero me devuelven?',
+     correct:'6 €', opts:['4 €','5 €','6 €','7 €']},
+
+    {type:'💶 Billetes', emoji:'🎩', difficulty:1,
+     text:'Carlos tiene 8€ y Pedro tiene 5€.',
+     question:'¿Cuántos euros tienen entre los dos?',
+     correct:'13 €', opts:['3 €','12 €','13 €','14 €']},
+
+    {type:'💶 Billetes', emoji:'📚', difficulty:1,
+     text:'Un libro de hechizos cuesta 7€ y un sombrero cuesta 6€.',
+     question:'¿Cuánto cuestan los dos juntos?',
+     correct:'13 €', opts:['1 €','12 €','13 €','14 €']},
+
+    {type:'💶 Billetes', emoji:'🧪', difficulty:2,
+     text:'Tengo un billete de 20€ y me gasto 9€ en pociones.',
+     question:'¿Cuánto me queda?',
+     correct:'11 €', opts:['9 €','10 €','11 €','12 €']},
+
+    {type:'💶 Billetes', emoji:'🧁', difficulty:2,
+     text:'Cada pastel mágico cuesta 3€. Quiero comprar 4 pasteles.',
+     question:'¿Cuánto tengo que pagar?',
+     correct:'12 €', opts:['7 €','10 €','12 €','15 €']},
+
+    {type:'💶 Billetes', emoji:'⭐', difficulty:2,
+     text:'Sofía ahorra 5€ cada semana. Han pasado 3 semanas.',
+     question:'¿Cuánto dinero ha ahorrado Sofía?',
+     correct:'15 €', opts:['8 €','10 €','15 €','20 €']},
+
+    {type:'💶 Billetes', emoji:'🛍️', difficulty:3,
+     text:'Tengo un billete de 50€. Compro una escoba por 35€ y una varita por 8€.',
+     question:'¿Cuánto dinero me sobra?',
+     correct:'7 €', opts:['5 €','7 €','9 €','43 €']},
+
+    {type:'💶 Billetes', emoji:'🎁', difficulty:3,
+     text:'Tengo 15€. El regalo cuesta 22€.',
+     question:'¿Cuántos euros me faltan para comprar el regalo?',
+     correct:'7 €', opts:['5 €','6 €','7 €','8 €']},
+
+    // ── LITROS ────────────────────────────────────────────────────────────
+    {type:'💧 Litros', emoji:'🧪', difficulty:1,
+     text:'Un caldero tiene 8 litros de poción. Usamos 3 litros para el conjuro.',
+     question:'¿Cuántos litros quedan en el caldero?',
+     correct:'5 litros', opts:['3 litros','4 litros','5 litros','6 litros']},
+
+    {type:'💧 Litros', emoji:'🫙', difficulty:1,
+     text:'Llenamos 3 jarras de 2 litros cada una.',
+     question:'¿Cuántos litros hay en total?',
+     correct:'6 litros', opts:['2 litros','4 litros','5 litros','6 litros']},
+
+    {type:'💧 Litros', emoji:'🍵', difficulty:1,
+     text:'En una botella hay 5 litros de poción mágica. Bebemos 2 litros.',
+     question:'¿Cuántos litros quedan?',
+     correct:'3 litros', opts:['2 litros','3 litros','4 litros','7 litros']},
+
+    {type:'💧 Litros', emoji:'🐊', difficulty:2,
+     text:'El lago mágico tiene 10 litros de agua encantada. Lo repartimos igual entre 2 clases.',
+     question:'¿Cuántos litros recibe cada clase?',
+     correct:'5 litros', opts:['2 litros','4 litros','5 litros','8 litros']},
+
+    {type:'💧 Litros', emoji:'🌊', difficulty:2,
+     text:'Hay 6 litros en un bote y 4 litros en otro bote.',
+     question:'¿Cuántos litros hay en total?',
+     correct:'10 litros', opts:['2 litros','8 litros','10 litros','12 litros']},
+
+    {type:'💧 Litros', emoji:'👩‍🎓', difficulty:3,
+     text:'Cada alumno bebe medio litro de agua. Hay 6 alumnos en la clase.',
+     question:'¿Cuántos litros de agua se beben entre todos?',
+     correct:'3 litros', opts:['2 litros','3 litros','4 litros','6 litros']},
+
+    {type:'💧 Litros', emoji:'🧃', difficulty:3,
+     text:'Llenamos 4 botellas de 3 litros. Luego bebemos 5 litros.',
+     question:'¿Cuántos litros nos quedan?',
+     correct:'7 litros', opts:['5 litros','7 litros','9 litros','12 litros']},
+
+    // ── MEDIDAS ────────────────────────────────────────────────────────────
+    {type:'📏 Medidas', emoji:'🧹', difficulty:1,
+     text:'Una escoba mide 120 centímetros. Otra escoba mide 80 centímetros.',
+     question:'¿Cuánto mide la diferencia entre las dos escobas?',
+     correct:'40 cm', opts:['20 cm','30 cm','40 cm','50 cm']},
+
+    {type:'📏 Medidas', emoji:'🏰', difficulty:1,
+     text:'Un pasillo del castillo mide 15 metros. Ya hemos caminado 7 metros.',
+     question:'¿Cuántos metros nos faltan para llegar al final?',
+     correct:'8 m', opts:['6 m','7 m','8 m','9 m']},
+
+    {type:'📏 Medidas', emoji:'🐍', difficulty:1,
+     text:'Una serpiente mide 2 metros y otra mide 3 metros.',
+     question:'¿Cuánto miden juntas?',
+     correct:'5 m', opts:['1 m','4 m','5 m','6 m']},
+
+    {type:'📏 Medidas', emoji:'📖', difficulty:2,
+     text:'Una mesa mide 100 centímetros. Un libro mide 20 centímetros de largo.',
+     question:'¿Cuántos libros caben en fila sobre la mesa?',
+     correct:'5 libros', opts:['4 libros','5 libros','6 libros','8 libros']},
+
+    {type:'📏 Medidas', emoji:'🗼', difficulty:2,
+     text:'El castillo mide 30 metros de alto. La torre mide 10 metros más que el castillo.',
+     question:'¿Cuánto mide la torre?',
+     correct:'40 m', opts:['20 m','30 m','40 m','50 m']},
+
+    {type:'📏 Medidas', emoji:'✂️', difficulty:3,
+     text:'Una cuerda de 18 metros la cortamos en trozos de 3 metros cada uno.',
+     question:'¿Cuántos trozos obtenemos?',
+     correct:'6 trozos', opts:['3 trozos','4 trozos','5 trozos','6 trozos']},
+
+    {type:'📏 Medidas', emoji:'🌲', difficulty:3,
+     text:'Un árbol mágico crece 4 centímetros cada mes. Ahora mide 20 centímetros.',
+     question:'¿Cuánto medirá dentro de 3 meses?',
+     correct:'32 cm', opts:['23 cm','24 cm','32 cm','60 cm']},
+  ];
+
+  // ─── Levels: define which difficulty problems appear ──────────────────────
+  const LEVELS = [
+    {name:'🎓 Aprendiz',     maxDiff:1, types:['⏰ Horas','💶 Billetes']},
+    {name:'⚡ Mago',          maxDiff:2, types:['⏰ Horas','💶 Billetes','💧 Litros']},
+    {name:'🌟 Archimago',    maxDiff:2, types:['⏰ Horas','💶 Billetes','💧 Litros','📏 Medidas']},
+    {name:'🧙 Brujo Experto',maxDiff:3, types:['⏰ Horas','💶 Billetes','💧 Litros','📏 Medidas']},
+  ];
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat15_level')||'0');
+  let streak = 0, score = 0;
+  const STREAK_NEEDED = 3;
+  let usedIndices = new Set();
+
+  function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){const j=rnd(0,i);[r[i],r[j]]=[r[j],r[i]];} return r; }
+
+  function nextProblem() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('msgBox').textContent = '';
+    showProblem();
+  }
+
+  function showProblem() {
+    const lv = LEVELS[levelIdx];
+    // Filter valid problems for this level
+    const valid = PROBLEMS
+      .map((p, i) => ({p, i}))
+      .filter(({p}) => p.difficulty <= lv.maxDiff && lv.types.includes(p.type));
+
+    // If we've used most of them, reset
+    const fresh = valid.filter(({i}) => !usedIndices.has(i));
+    const pool = fresh.length > 0 ? fresh : valid;
+    if (fresh.length === 0) usedIndices.clear();
+
+    const {p, i} = pool[rnd(0, pool.length-1)];
+    usedIndices.add(i);
+
+    document.getElementById('problemType').textContent = p.type;
+    document.getElementById('problemEmoji').textContent = p.emoji;
+    document.getElementById('problemText').textContent = p.text;
+    document.getElementById('problemQuestion').textContent = '🔍 ' + p.question;
+
+    const opts = shuffle([...p.opts]);
+    document.getElementById('answersArea').innerHTML = opts.map(o =>
+      `<button class="ans-btn" data-val="${o}" data-correct="${p.correct}"
+        onclick="checkAns(this)">${o}</button>`
+    ).join('');
+  }
+
+  function checkAns(btn) {
+    document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+    const correct = btn.dataset.correct;
+    const ok = btn.dataset.val === correct;
+    btn.classList.add(ok ? 'correct' : 'wrong');
+    document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => {
+      if (b.dataset.val === correct) b.classList.add('correct');
+    });
+
+    if (ok) {
+      score += (levelIdx+1)*10;
+      document.getElementById('scoreDisp').textContent = score;
+      streak++; updateStreak(); showPop(); Sound.fanfare();
+      if (streak >= STREAK_NEEDED && levelIdx < 3) {
+        levelIdx++; streak = 0; usedIndices.clear();
+        sessionStorage.setItem('mat15_level', levelIdx);
+        document.getElementById('msgBox').textContent =
+          `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Muy bien resuelto! ⭐','¡Genial! 🌟','¡Fantástico! ⚡','¡Eres un experto! 🧙'][levelIdx];
+      }
+    } else {
+      streak = 0; Sound.wrong();
+      document.getElementById('msgBox').textContent =
+        '🌙 No es correcto. ¡Lee bien el problema y vuelve a intentarlo!';
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function showPop() {
+    const h = document.createElement('div');
+    h.className = 'pop-anim'; h.textContent = '📜';
+    document.body.appendChild(h); setTimeout(() => h.remove(), 800);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent = LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML =
+      Array.from({length:STREAK_NEEDED}, (_,i) =>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  // Init
+  updateLevelBadge(); updateStreak(); showProblem();
+  </script>
+</body>
+</html>

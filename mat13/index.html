@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>⏰ El Reloj Encantado — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:620px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:4px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 18px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:18px; height:18px; border-radius:50%;
+      background:#1a0533; border:2px solid #7c43bd; transition:background .3s;
+    }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Question banner ─────────────────────────── */
+    .q-banner {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      border:2px solid #ce93d8; border-radius:20px;
+      padding:14px 28px; font-family:'Patrick Hand',cursive;
+      font-size:1.3rem; color:#FFD700; text-align:center;
+      width:100%; max-width:580px;
+      box-shadow:0 4px 18px rgba(160,32,240,.35);
+    }
+
+    /* ── Clock grid ──────────────────────────────── */
+    .clock-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:14px; width:100%; max-width:580px; margin-top:12px;
+    }
+    .clock-opt {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:4px solid #b8860b; border-radius:20px;
+      display:flex; flex-direction:column; align-items:center;
+      padding:14px 10px 10px; cursor:pointer;
+      transition:transform .15s, box-shadow .2s, border-color .2s;
+      box-shadow:0 4px 14px rgba(160,32,240,.25);
+    }
+    .clock-opt:hover:not(:disabled) {
+      transform:scale(1.05);
+      box-shadow:0 8px 24px rgba(255,215,0,.55);
+      border-color:#FFD700;
+    }
+    .clock-opt:disabled { cursor:default; transform:none; }
+    .clock-opt.correct {
+      border-color:#4CAF50 !important;
+      box-shadow:0 0 0 3px #4CAF50, 0 0 18px rgba(76,175,80,.6) !important;
+      background:linear-gradient(160deg,#e8f5e9,#c8e6c9) !important;
+    }
+    .clock-opt.wrong {
+      border-color:#ef5350 !important;
+      box-shadow:0 0 0 3px #ef5350 !important;
+      background:linear-gradient(160deg,#ffebee,#ffcdd2) !important;
+      animation:shake .35s;
+    }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+    #msgBox {
+      min-height:1.4em; font-size:1rem; text-align:center;
+      color:#FFD700; font-family:'Patrick Hand',cursive; margin:8px 0;
+    }
+    .btn-next {
+      background:#FFD700; color:#2d004a; border:none; border-radius:20px;
+      padding:10px 30px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; font-weight:bold; transition:transform .1s;
+    }
+    .btn-next:hover { transform:scale(1.05); }
+    @keyframes pop {
+      0%{transform:scale(0) translateX(-50%);opacity:0}
+      60%{transform:scale(1.3) translateX(-50%);opacity:1}
+      100%{transform:scale(1) translateX(-50%);opacity:1}
+    }
+    .pop-anim {
+      position:fixed; top:20%; left:50%; transform:translateX(-50%);
+      font-size:4rem; z-index:999; pointer-events:none;
+      animation:pop .7s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">⏰ El Reloj Encantado</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar" id="streakBar"></div>
+  </div>
+
+  <div class="q-banner" id="qBanner">¿Qué reloj muestra…?</div>
+
+  <div class="clock-grid" id="clockGrid"></div>
+
+  <p id="msgBox"></p>
+  <div style="text-align:center">
+    <button class="btn-next" id="nextBtn" style="display:none" onclick="newQuestion()">✨ Siguiente reloj</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ─── Levels ──────────────────────────────────────────────────────────────
+  // Each level adds a new minute type
+  const LEVELS = [
+    {name:'🎓 Aprendiz',     minutes:[0]},
+    {name:'⚡ Mago',          minutes:[0,30]},
+    {name:'🌟 Archimago',    minutes:[0,30,15]},
+    {name:'🧙 Brujo Experto',minutes:[0,30,15,45]},
+  ];
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat13_level')||'0');
+  let streak = 0, score = 0;
+  const STREAK_NEEDED = 3;
+  let correctIdx = -1;
+
+  function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){const j=rnd(0,i);[r[i],r[j]]=[r[j],r[i]];} return r; }
+
+  // ─── Time helpers ─────────────────────────────────────────────────────────
+  function timeLabel(h, m) {
+    // h: 1-12, m: 0/15/30/45
+    if (m === 0)  return `las ${h} en punto`;
+    if (m === 30) return `las ${h} y media`;
+    if (m === 15) return `las ${h} y cuarto`;
+    // m === 45: "las [h+1] menos cuarto"
+    const next = (h % 12) + 1;
+    return `las ${next} menos cuarto`;
+  }
+
+  // ─── SVG clock ────────────────────────────────────────────────────────────
+  function makeClock(h, m, size=140) {
+    const cx = size/2, cy = size/2, r = size * 0.44;
+    // Angles in degrees, clockwise from 12
+    const minuteAngle = m * 6;                       // m*6 degrees
+    const hourAngle   = (h % 12) * 30 + m * 0.5;    // each hour = 30deg + minutes contribution
+
+    function hand(angleDeg, len) {
+      const rad = angleDeg * Math.PI / 180;
+      return { x: cx + len * Math.sin(rad), y: cy - len * Math.cos(rad) };
+    }
+    const hn = hand(hourAngle,   r * 0.52);
+    const mn = hand(minuteAngle, r * 0.74);
+
+    const nums = Array.from({length:12}, (_,i) => {
+      const n = i + 1;
+      const rad = n * (Math.PI/6);
+      const nx = (cx + (r * 0.76) * Math.sin(rad)).toFixed(1);
+      const ny = (cy - (r * 0.76) * Math.cos(rad) + size*0.045).toFixed(1);
+      return `<text x="${nx}" y="${ny}" text-anchor="middle"
+        font-size="${(size*0.12).toFixed(0)}" font-family="Patrick Hand,cursive"
+        fill="#3e2000" font-weight="bold">${n}</text>`;
+    }).join('');
+
+    // Tick marks for each minute (small) and hour (bigger)
+    const ticks = Array.from({length:60}, (_,i) => {
+      const isHour = i % 5 === 0;
+      const rad = i * (Math.PI/30);
+      const r1 = isHour ? r * 0.88 : r * 0.92;
+      const r2 = r * 0.98;
+      const x1 = (cx + r1 * Math.sin(rad)).toFixed(1);
+      const y1 = (cy - r1 * Math.cos(rad)).toFixed(1);
+      const x2 = (cx + r2 * Math.sin(rad)).toFixed(1);
+      const y2 = (cy - r2 * Math.cos(rad)).toFixed(1);
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+        stroke="#b8860b" stroke-width="${isHour?2:1}" opacity=".5"/>`;
+    }).join('');
+
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fffde7" stroke="#b8860b" stroke-width="3"/>
+      ${ticks}
+      ${nums}
+      <line x1="${cx}" y1="${cy}" x2="${hn.x.toFixed(1)}" y2="${hn.y.toFixed(1)}"
+        stroke="#3e2000" stroke-width="${(size*0.045).toFixed(1)}" stroke-linecap="round"/>
+      <line x1="${cx}" y1="${cy}" x2="${mn.x.toFixed(1)}" y2="${mn.y.toFixed(1)}"
+        stroke="#4a0072" stroke-width="${(size*0.03).toFixed(1)}" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="${(size*0.045).toFixed(1)}" fill="#3e2000"/>
+    </svg>`;
+  }
+
+  // ─── Question logic ────────────────────────────────────────────────────────
+  function newQuestion() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('msgBox').textContent = '';
+
+    const lv = LEVELS[levelIdx];
+    // Pick a random time based on allowed minutes for this level
+    const m = lv.minutes[rnd(0, lv.minutes.length-1)];
+    const h = rnd(1, 12);
+    const label = timeLabel(h, m);
+
+    document.getElementById('qBanner').innerHTML =
+      `🔍 ¿Qué reloj muestra <b>${label}</b>?`;
+
+    // Generate 3 distractor times (ensure different labels)
+    const usedLabels = new Set([label]);
+    const distractors = [];
+    let tries = 0;
+    while (distractors.length < 3 && tries < 500) {
+      tries++;
+      const dm = lv.minutes[rnd(0, lv.minutes.length-1)];
+      const dh = rnd(1, 12);
+      const dl = timeLabel(dh, dm);
+      if (!usedLabels.has(dl)) {
+        usedLabels.add(dl);
+        distractors.push({h:dh, m:dm, label:dl, correct:false});
+      }
+    }
+
+    // Build options array, shuffle, record correct index
+    const options = shuffle([{h, m, label, correct:true}, ...distractors]);
+    correctIdx = options.findIndex(o => o.correct);
+
+    // Render clock grid
+    const grid = document.getElementById('clockGrid');
+    grid.innerHTML = options.map((o, i) =>
+      `<button class="clock-opt" id="copt${i}" onclick="checkClock(${i},${o.correct?'true':'false'})">
+        ${makeClock(o.h, o.m)}
+      </button>`
+    ).join('');
+  }
+
+  function checkClock(idx, isCorrect) {
+    // Disable all clocks
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('copt'+i);
+      if (el) el.disabled = true;
+    }
+    const btn = document.getElementById('copt'+idx);
+    const correctBtn = document.getElementById('copt'+correctIdx);
+
+    if (isCorrect) {
+      btn.classList.add('correct');
+      score += (levelIdx+1)*10;
+      document.getElementById('scoreDisp').textContent = score;
+      streak++; updateStreak(); showPop(); Sound.fanfare();
+      if (streak >= STREAK_NEEDED && levelIdx < 3) {
+        levelIdx++; streak = 0;
+        sessionStorage.setItem('mat13_level', levelIdx);
+        document.getElementById('msgBox').textContent =
+          `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Muy bien! ⭐','¡Genial! 🌟','¡Fantástico! ⚡','¡Eres un experto! 🧙'][levelIdx];
+      }
+    } else {
+      btn.classList.add('wrong');
+      correctBtn.classList.add('correct');
+      streak = 0; Sound.wrong();
+      document.getElementById('msgBox').textContent =
+        '🌙 No es ese. ¡Fíjate bien en las manecillas!';
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function showPop() {
+    const h = document.createElement('div');
+    h.className = 'pop-anim'; h.textContent = '⏰';
+    document.body.appendChild(h); setTimeout(() => h.remove(), 800);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent = LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML =
+      Array.from({length:STREAK_NEEDED}, (_,i) =>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  // Init
+  updateLevelBadge(); updateStreak(); newQuestion();
+  </script>
+</body>
+</html>

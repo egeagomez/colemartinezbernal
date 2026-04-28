@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>📊 El Gráfico del Castillo — Academia de Magia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      display:flex; flex-direction:column; align-items:center;
+      padding-bottom:32px; min-height:100vh;
+      background:linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed;
+    }
+    .top-bar {
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; max-width:620px; padding:8px 14px; gap:10px;
+    }
+    .back-btn {
+      background:#4a0072; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:14px; padding:5px 14px; font-family:'Patrick Hand',cursive;
+      font-size:.9rem; cursor:pointer; text-decoration:none;
+    }
+    .back-btn:hover { background:#7c43bd; }
+    .score-box {
+      background:#1a0533; color:#FFD700; border:2px solid #7c43bd;
+      border-radius:20px; padding:4px 18px; font-weight:bold;
+      font-size:1rem; font-family:'Patrick Hand',cursive;
+    }
+    .hud {
+      display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+      justify-content:center; margin:3px 0 10px;
+      font-family:'Patrick Hand',cursive;
+    }
+    .level-badge {
+      background:linear-gradient(90deg,#4a0072,#7c43bd);
+      color:#FFD700; padding:4px 16px; border-radius:20px;
+      font-size:.95rem; border:1px solid #ce93d8;
+    }
+    .streak-bar { display:flex; gap:6px; }
+    .streak-dot {
+      width:18px; height:18px; border-radius:50%;
+      background:#1a0533; border:2px solid #7c43bd;
+      transition:background .3s;
+    }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* ── Chart ──────────────────────────────────── */
+    .chart-wrap {
+      background:linear-gradient(160deg,#fff8dc,#ffeaa7);
+      border:3px solid #b8860b; border-radius:16px;
+      padding:14px 18px 10px; width:100%; max-width:580px;
+      box-shadow:0 0 24px rgba(160,32,240,.4);
+    }
+    .chart-title {
+      font-family:'Patrick Hand',cursive; font-size:1rem;
+      color:#3e2000; text-align:center; margin-bottom:10px; font-weight:bold;
+    }
+    .chart-grid {
+      display:flex; gap:0; align-items:flex-end;
+      height:180px; border-bottom:3px solid #3e2000;
+      border-left:3px solid #3e2000; padding:0 6px 0 0;
+      position:relative; overflow:visible;
+    }
+    /* Y-axis grid lines */
+    .chart-grid::before {
+      content:''; position:absolute; inset:0; overflow:hidden;
+      background:repeating-linear-gradient(
+        to top, transparent 0px, transparent calc(180px/6 - 1px),
+        rgba(62,32,0,.12) calc(180px/6 - 1px), rgba(62,32,0,.12) calc(180px/6)
+      );
+      pointer-events:none;
+    }
+    .bar-col {
+      display:flex; flex-direction:column; align-items:center;
+      flex:1; gap:0; position:relative; z-index:1;
+    }
+    .bar-val {
+      font-family:'Patrick Hand',cursive; font-size:.95rem;
+      color:#fff; font-weight:bold; margin-top:5px;
+      text-shadow:0 1px 4px rgba(0,0,0,.8);
+    }
+    .bar-body {
+      width:72%; border-radius:6px 6px 0 0; transition:height .4s ease;
+      display:flex; align-items:flex-start; justify-content:center;
+      min-height:42px;
+    }
+    .bar-col.highlight .bar-body {
+      filter:drop-shadow(0 0 8px rgba(255,215,0,.9));
+      outline:3px solid #FFD700; border-radius:6px 6px 0 0;
+    }
+    /* Labels row below the chart border */
+    .chart-labels {
+      display:flex; border-left:3px solid transparent;
+      padding:0 6px 0 0;
+    }
+    .bar-label-col {
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:1px;
+      padding-top:4px;
+    }
+    .bar-emoji { font-size:1.4rem; line-height:1; }
+    .bar-name {
+      font-family:'Patrick Hand',cursive; font-size:.65rem;
+      color:#3e2000; text-align:center;
+      max-width:60px; overflow:hidden; text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    /* ── Question card ───────────────────────────── */
+    .q-card {
+      background:linear-gradient(160deg,#2d004a,#4a0072);
+      border:2px solid #7c43bd; border-radius:16px;
+      padding:14px 18px; width:100%; max-width:580px;
+      font-family:'Patrick Hand',cursive; margin-top:12px;
+    }
+    .q-text {
+      font-size:1.1rem; color:#fff; text-align:center;
+      min-height:2rem; margin-bottom:14px; line-height:1.4;
+    }
+    .answers {
+      display:grid; grid-template-columns:1fr 1fr; gap:10px;
+    }
+    .ans-btn {
+      background:linear-gradient(135deg,#4a0072,#7c43bd);
+      color:#FFD700; border:2px solid #ce93d8; border-radius:14px;
+      padding:12px 6px; font-size:1.15rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; transition:transform .12s;
+    }
+    .ans-btn:hover:not(:disabled) { transform:scale(1.05); }
+    .ans-btn:disabled { opacity:.4; cursor:default; transform:none; }
+    .ans-btn.correct {
+      background:linear-gradient(135deg,#1b5e20,#388E3C) !important;
+      border-color:#4CAF50 !important; color:#fff !important;
+    }
+    .ans-btn.wrong {
+      background:linear-gradient(135deg,#b71c1c,#c62828) !important;
+      border-color:#ef9a9a !important; color:#fff !important;
+    }
+
+    #msgBox {
+      min-height:1.4em; font-size:1rem; text-align:center;
+      color:#FFD700; font-family:'Patrick Hand',cursive; margin:6px 0;
+    }
+    .btn-next {
+      background:#FFD700; color:#2d004a; border:none; border-radius:20px;
+      padding:10px 28px; font-size:1.1rem; font-family:'Patrick Hand',cursive;
+      cursor:pointer; font-weight:bold; transition:transform .1s;
+    }
+    .btn-next:hover { transform:scale(1.05); }
+
+    @keyframes pop {
+      0%{transform:scale(0) translateX(-50%);opacity:0}
+      60%{transform:scale(1.3) translateX(-50%);opacity:1}
+      100%{transform:scale(1) translateX(-50%);opacity:1}
+    }
+    .pop-anim {
+      position:fixed; top:20%; left:50%; transform:translateX(-50%);
+      font-size:4rem; z-index:999; pointer-events:none;
+      animation:pop .7s ease forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html">← Inicio</a>
+    <span style="font-family:'Patrick Hand',cursive;color:#FFD700;font-size:1.1rem">📊 El Gráfico del Castillo</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="hud">
+    <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+    <div class="streak-bar" id="streakBar"></div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title" id="chartTitle">Objetos en el castillo mágico</div>
+    <div class="chart-grid" id="chartGrid"></div>
+    <div class="chart-labels" id="chartLabels"></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-text" id="qText">Cargando pregunta…</div>
+    <div class="answers" id="answersArea"></div>
+  </div>
+
+  <p id="msgBox"></p>
+  <div style="text-align:center">
+    <button class="btn-next" id="nextBtn" style="display:none" onclick="nextQ()">✨ Siguiente pregunta</button>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  // ─── Data ────────────────────────────────────────────────────────────────
+  const CAT_SETS = [
+    [{name:'Pociones',emoji:'🧪'},{name:'Varitas',emoji:'🪄'},{name:'Búhos',emoji:'🦉'},{name:'Ratones',emoji:'🐭'},{name:'Libros',emoji:'📚'}],
+    [{name:'Dragones',emoji:'🐉'},{name:'Escobas',emoji:'🧹'},{name:'Gatos',emoji:'🐱'},{name:'Ranas',emoji:'🐸'},{name:'Sombreros',emoji:'🎩'}],
+    [{name:'Estrellas',emoji:'⭐'},{name:'Lunas',emoji:'🌙'},{name:'Rayos',emoji:'⚡'},{name:'Cristales',emoji:'💎'},{name:'Velas',emoji:'🕯️'}],
+    [{name:'Manzanas',emoji:'🍎'},{name:'Peras',emoji:'🍐'},{name:'Fresas',emoji:'🍓'},{name:'Uvas',emoji:'🍇'},{name:'Cerezas',emoji:'🍒'}],
+  ];
+  const BAR_COLORS = [
+    'linear-gradient(180deg,#9c27b0,#4a0072)',
+    'linear-gradient(180deg,#e91e63,#880e4f)',
+    'linear-gradient(180deg,#ff9800,#bf360c)',
+    'linear-gradient(180deg,#4caf50,#1b5e20)',
+    'linear-gradient(180deg,#2196f3,#0d47a1)',
+  ];
+  const CHART_TITLES = [
+    'Objetos en el castillo mágico',
+    'Criaturas en el bosque encantado',
+    'Artículos de la tienda de pociones',
+    'Cosas en la clase de hechizos',
+  ];
+  const LEVELS = [
+    {name:'🎓 Aprendiz',    maxVal:6,  qtypes:[0,0,0,1]},
+    {name:'⚡ Mago',         maxVal:9,  qtypes:[0,1,1,2]},
+    {name:'🌟 Archimago',   maxVal:12, qtypes:[0,1,2,3]},
+    {name:'🧙 Brujo Experto',maxVal:15, qtypes:[1,2,3,3]},
+  ];
+
+  let levelIdx = parseInt(sessionStorage.getItem('mat12_level')||'0');
+  let streak = 0, score = 0;
+  const STREAK_NEEDED = 3;
+  let cats = [], vals = [], correctAns = '', qCount = 0;
+
+  function rnd(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a){ const r=[...a]; for(let i=r.length-1;i>0;i--){const j=rnd(0,i);[r[i],r[j]]=[r[j],r[i]];} return r; }
+
+  // ─── Chart generation ────────────────────────────────────────────────────
+  function genChart() {
+    const lv = LEVELS[levelIdx];
+    const set = CAT_SETS[rnd(0, CAT_SETS.length-1)];
+    cats = shuffle([...set]);
+    // Ensure 4+ distinct values AND the max is at least 3 ahead of the second highest
+    let tries = 0;
+    do {
+      vals = cats.map(() => rnd(1, lv.maxVal));
+      const sorted = [...vals].sort((a,b) => b-a);
+      const spread = sorted[0] - sorted[1];
+      if (new Set(vals).size >= 4 && spread >= 3) break;
+      tries++;
+    } while (tries < 300);
+    document.getElementById('chartTitle').textContent =
+      CHART_TITLES[rnd(0, CHART_TITLES.length-1)];
+  }
+
+  function drawChart(highlightIdx = -1) {
+    const grid   = document.getElementById('chartGrid');
+    const labels = document.getElementById('chartLabels');
+    const maxV   = Math.max(...vals);
+    const CHART_H = 175; // px available for the tallest bar
+    grid.innerHTML = cats.map((c, i) => {
+      const h = Math.max(42, Math.round((vals[i] / maxV) * CHART_H));
+      const hl = (i === highlightIdx) ? ' highlight' : '';
+      return `<div class="bar-col${hl}">
+        <div class="bar-body" style="height:${h}px;background:${BAR_COLORS[i]}">
+          <div class="bar-val">${vals[i]}</div>
+        </div>
+      </div>`;
+    }).join('');
+    labels.innerHTML = cats.map(c =>
+      `<div class="bar-label-col">
+        <div class="bar-emoji">${c.emoji}</div>
+        <div class="bar-name">${c.name}</div>
+      </div>`
+    ).join('');
+  }
+
+  // ─── Question generation ─────────────────────────────────────────────────
+  function genQuestion() {
+    drawChart(); // reset highlight
+    const lv = LEVELS[levelIdx];
+    const qt = lv.qtypes[rnd(0, lv.qtypes.length-1)];
+
+    if (qt === 0) {
+      // ¿Cuántos/as [X] hay?
+      const i = rnd(0, 4);
+      const correct = vals[i];
+      const dist = new Set([correct]);
+      while (dist.size < 4) {
+        const d = Math.max(1, correct + rnd(-4, 4));
+        if (d !== correct) dist.add(d);
+      }
+      drawChart(i);
+      showQ(`¿Cuántos/as <b>${cats[i].emoji} ${cats[i].name}</b> hay?`,
+        String(correct), shuffle([...dist]).map(String));
+    }
+    else if (qt === 1) {
+      // ¿De qué hay MÁS?
+      const maxV = Math.max(...vals);
+      const maxI = vals.indexOf(maxV);
+      const correct = cats[maxI].name;
+      const others = shuffle(cats.filter((_,i) => i !== maxI).map(c => c.name)).slice(0, 3);
+      showQ(`¿De qué hay <b>más</b> en el gráfico?`,
+        correct, shuffle([correct, ...others]));
+    }
+    else if (qt === 2) {
+      // ¿Cuántos/as [X] y [Y] juntos?
+      let i, j;
+      do { i = rnd(0, 4); j = rnd(0, 4); } while (i === j);
+      const correct = vals[i] + vals[j];
+      const dist = new Set([correct]);
+      while (dist.size < 4) {
+        const d = Math.max(2, correct + rnd(-5, 5));
+        if (d !== correct) dist.add(d);
+      }
+      drawChart(-1);
+      showQ(`¿Cuántos hay de <b>${cats[i].emoji} ${cats[i].name}</b> y de <b>${cats[j].emoji} ${cats[j].name}</b> en total?`,
+        String(correct), shuffle([...dist]).map(String));
+    }
+    else {
+      // ¿Cuántos/as más [X] que [Y]?
+      let i, j, tries = 0;
+      do { i = rnd(0,4); j = rnd(0,4); tries++; } while ((i===j || vals[i]<=vals[j]) && tries<200);
+      const correct = vals[i] - vals[j];
+      const dist = new Set([correct]);
+      while (dist.size < 4) {
+        const d = Math.max(1, correct + rnd(-3, 3));
+        if (d !== correct) dist.add(d);
+      }
+      drawChart(-1);
+      showQ(`¿Cuántos/as más <b>${cats[i].emoji} ${cats[i].name}</b> que <b>${cats[j].emoji} ${cats[j].name}</b> hay?`,
+        String(correct), shuffle([...dist]).map(String));
+    }
+  }
+
+  function showQ(html, correct, opts) {
+    document.getElementById('qText').innerHTML = html;
+    correctAns = correct;
+    document.getElementById('answersArea').innerHTML = opts.map(o =>
+      `<button class="ans-btn" data-val="${o}" onclick="checkAns(this)">${o}</button>`
+    ).join('');
+    document.getElementById('msgBox').textContent = '';
+    document.getElementById('nextBtn').style.display = 'none';
+  }
+
+  function checkAns(btn) {
+    document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+    const ok = btn.dataset.val === correctAns;
+    btn.classList.add(ok ? 'correct' : 'wrong');
+    if (!ok) {
+      document.getElementById('answersArea').querySelectorAll('.ans-btn').forEach(b => {
+        if (b.dataset.val === correctAns) b.classList.add('correct');
+      });
+      streak = 0; Sound.wrong();
+      document.getElementById('msgBox').textContent = '🌙 Fíjate bien en el gráfico. ¡Inténtalo de nuevo!';
+    } else {
+      score += (levelIdx + 1) * 10;
+      document.getElementById('scoreDisp').textContent = score;
+      streak++;
+      updateStreak(); showPop(); Sound.fanfare();
+      if (streak >= STREAK_NEEDED && levelIdx < 3) {
+        levelIdx++; streak = 0;
+        sessionStorage.setItem('mat12_level', levelIdx);
+        document.getElementById('msgBox').textContent = `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent =
+          ['¡Muy bien! ⭐','¡Genial! 🌟','¡Fantástico! ⚡','¡Eres un experto! 🧙'][levelIdx];
+      }
+    }
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function nextQ() {
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('msgBox').textContent = '';
+    qCount++;
+    if (qCount >= 3) { qCount = 0; genChart(); }
+    genQuestion();
+  }
+
+  function showPop() {
+    const h = document.createElement('div');
+    h.className = 'pop-anim'; h.textContent = '✨';
+    document.body.appendChild(h); setTimeout(() => h.remove(), 800);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent = LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML =
+      Array.from({length:STREAK_NEEDED}, (_,i) =>
+        `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  // Init
+  updateLevelBadge(); updateStreak();
+  genChart(); genQuestion();
+  </script>
+</body>
+</html>
