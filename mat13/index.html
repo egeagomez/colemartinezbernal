@@ -134,12 +134,12 @@
   <script src="../assets/score.js"></script>
   <script>
   // ─── Levels ──────────────────────────────────────────────────────────────
-  // Each level adds a new minute type
+  // Progression: basic → quarter-hours → near-halves → all 5-min steps
   const LEVELS = [
-    {name:'🎓 Aprendiz',     minutes:[0]},
-    {name:'⚡ Mago',          minutes:[0,30]},
-    {name:'🌟 Archimago',    minutes:[0,30,15]},
-    {name:'🧙 Brujo Experto',minutes:[0,30,15,45]},
+    {name:'🎓 Aprendiz',     minutes:[0, 30]},
+    {name:'⚡ Mago',          minutes:[0, 15, 30, 45]},
+    {name:'🌟 Archimago',    minutes:[0, 10, 15, 20, 30, 40, 45, 50]},
+    {name:'🧙 Brujo Experto',minutes:[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]},
   ];
 
   let levelIdx = parseInt(sessionStorage.getItem('mat13_level')||'0');
@@ -152,13 +152,23 @@
 
   // ─── Time helpers ─────────────────────────────────────────────────────────
   function timeLabel(h, m) {
-    // h: 1-12, m: 0/15/30/45
-    if (m === 0)  return `las ${h} en punto`;
-    if (m === 30) return `las ${h} y media`;
-    if (m === 15) return `las ${h} y cuarto`;
-    // m === 45: "las [h+1] menos cuarto"
+    // h: 1-12, m: any multiple of 5
     const next = (h % 12) + 1;
-    return `las ${next} menos cuarto`;
+    switch(m) {
+      case  0: return `las ${h} en punto`;
+      case  5: return `las ${h} y cinco`;
+      case 10: return `las ${h} y diez`;
+      case 15: return `las ${h} y cuarto`;
+      case 20: return `las ${h} y veinte`;
+      case 25: return `las ${h} y veinticinco`;
+      case 30: return `las ${h} y media`;
+      case 35: return `las ${next} menos veinticinco`;
+      case 40: return `las ${next} menos veinte`;
+      case 45: return `las ${next} menos cuarto`;
+      case 50: return `las ${next} menos diez`;
+      case 55: return `las ${next} menos cinco`;
+      default: return `las ${h}:${String(m).padStart(2,'0')}`;
+    }
   }
 
   // ─── SVG clock ────────────────────────────────────────────────────────────
