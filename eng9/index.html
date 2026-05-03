@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔍 Guess Who — English</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:680px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1rem;text-align:center;margin:6px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ── Phase 1: Meet ── */
+.meet-dots{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
+.m-dot{width:11px;height:11px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
+.m-dot.cur{background:#FFD700;border-color:#f9a825}.m-dot.seen{background:#42a5f5}
+.char-card{width:100%;max-width:360px;background:linear-gradient(145deg,#1a3a5c,#0d2540);border:3px solid #2979ff;border-radius:24px;padding:22px 18px;text-align:center;box-shadow:0 8px 28px rgba(41,121,255,.3)}
+.cc-name{font-size:1.8rem;font-weight:bold;color:#FFD700;margin-bottom:2px}
+.cc-pronoun{font-size:.82rem;color:#90caf9;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px}
+.cc-feats{display:flex;justify-content:center;gap:20px;margin-bottom:14px}
+.cc-feat{display:flex;flex-direction:column;align-items:center;gap:5px}
+.cc-feat img{width:90px;height:90px;object-fit:cover;border-radius:14px;border:2px solid #42a5f5;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.cc-feat-lbl{font-size:.8rem;color:#90caf9}
+.cc-sentence{font-size:1.15rem;color:#fff;line-height:1.5}
+.cc-sentence b{color:#69f0ae}
+.meet-nav{display:flex;align-items:center;gap:14px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:42px;height:42px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+.spk-btn:hover{background:#1976d2}
+
+/* ── Phase 2: Find Me ── */
+.desc-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:14px 16px;text-align:center;margin-bottom:10px}
+.desc-text{font-size:1.4rem;color:#FFD700;font-weight:bold;line-height:1.5}
+.desc-text b{color:#69f0ae}
+.find-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:8px}
+.pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.pick-card{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;transition:transform .12s,border-color .15s,opacity .3s;font-family:inherit}
+.pick-card:hover:not([disabled]){transform:scale(1.04);border-color:#90caf9}
+.pick-card[disabled]{cursor:default}
+.pick-card.correct{border-color:#69f0ae!important;box-shadow:0 0 16px rgba(105,240,174,.5);outline:3px solid #69f0ae}
+.pick-card.wrong{opacity:.25;border-color:#f44336!important}
+.pick-card .pc-name{font-size:1.05rem;font-weight:bold;color:#FFD700}
+.pick-card .pc-imgs{display:flex;gap:8px}
+.pick-card .pc-imgs img{width:58px;height:58px;object-fit:cover;border-radius:10px}
+
+/* ── Phase 3: Guess Who ── */
+.gw-top{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:8px}
+.gw-mystery{background:linear-gradient(145deg,#1a0533,#2d004a);border:3px solid #7c43bd;border-radius:16px;padding:10px 14px;text-align:center;min-width:108px}
+.gw-mys-lbl{font-size:.7rem;color:#ce93d8;margin-bottom:3px}
+.gw-mys-em{font-size:2.2rem;margin-bottom:2px}
+.gw-mys-pronoun{font-size:.95rem;color:#FFD700;font-weight:bold}
+.gw-mys-name{font-size:.9rem;color:#69f0ae;font-weight:bold;margin-top:2px;display:none}
+.gw-round-info{font-size:.88rem;color:#90caf9;text-align:center;line-height:1.6}
+.gw-lives{text-align:right}
+.gw-lives-lbl{font-size:.7rem;color:#90caf9;margin-bottom:3px}
+.gw-lives-row{font-size:1.4rem;line-height:1}
+.gw-ans{background:rgba(0,0,0,.45);border:2px solid #2979ff;border-radius:12px;padding:9px 14px;text-align:center;margin-bottom:8px;min-height:50px;display:flex;align-items:center;justify-content:center}
+.gw-ans-txt{font-size:1.15rem;font-weight:bold;color:#90caf9}
+.gw-ans-txt.yes{color:#69f0ae}.gw-ans-txt.no{color:#ff5252}
+/* Character grid */
+.gw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;margin-bottom:10px}
+.gw-ch{background:linear-gradient(145deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:11px;padding:6px 4px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s,transform .12s,opacity .3s,filter .3s;user-select:none}
+.gw-ch:hover:not(.eliminated):not(.wrong-guess){border-color:#FFD700;transform:scale(1.06)}
+.gw-ch.eliminated{opacity:.13;cursor:default;filter:grayscale(1);pointer-events:none}
+.gw-ch.wrong-guess{border-color:#f44336!important;opacity:.28;filter:grayscale(1);pointer-events:none}
+.gw-ch.found{border-color:#69f0ae!important;box-shadow:0 0 18px rgba(105,240,174,.6);animation:pop .45s}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.gw-ch .cn{font-size:.72rem;font-weight:bold;color:#FFD700;margin-bottom:3px}
+.gw-ch .ci{display:flex;justify-content:center;gap:3px}
+.gw-ch .ci img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+.gw-ch .cx{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:2rem;font-weight:bold;color:#f44336;border-radius:11px}
+.gw-ch.eliminated .cx,.gw-ch.wrong-guess .cx{display:flex}
+/* Feature buttons */
+.feat-panel{width:100%;background:rgba(10,20,40,.8);border:2px solid #2979ff;border-radius:14px;padding:8px 10px;margin-bottom:6px}
+.feat-panel-lbl{font-size:.8rem;color:#90caf9;text-align:center;margin-bottom:7px}
+.feat-btns{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.f-qbtn{display:flex;flex-direction:column;align-items:center;gap:2px;background:#0f1f35;border:2px solid #2979ff;border-radius:9px;padding:5px 6px;cursor:pointer;min-width:66px;transition:transform .1s;font-family:inherit}
+.f-qbtn:hover:not([disabled]){transform:scale(1.06);border-color:#90caf9}
+.f-qbtn[disabled]{cursor:default;opacity:.3}
+.f-qbtn img{width:38px;height:38px;object-fit:cover;border-radius:6px}
+.f-qbtn span{font-size:.64rem;color:#90caf9;text-align:center;line-height:1.2}
+.f-qbtn.fy{border-color:#69f0ae!important;background:rgba(105,240,174,.12)}
+.f-qbtn.fn{border-color:#ff5252!important;background:rgba(255,82,82,.12)}
+.gw-guess-hint{font-size:.88rem;color:#FFD700;text-align:center;margin:3px 0 6px;font-weight:bold}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🔍 Guess Who</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">👥 Meet</div>
+  <div class="p-tab"        id="tab2">🔎 Find Me</div>
+  <div class="p-tab"        id="tab3">🔍 Guess Who</div>
+</div>
+
+<!-- ══ PHASE 1: MEET ══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Meet the characters! Click ▶ to see them all 👀</p>
+  <div class="meet-dots" id="mDots"></div>
+  <div class="char-card"  id="charCard"></div>
+  <div class="meet-nav">
+    <button class="nav-btn" id="mP" onclick="meetMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="mCnt">1 / 8</span>
+    <button class="nav-btn" id="mN" onclick="meetMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakChar()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>🔎 Start Find Me! →</button>
+</div>
+
+<!-- ══ PHASE 2: FIND ME ══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Read the description and tap the right character! 🔎</p>
+  <div class="desc-box">
+    <div class="desc-text" id="descText"></div>
+  </div>
+  <div class="find-prog" id="findProg">Question 1 of 8</div>
+  <div class="pick-grid" id="pickGrid"></div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- ══ PHASE 3: GUESS WHO ══ -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Ask questions and guess the mystery character! 🕵️</p>
+  <div class="gw-top" id="gwTop">
+    <div class="gw-mystery">
+      <div class="gw-mys-lbl">Mystery!</div>
+      <div class="gw-mys-em"   id="gwMysEm">🕵️</div>
+      <div class="gw-mys-pronoun" id="gwMysPron"></div>
+      <div class="gw-mys-name"    id="gwMysName"></div>
+    </div>
+    <div class="gw-round-info" id="gwRoundInfo"></div>
+    <div class="gw-lives">
+      <div class="gw-lives-lbl">Lives</div>
+      <div class="gw-lives-row" id="gwLivesRow"></div>
+    </div>
+  </div>
+  <div class="gw-ans" id="gwAns"><span class="gw-ans-txt" id="gwAnsTxt">Ask a question below! 👇</span></div>
+  <div class="gw-grid" id="gwGrid"></div>
+  <div class="feat-panel" id="featPanel">
+    <div class="feat-panel-lbl" id="featLbl">🎙️ Ask: <em>Has he/she got…?</em></div>
+    <div class="feat-btns" id="featBtns"></div>
+  </div>
+  <div class="gw-guess-hint" id="gwHint">💡 Tap a character card to guess!</div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-go" id="btnNR" style="display:none" onclick="nextGWRound()">Next Round ▶</button>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎉</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">You're a Guess Who champion!</div>
+    <div style="color:#90caf9">Total score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────
+const CHARS = [
+  { name:'Alice', pronoun:'She', emoji:'👧', features:['curly hair', 'necklace'],
+    imgs:['../assets/eng6/CurlyAir.jpg',  '../assets/eng7/collar.png'] },
+  { name:'Tom',   pronoun:'He',  emoji:'👦', features:['short hair', 'glasses'],
+    imgs:['../assets/eng6/shortAir.jpg',  '../assets/eng7/Gafas.png'] },
+  { name:'Sue',   pronoun:'She', emoji:'👧', features:['long hair',  'crown'],
+    imgs:['../assets/eng6/LongAir.jpg',   '../assets/eng7/corona.png'] },
+  { name:'Ben',   pronoun:'He',  emoji:'👦', features:['dark hair',  'beard'],
+    imgs:['../assets/eng6/BlackAir.jpg',  '../assets/eng6/Beard.jpg'] },
+  { name:'Lily',  pronoun:'She', emoji:'👧', features:['blonde hair','earrings'],
+    imgs:['../assets/eng6/Blonde.jpg',    '../assets/eng7/Pendientes.png'] },
+  { name:'Eva',   pronoun:'She', emoji:'👧', features:['straight hair','wig'],
+    imgs:['../assets/eng6/Straight.jpg',  '../assets/eng7/peluca.png'] },
+  { name:'Jack',  pronoun:'He',  emoji:'👦', features:['curly hair', 'moustache'],
+    imgs:['../assets/eng6/CurlyAir.jpg',  '../assets/eng6/Mustache.jpg'] },
+  { name:'Rosa',  pronoun:'She', emoji:'👧', features:['long hair',  'glasses'],
+    imgs:['../assets/eng6/LongAir.jpg',   '../assets/eng7/Gafas.png'] },
+];
+
+// All unique features across characters (for question buttons)
+const FEATS = [
+  { name:'curly hair',    img:'../assets/eng6/CurlyAir.jpg' },
+  { name:'straight hair', img:'../assets/eng6/Straight.jpg' },
+  { name:'long hair',     img:'../assets/eng6/LongAir.jpg' },
+  { name:'short hair',    img:'../assets/eng6/shortAir.jpg' },
+  { name:'dark hair',     img:'../assets/eng6/BlackAir.jpg' },
+  { name:'blonde hair',   img:'../assets/eng6/Blonde.jpg' },
+  { name:'beard',         img:'../assets/eng6/Beard.jpg' },
+  { name:'moustache',     img:'../assets/eng6/Mustache.jpg' },
+  { name:'necklace',      img:'../assets/eng7/collar.png' },
+  { name:'glasses',       img:'../assets/eng7/Gafas.png' },
+  { name:'crown',         img:'../assets/eng7/corona.png' },
+  { name:'earrings',      img:'../assets/eng7/Pendientes.png' },
+  { name:'wig',           img:'../assets/eng7/peluca.png' },
+];
+
+const GW_ROUNDS = 4;
+
+// ── Utilities ────────────────────────────────────────────────────────
+let score = 0;
+const upScore = n => { score += n; document.getElementById('scoreDisp').textContent = score; };
+const flash  = ok => { const e = document.getElementById('fov'); e.className = 'flash-ov ' + (ok ? 'g' : 'r'); setTimeout(() => e.className = 'flash-ov', 300); };
+const speak  = t  => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = .85; speechSynthesis.cancel(); speechSynthesis.speak(u); };
+const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+
+function goTab(n) {
+  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+  document.getElementById('phase' + n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t, i) => {
+    t.classList.remove('active', 'done');
+    if (i + 1 < n) t.classList.add('done');
+  });
+  document.getElementById('tab' + n).classList.add('active');
+  if (n === 2) initFind();
+  if (n === 3) initGW();
+}
+
+// ── Phase 1: Meet ────────────────────────────────────────────────────
+let meetIdx = 0, meetSeen = new Set();
+
+function meetRender() {
+  const c = CHARS[meetIdx];
+  document.getElementById('charCard').innerHTML = `
+    <div class="cc-name">${c.name}</div>
+    <div class="cc-pronoun">${c.pronoun}</div>
+    <div class="cc-feats">
+      ${c.features.map((f, i) => `
+        <div class="cc-feat">
+          <img src="${c.imgs[i]}" alt="${f}">
+          <div class="cc-feat-lbl">${f}</div>
+        </div>`).join('')}
+    </div>
+    <div class="cc-sentence">
+      ${c.pronoun} <b>has got</b> ${c.features[0]} and ${c.features[1]}.
+    </div>`;
+  document.getElementById('mCnt').textContent = (meetIdx + 1) + ' / ' + CHARS.length;
+  document.getElementById('mP').disabled = meetIdx === 0;
+  document.getElementById('mN').disabled = meetIdx === CHARS.length - 1;
+  meetSeen.add(meetIdx);
+  document.getElementById('mDots').innerHTML = CHARS.map((_, i) =>
+    `<div class="m-dot${i === meetIdx ? ' cur' : meetSeen.has(i) ? ' seen' : ''}"></div>`
+  ).join('');
+  if (meetSeen.size === CHARS.length) {
+    document.getElementById('btn1').disabled = false;
+    const f = document.getElementById('fb1'); f.className = 'fb ok';
+    f.textContent = '✅ You know them all! Ready to play!';
+  }
+}
+
+function meetMove(d) { meetIdx = Math.max(0, Math.min(CHARS.length - 1, meetIdx + d)); meetRender(); }
+function speakChar() {
+  const c = CHARS[meetIdx];
+  speak(`${c.name}. ${c.pronoun} has got ${c.features[0]} and ${c.features[1]}.`);
+}
+meetRender();
+
+// ── Phase 2: Find Me ─────────────────────────────────────────────────
+let findN = 0, findOK = 0, findOrder = [];
+
+function initFind() { findN = 0; findOK = 0; findOrder = shuffle(CHARS.map((_, i) => i)); nextFind(); }
+
+function nextFind() {
+  if (findN >= CHARS.length) {
+    document.getElementById('tab2').classList.add('done');
+    const f = document.getElementById('fb2'); f.className = 'fb ok';
+    f.innerHTML = '🎉 Done! ' + findOK + '/' + CHARS.length + ' correct!';
+    setTimeout(() => goTab(3), 1500);
+    return;
+  }
+  const ci = findOrder[findN];
+  const c  = CHARS[ci];
+  document.getElementById('descText').innerHTML =
+    `${c.pronoun} has got <b>${c.features[0]}</b> and <b>${c.features[1]}</b>.`;
+  document.getElementById('findProg').textContent = 'Question ' + (findN + 1) + ' of ' + CHARS.length;
+  const others = shuffle(CHARS.map((_, i) => i).filter(i => i !== ci)).slice(0, 3);
+  const opts   = shuffle([ci, ...others]);
+  document.getElementById('pickGrid').innerHTML = opts.map(oi => {
+    const ch = CHARS[oi];
+    return `<button class="pick-card" data-ci="${oi}" onclick="checkFind(this,${ci})">
+      <div class="pc-name">${ch.name}</div>
+      <div class="pc-imgs">${ch.imgs.map((img, fi) => `<img src="${img}" alt="${ch.features[fi]}">`).join('')}</div>
+    </button>`;
+  }).join('');
+  document.getElementById('fb2').textContent = '';
+}
+
+function checkFind(btn, correctIdx) {
+  document.querySelectorAll('.pick-card').forEach(b => { b.disabled = true; });
+  const ok = parseInt(btn.dataset.ci) === correctIdx;
+  const c  = CHARS[correctIdx];
+  if (ok) {
+    btn.classList.add('correct'); findOK++; upScore(10); flash(true);
+    const f = document.getElementById('fb2'); f.className = 'fb ok';
+    f.textContent = '✅ Yes, it\'s ' + c.name + '!';
+    speak(`Yes! It's ${c.name}. ${c.pronoun} has got ${c.features[0]} and ${c.features[1]}.`);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.pick-card').forEach(b => {
+      if (parseInt(b.dataset.ci) === correctIdx) b.classList.add('correct');
+    });
+    flash(false);
+    const f = document.getElementById('fb2'); f.className = 'fb no';
+    f.textContent = '❌ It was ' + c.name + '!';
+    speak('It was ' + c.name + '!');
+  }
+  findN++;
+  setTimeout(nextFind, 1600);
+}
+
+// ── Phase 3: Guess Who ───────────────────────────────────────────────
+let gwRound = 0, gwSecret = -1, gwLives = 3, gwQAsked = 0, gwSecretPool = [];
+
+function initGW() {
+  gwRound = 0; gwLives = 3;
+  gwSecretPool = shuffle(CHARS.map((_, i) => i));
+  startGWRound();
+}
+
+function nextGWRound() {
+  gwRound++;
+  document.getElementById('btnNR').style.display = 'none';
+  document.getElementById('fb3').textContent = '';
+  if (gwRound >= GW_ROUNDS) {
+    document.getElementById('gwTop').style.display    = 'none';
+    document.getElementById('gwAns').style.display    = 'none';
+    document.getElementById('gwGrid').style.display   = 'none';
+    document.getElementById('featPanel').style.display = 'none';
+    document.getElementById('gwHint').style.display   = 'none';
+    document.getElementById('fin').style.display      = 'block';
+    document.getElementById('finSc').textContent      = score;
+    return;
+  }
+  startGWRound();
+}
+
+function startGWRound() {
+  gwSecret  = gwSecretPool[gwRound % CHARS.length];
+  gwQAsked  = 0;
+  const sec = CHARS[gwSecret];
+
+  // Reset visibility
+  document.getElementById('gwTop').style.display    = '';
+  document.getElementById('gwAns').style.display    = '';
+  document.getElementById('gwGrid').style.display   = '';
+  document.getElementById('featPanel').style.display = '';
+  document.getElementById('gwHint').style.display   = '';
+
+  // Mystery card
+  document.getElementById('gwMysEm').textContent   = sec.pronoun === 'He' ? '👦' : '👧';
+  document.getElementById('gwMysPron').textContent = sec.pronoun;
+  document.getElementById('gwMysName').style.display = 'none';
+  document.getElementById('gwMysName').textContent  = sec.name;
+
+  document.getElementById('gwRoundInfo').innerHTML =
+    `Round ${gwRound + 1} of ${GW_ROUNDS}<br><span style="color:#FFD700">Who is it?</span>`;
+  document.getElementById('featLbl').innerHTML =
+    `🎙️ Ask: <em>Has ${sec.pronoun.toLowerCase()} got…?</em>`;
+
+  renderLives();
+
+  const ansTxt = document.getElementById('gwAnsTxt');
+  ansTxt.className   = 'gw-ans-txt';
+  ansTxt.textContent = 'Ask a question below! 👇';
+
+  // Character grid
+  document.getElementById('gwGrid').innerHTML = CHARS.map((ch, i) =>
+    `<div class="gw-ch" id="gwc${i}" onclick="gwGuess(${i})">
+      <div class="cn">${ch.name}</div>
+      <div class="ci">${ch.imgs.map((img, fi) => `<img src="${img}" alt="${ch.features[fi]}">`).join('')}</div>
+      <div class="cx">✕</div>
+    </div>`
+  ).join('');
+
+  // Feature buttons
+  document.getElementById('featBtns').innerHTML = FEATS.map((f, i) =>
+    `<button class="f-qbtn" id="fqb${i}" onclick="gwAsk(${i})">
+      <img src="${f.img}" alt="${f.name}">
+      <span>${f.name}</span>
+    </button>`
+  ).join('');
+}
+
+function renderLives() {
+  document.getElementById('gwLivesRow').textContent =
+    '❤️'.repeat(gwLives) + '🖤'.repeat(3 - gwLives);
+}
+
+function gwAsk(featIdx) {
+  const f    = FEATS[featIdx];
+  const sec  = CHARS[gwSecret];
+  const hasIt = sec.features.includes(f.name);
+  const pron  = sec.pronoun.toLowerCase();
+
+  const btn = document.getElementById('fqb' + featIdx);
+  btn.disabled = true;
+  btn.classList.add(hasIt ? 'fy' : 'fn');
+  gwQAsked++;
+
+  const ansTxt = document.getElementById('gwAnsTxt');
+  if (hasIt) {
+    ansTxt.className   = 'gw-ans-txt yes';
+    ansTxt.textContent = `✅ Yes, ${pron} has got ${f.name}!`;
+    speak(`Yes, ${pron} has got ${f.name}.`);
+  } else {
+    ansTxt.className   = 'gw-ans-txt no';
+    ansTxt.textContent = `❌ No, ${pron} hasn't got ${f.name}!`;
+    speak(`No, ${pron} hasn't got ${f.name}.`);
+  }
+
+  // Eliminate non-matching characters
+  CHARS.forEach((ch, i) => {
+    const el = document.getElementById('gwc' + i);
+    if (!el || el.classList.contains('eliminated') || el.classList.contains('wrong-guess')) return;
+    if (ch.features.includes(f.name) !== hasIt) el.classList.add('eliminated');
+  });
+
+  // Check if only 1 remains
+  const alive = CHARS.filter((_, i) => {
+    const el = document.getElementById('gwc' + i);
+    return el && !el.classList.contains('eliminated') && !el.classList.contains('wrong-guess');
+  });
+  if (alive.length === 1) {
+    const f3 = document.getElementById('fb3'); f3.className = 'fb ok';
+    f3.textContent = '💡 Only one left — tap them!';
+  }
+}
+
+function gwGuess(charIdx) {
+  const el = document.getElementById('gwc' + charIdx);
+  if (!el || el.classList.contains('eliminated') || el.classList.contains('wrong-guess')) return;
+
+  const correct = charIdx === gwSecret;
+  if (correct) {
+    el.classList.add('found');
+    document.getElementById('gwMysName').style.display = 'block';
+    // Score based on questions asked: fewer = more points
+    const pts = gwQAsked <= 1 ? 25 : gwQAsked <= 3 ? 15 : 10;
+    upScore(pts);
+    flash(true);
+    speak(`Yes! It's ${CHARS[gwSecret].name}!`);
+    const f3 = document.getElementById('fb3'); f3.className = 'fb ok';
+    f3.textContent = `🎉 Yes! It's ${CHARS[gwSecret].name}! +${pts} ⭐`;
+    // Freeze everything
+    document.querySelectorAll('.f-qbtn').forEach(b => { b.disabled = true; });
+    document.querySelectorAll('.gw-ch').forEach(b => { if (!b.classList.contains('found')) b.style.pointerEvents = 'none'; });
+    document.getElementById('btnNR').style.display = 'inline-block';
+  } else {
+    el.classList.add('wrong-guess');
+    gwLives = Math.max(0, gwLives - 1);
+    renderLives();
+    flash(false);
+    const f3 = document.getElementById('fb3'); f3.className = 'fb no';
+    f3.textContent = '❌ Not ' + CHARS[charIdx].name + '! Try again!';
+    speak('No, try again!');
+
+    if (gwLives === 0) {
+      // Reveal secret
+      document.getElementById('gwMysName').style.display = 'block';
+      const secEl = document.getElementById('gwc' + gwSecret);
+      if (secEl) secEl.classList.add('found');
+      document.querySelectorAll('.f-qbtn').forEach(b => { b.disabled = true; });
+      document.querySelectorAll('.gw-ch').forEach(b => { b.style.pointerEvents = 'none'; });
+      f3.textContent = '💔 It was ' + CHARS[gwSecret].name + '!';
+      speak('It was ' + CHARS[gwSecret].name + '!');
+      document.getElementById('btnNR').style.display = 'inline-block';
+      // Restore lives for next round
+      gwLives = 3;
+    }
+  }
+}
+</script>
+</body>
+</html>

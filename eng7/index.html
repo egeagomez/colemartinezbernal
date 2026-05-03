@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>👜 Accessories — English</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff;cursor:pointer}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ── Phase 1: Match ── */
+.m-lbl{color:#90caf9;font-size:.9rem;text-align:center;margin-bottom:8px}
+.match-area{position:relative;width:100%;display:flex;justify-content:space-between}
+.match-col{display:flex;flex-direction:column;gap:7px;width:44%}
+.match-svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.mi{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #2979ff;border-radius:14px;padding:8px 10px;cursor:pointer;position:relative;min-height:50px;transition:border-color .15s,box-shadow .15s}
+.mi:hover:not(.matched){border-color:#90caf9;box-shadow:0 0 10px rgba(144,202,249,.4)}
+.mi.sel{border-color:#FFD700;box-shadow:0 0 14px rgba(255,215,0,.6)}
+.mi.matched{opacity:.4;cursor:default;border-color:#4CAF50}
+.mi.wrong{border-color:#f44336;animation:wsh .3s}
+@keyframes wsh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mi .em{width:52px;height:52px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.7rem;overflow:hidden;border-radius:8px}
+.mi .em img{width:52px;height:52px;object-fit:cover;border-radius:8px}
+.mi .wd{font-size:.9rem;font-weight:bold;color:#FFD700}
+.dot-r{position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+.dot-l{position:absolute;left:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;border-radius:50%;background:#2979ff;border:2px solid #90caf9}
+
+/* ── Phase 2: Quiz ── */
+.qz-card{width:100%;background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid #2979ff;border-radius:20px;padding:18px 16px;margin-bottom:10px}
+.qz-hd{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.qz-em{width:100px;height:100px;background:rgba(41,121,255,.18);border:3px solid #2979ff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:3.4rem;flex-shrink:0;overflow:hidden}
+.qz-em img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.qz-es{font-size:1.9rem;font-weight:bold;color:#FFD700;flex:1;line-height:1.2}
+.qz-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.qz-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.q-btn{padding:16px 6px;border-radius:14px;border:none;font-family:inherit;font-size:1.05rem;font-weight:bold;color:#fff;cursor:pointer;transition:transform .1s,opacity .2s}
+.q-btn:hover:not(:disabled){transform:scale(1.04)}.q-btn:disabled{cursor:default}
+.q-btn.correct{outline:4px solid #69f0ae!important;box-shadow:0 0 16px rgba(105,240,174,.5)}
+.q-btn.wrong{opacity:.3;text-decoration:line-through}
+
+/* ── Phase 3: Scramble ── */
+.sc-card{width:100%;background:#0d2540;border:2px solid #7c43bd;border-radius:16px;padding:16px;margin-bottom:10px;text-align:center}
+.sc-prog{color:#90caf9;font-size:.9rem;margin-bottom:6px}
+.sc-em{font-size:3.5rem;margin:6px 0;display:flex;justify-content:center;align-items:center}
+.sc-em img{width:90px;height:90px;object-fit:cover;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.sc-es{font-size:1.1rem;color:#42a5f5;margin-bottom:10px}
+.ans-row{display:flex;justify-content:center;gap:6px;min-height:44px;margin-bottom:10px;flex-wrap:wrap}
+.ans-slot{display:flex;align-items:center;justify-content:center;width:34px;height:36px;border-bottom:3px solid #42a5f5;font-weight:bold;font-size:1.1rem;color:#69f0ae;text-transform:uppercase;min-width:14px}
+.ans-slot.space{width:10px;border-bottom:none}
+.l-row{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-bottom:10px}
+.l-btn{width:38px;height:38px;background:linear-gradient(135deg,#1a3a5c,#0d2540);border:2px solid #42a5f5;border-radius:9px;color:#FFD700;font-family:inherit;font-size:1.1rem;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.l-btn:hover:not(:disabled){background:#2979ff;color:#fff}
+.l-btn:disabled{opacity:.25;cursor:default}
+.sc-btns{display:flex;gap:8px;justify-content:center}
+.sc-btn{padding:7px 18px;border-radius:14px;font-family:inherit;font-size:.95rem;cursor:pointer;border:2px solid}
+.sc-btn.del{background:#2d0020;border-color:#f44336;color:#ff5252}
+.sc-btn.del:hover{background:#f44336;color:#fff}
+.sc-btn.chk{background:#1b5e20;border-color:#4CAF50;color:#69f0ae}
+.sc-btn.chk:hover{background:#4CAF50;color:#fff}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">👜 Accessories</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🔗 Match</div>
+  <div class="p-tab"        id="tab2">❓ Quiz</div>
+  <div class="p-tab"        id="tab3">✍️ Spell</div>
+</div>
+
+<!-- ══ PHASE 1: MATCH ══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Connect the emoji to the English word! 🔗</p>
+  <div class="m-lbl" id="mLbl"></div>
+  <div class="match-area" id="mArea">
+    <div class="match-col" id="mColL"></div>
+    <svg class="match-svg" id="mSvg"></svg>
+    <div class="match-col" id="mColR"></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" style="display:none" onclick="nextMR()">Next round ▶</button>
+</div>
+
+<!-- ══ PHASE 2: QUIZ ══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Tap the correct English word! 🎯</p>
+  <div class="qz-card">
+    <div class="qz-hd">
+      <div class="qz-em" id="qEm"></div>
+      <div class="qz-es" id="qEs"></div>
+    </div>
+    <div class="qz-prog" id="qProg">Question 1 of 10</div>
+    <div class="qz-btns" id="qBtns"></div>
+  </div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- ══ PHASE 3: SCRAMBLE ══ -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Spell the word! Click the letters in the right order ✍️</p>
+  <div class="sc-card" id="scCard">
+    <div class="sc-prog" id="scProg"></div>
+    <div class="sc-em"   id="scEm"></div>
+    <div class="sc-es"   id="scEs"></div>
+    <div class="ans-row" id="ansRow"></div>
+    <div class="l-row"   id="lRow"></div>
+    <div class="sc-btns">
+      <button class="sc-btn del" onclick="delLetter()">⌫ Delete</button>
+      <button class="sc-btn chk" onclick="checkSpell()">✅ Check</button>
+    </div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎉</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">Well done! You can spell them all!</div>
+    <div style="color:#90caf9">Total score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const VOCAB = [
+  {en:'wig',      es:'peluca',     emoji:'🦱', img:'peluca.png'},
+  {en:'necklace', es:'collar',     emoji:'📿', img:'collar.png'},
+  {en:'crown',    es:'corona',     emoji:'👑', img:'corona.png'},
+  {en:'glasses',  es:'gafas',      emoji:'👓', img:'Gafas.png'},
+  {en:'earrings', es:'pendientes', emoji:'💎', img:'Pendientes.png'},
+];
+const imgTag = v => v.img
+  ? `<img src="../assets/eng7/${v.img}" alt="${v.en}">`
+  : `<span style="font-size:3rem;line-height:1">${v.emoji}</span>`;
+const QC = ['#0097a7','#c62828','#e65100','#2e7d32'];
+
+let score = 0;
+const upScore = n => { score += n; document.getElementById('scoreDisp').textContent = score; };
+const flash = ok => { const e = document.getElementById('fov'); e.className = 'flash-ov ' + (ok ? 'g' : 'r'); setTimeout(() => e.className = 'flash-ov', 300); };
+const speak = t => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = .85; speechSynthesis.cancel(); speechSynthesis.speak(u); };
+const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+
+function goTab(n) {
+  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+  document.getElementById('phase' + n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t, i) => { t.classList.remove('active', 'done'); if (i + 1 < n) t.classList.add('done'); });
+  document.getElementById('tab' + n).classList.add('active');
+  if (n === 2) initQ();
+  if (n === 3) initSc();
+}
+
+// ── Phase 1: Match ─────────────────────────────────────────
+const ROUNDS = [[0, 1, 2, 3, 4]];
+let mR = 0, mSel = null, mDone = 0;
+function initM() { mR = 0; renderMR(); }
+function renderMR() {
+  const ids = ROUNDS[mR]; mSel = null; mDone = 0;
+  document.getElementById('mLbl').textContent = 'Round ' + (mR + 1) + ' of ' + ROUNDS.length;
+  document.getElementById('btn1').style.display = 'none';
+  document.getElementById('fb1').textContent = '';
+  const sIds = shuffle([...ids]);
+  document.getElementById('mColL').innerHTML = ids.map((vi, i) =>
+    `<div class="mi" id="L${i}" data-vi="${vi}" onclick="cL(${i})"><div class="em">${imgTag(VOCAB[vi])}</div><div class="dot-r"></div></div>`
+  ).join('');
+  document.getElementById('mColR').innerHTML = sIds.map((vi, i) =>
+    `<div class="mi" id="R${i}" data-vi="${vi}" onclick="cR(${i})"><div class="dot-l"></div><span class="wd">${VOCAB[vi].en}</span></div>`
+  ).join('');
+  document.getElementById('mSvg').innerHTML = '';
+}
+function cL(i) {
+  if (document.getElementById('L' + i).classList.contains('matched')) return;
+  document.querySelectorAll('#mColL .mi').forEach(m => m.classList.remove('sel'));
+  document.getElementById('L' + i).classList.add('sel'); mSel = i;
+}
+function cR(j) {
+  if (mSel === null || document.getElementById('R' + j).classList.contains('matched')) return;
+  const L = document.getElementById('L' + mSel), R = document.getElementById('R' + j);
+  if (L.dataset.vi === R.dataset.vi) {
+    L.classList.add('matched'); R.classList.add('matched'); L.classList.remove('sel');
+    drawLn('L' + mSel, 'R' + j); upScore(15); flash(true); speak(VOCAB[parseInt(L.dataset.vi)].en);
+    if (++mDone === ROUNDS[mR].length) {
+      if (mR < ROUNDS.length - 1) {
+        const f = document.getElementById('fb1'); f.className = 'fb ok'; f.textContent = '✅ Round done!';
+        document.getElementById('btn1').style.display = 'inline-block';
+      } else {
+        document.getElementById('tab1').classList.add('done');
+        const f = document.getElementById('fb1'); f.className = 'fb ok'; f.textContent = '✅ All matched! Starting quiz…';
+        setTimeout(() => goTab(2), 1400);
+      }
+    }
+  } else {
+    R.classList.add('wrong'); L.classList.add('wrong'); flash(false);
+    setTimeout(() => { R.classList.remove('wrong'); L.classList.remove('wrong'); L.classList.remove('sel'); }, 600);
+  }
+  mSel = null;
+}
+function drawLn(idL, idR) {
+  const svg = document.getElementById('mSvg'), ar = document.getElementById('mArea').getBoundingClientRect();
+  const l = document.getElementById(idL).getBoundingClientRect(), r = document.getElementById(idR).getBoundingClientRect();
+  const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  ln.setAttribute('x1', l.right - ar.left); ln.setAttribute('y1', l.top + l.height / 2 - ar.top);
+  ln.setAttribute('x2', r.left - ar.left);  ln.setAttribute('y2', r.top + r.height / 2 - ar.top);
+  ln.setAttribute('stroke', '#69f0ae'); ln.setAttribute('stroke-width', '3'); ln.setAttribute('opacity', '.7');
+  svg.appendChild(ln);
+}
+function nextMR() { mR++; renderMR(); }
+initM();
+
+// ── Phase 2: Quiz ─────────────────────────────────────────
+let qN = 0, qOK = 0, qOrder = [];
+function initQ() { qN = 0; qOK = 0; qOrder = shuffle(VOCAB.map((_, i) => i)); nextQ(); }
+function nextQ() {
+  if (qN >= VOCAB.length) {
+    document.getElementById('tab2').classList.add('done');
+    const f = document.getElementById('fb2'); f.className = 'fb ok';
+    f.innerHTML = '🎉 Quiz done! ' + qOK + '/' + VOCAB.length + ' correct!';
+    setTimeout(() => goTab(3), 1400); return;
+  }
+  const c = VOCAB[qOrder[qN]];
+  const opts = shuffle([c, ...shuffle(VOCAB.filter(v => v.en !== c.en)).slice(0, 3)]);
+  document.getElementById('qEm').innerHTML = imgTag(c);
+  document.getElementById('qEs').textContent = c.es;
+  document.getElementById('qProg').textContent = 'Question ' + (qN + 1) + ' of ' + VOCAB.length;
+  document.getElementById('qBtns').innerHTML = opts.map((o, i) =>
+    `<button class="q-btn" style="background:${QC[i]}" data-en="${o.en}" onclick="checkQ(this,'${c.en}')">${o.en}</button>`
+  ).join('');
+  document.getElementById('fb2').textContent = '';
+}
+function checkQ(btn, cEn) {
+  document.querySelectorAll('.q-btn').forEach(b => b.disabled = true);
+  const ok = btn.dataset.en === cEn;
+  if (ok) {
+    btn.classList.add('correct'); qOK++; upScore(10); flash(true);
+    const f = document.getElementById('fb2'); f.className = 'fb ok'; f.textContent = '✅ Correct!'; speak(cEn);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.q-btn').forEach(b => { if (b.dataset.en === cEn) b.classList.add('correct'); });
+    flash(false); const f = document.getElementById('fb2'); f.className = 'fb no'; f.textContent = "❌ It's: " + cEn; speak(cEn);
+  }
+  qN++; setTimeout(nextQ, 1400);
+}
+
+// ── Phase 3: Scramble ─────────────────────────────────────
+let scWords = [], scIdx = 0, placed = [];
+function initSc() {
+  scWords = shuffle([...VOCAB]); scIdx = 0; loadScWord();
+}
+function loadScWord() {
+  if (scIdx >= scWords.length) {
+    document.getElementById('scCard').style.display = 'none';
+    document.getElementById('fin').style.display = 'block';
+    document.getElementById('finSc').textContent = score; return;
+  }
+  const w = scWords[scIdx];
+  placed = [];
+  const letters = w.en.split('');
+  const shuffled = shuffle([...letters]);
+  document.getElementById('scProg').textContent = 'Word ' + (scIdx + 1) + ' of ' + scWords.length;
+  document.getElementById('scEm').innerHTML = imgTag(w);
+  document.getElementById('scEs').textContent = w.es;
+  document.getElementById('lRow').innerHTML = shuffled.map((l, i) =>
+    `<button class="l-btn" id="lb${i}" onclick="pickL(${i},'${l === "'" ? "\\'" : l}')">${l.toUpperCase()}</button>`
+  ).join('');
+  renderAns(w.en.length);
+  document.getElementById('fb3').textContent = '';
+}
+function renderAns(len) {
+  document.getElementById('ansRow').innerHTML = Array.from({ length: len }, (_, i) =>
+    `<span class="ans-slot">${placed[i] ? placed[i].l.toUpperCase() : ''}</span>`
+  ).join('');
+}
+function pickL(pos, l) {
+  const btn = document.getElementById('lb' + pos);
+  if (btn.disabled) return;
+  btn.disabled = true;
+  placed.push({ l, pos });
+  renderAns(scWords[scIdx].en.length);
+}
+function delLetter() {
+  if (!placed.length) return;
+  const last = placed.pop();
+  const btn = document.getElementById('lb' + last.pos);
+  if (btn) btn.disabled = false;
+  renderAns(scWords[scIdx].en.length);
+}
+function checkSpell() {
+  const w = scWords[scIdx];
+  const answer = placed.map(p => p.l).join('').toLowerCase();
+  if (answer === w.en.toLowerCase()) {
+    upScore(20); flash(true); speak(w.en);
+    const f = document.getElementById('fb3'); f.className = 'fb ok'; f.textContent = '✅ Correct! ' + w.en;
+    scIdx++; setTimeout(loadScWord, 1300);
+  } else {
+    flash(false);
+    const f = document.getElementById('fb3'); f.className = 'fb no'; f.textContent = '❌ Try again!';
+  }
+}
+</script>
+</body>
+</html>

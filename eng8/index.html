@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📝 Has Got — English</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff;cursor:pointer}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+
+/* ── Phase 1: Learn ── */
+.learn-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
+.l-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff;transition:background .2s}
+.l-dot.cur{background:#FFD700;border-color:#f9a825}
+.learn-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #2979ff;border-radius:24px;padding:24px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(41,121,255,.3);min-height:260px;justify-content:center}
+.lc-pronoun{font-size:1rem;color:#90caf9;letter-spacing:2px;text-transform:uppercase;font-weight:bold}
+.lc-em{display:flex;justify-content:center;align-items:center;margin:4px 0;font-size:5rem;line-height:1}
+.lc-em img{width:90px;height:90px;object-fit:cover;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.5)}
+.lc-sentence{font-size:1.6rem;font-weight:bold;color:#FFD700;line-height:1.3}
+.lc-verb{color:#69f0ae}
+.lc-es{font-size:1.05rem;color:#90caf9;font-style:italic}
+.lc-rule{font-size:.88rem;color:#42a5f5;background:rgba(41,121,255,.15);border:1px solid #2979ff;border-radius:10px;padding:6px 14px;margin-top:6px}
+.learn-nav{display:flex;align-items:center;gap:16px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+.spk-btn:hover{background:#1976d2}
+
+/* ── Phase 2: Has/Hasn't Got ── */
+.hg-card{width:100%;background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid #2979ff;border-radius:20px;padding:18px;margin-bottom:10px}
+.hg-char{display:flex;align-items:center;gap:14px;margin-bottom:8px;background:rgba(41,121,255,.1);border-radius:14px;padding:10px 14px}
+.hg-char-em{font-size:3.5rem;line-height:1}
+.hg-char-info{display:flex;flex-direction:column;gap:4px}
+.hg-char-name{font-size:1.2rem;font-weight:bold;color:#FFD700}
+.hg-char-desc{font-size:.82rem;color:#90caf9;line-height:1.5}
+.hg-feat-img{display:flex;justify-content:center;margin:6px 0}
+.hg-feat-img img{width:80px;height:80px;object-fit:cover;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.hg-question{font-size:1.2rem;color:#fff;text-align:center;margin:6px 0;line-height:1.4}
+.hg-feat{color:#FFD700;font-weight:bold}
+.hg-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.hg-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hg-btn{padding:18px 8px;border-radius:16px;border:3px solid;font-family:inherit;font-size:1.1rem;font-weight:bold;cursor:pointer;transition:transform .12s,opacity .2s}
+.hg-btn:hover:not(:disabled){transform:scale(1.04)}.hg-btn:disabled{cursor:default;opacity:.5}
+.hg-btn.yes{background:linear-gradient(135deg,#1b5e20,#388E3C);border-color:#69f0ae;color:#fff}
+.hg-btn.no {background:linear-gradient(135deg,#7f0000,#c62828);border-color:#ff5252;color:#fff}
+.hg-btn.correct{outline:4px solid #FFD700!important;box-shadow:0 0 18px rgba(255,215,0,.6)!important}
+.hg-btn.wrong{opacity:.3!important;text-decoration:line-through}
+
+/* ── Phase 3: Fill the blank ── */
+.fill-card{width:100%;background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid #2979ff;border-radius:20px;padding:18px;margin-bottom:10px}
+.fill-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:12px}
+.fill-char{font-size:3rem;text-align:center;margin-bottom:4px}
+.fill-feat{display:flex;justify-content:center;margin-bottom:10px}
+.fill-feat img{width:80px;height:80px;object-fit:cover;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.fill-sentence{font-size:1.35rem;color:#fff;text-align:center;line-height:1.6;margin-bottom:16px}
+.fill-blank{display:inline-block;min-width:110px;border-bottom:3px solid #42a5f5;padding:0 6px;color:#FFD700;font-weight:bold}
+.fill-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f-btn{padding:14px 6px;border-radius:14px;border:none;font-family:inherit;font-size:.95rem;font-weight:bold;color:#fff;cursor:pointer;transition:transform .1s,opacity .2s}
+.f-btn:hover:not(:disabled){transform:scale(1.04)}.f-btn:disabled{cursor:default}
+.f-btn.correct{outline:4px solid #69f0ae!important;box-shadow:0 0 14px rgba(105,240,174,.5)}
+.f-btn.wrong{opacity:.3;text-decoration:line-through}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">📝 Has Got</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📖 Learn</div>
+  <div class="p-tab"        id="tab2">✅ Has Got?</div>
+  <div class="p-tab"        id="tab3">✍️ Fill In</div>
+</div>
+
+<!-- ══ PHASE 1: LEARN ══ -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn the grammar! Click ▶ to see all examples 👀</p>
+  <div class="learn-dots" id="lDots"></div>
+  <div class="learn-card" id="lCard"></div>
+  <div class="learn-nav">
+    <button class="nav-btn" id="lP" onclick="lcMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="lCnt">1 / 6</span>
+    <button class="nav-btn" id="lN" onclick="lcMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakCard()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>✅ Start Practice →</button>
+</div>
+
+<!-- ══ PHASE 2: HAS / HASN'T GOT ══ -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Does the character have it? 🤔</p>
+  <div class="hg-card">
+    <div class="hg-char">
+      <div class="hg-char-em" id="hgCharEm"></div>
+      <div class="hg-char-info">
+        <div class="hg-char-name" id="hgCharName"></div>
+        <div class="hg-char-desc" id="hgCharDesc"></div>
+      </div>
+    </div>
+    <div class="hg-prog" id="hgProg">Question 1 of 10</div>
+    <div class="hg-feat-img" id="hgFeatImg"></div>
+    <div class="hg-question" id="hgQ"></div>
+    <div class="hg-btns">
+      <button class="hg-btn yes" id="hgYes" onclick="checkHG(true)">✅ has got</button>
+      <button class="hg-btn no"  id="hgNo"  onclick="checkHG(false)">❌ hasn't got</button>
+    </div>
+  </div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- ══ PHASE 3: FILL IN ══ -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Choose the correct verb form to complete the sentence! 🎯</p>
+  <div class="fill-card">
+    <div class="fill-prog"     id="fProg">Sentence 1 of 8</div>
+    <div class="fill-char"     id="fChar"></div>
+    <div class="fill-feat"     id="fFeatImg"></div>
+    <div class="fill-sentence" id="fSent"></div>
+    <div class="fill-btns"     id="fBtns"></div>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎉</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">Brilliant! You've mastered Has Got!</div>
+    <div style="color:#90caf9">Total score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────
+
+// Phase 1: Learn cards
+const LEARN = [
+  { pronoun:'He',  form:'has got',     emoji:'🧔‍♂️', feature:'a beard',       es:'Él tiene barba.',         rule:'He / She  →  HAS GOT' },
+  { pronoun:'She', form:'has got',     emoji:'👩‍🦱',  feature:'curly hair',    es:'Ella tiene pelo rizado.', rule:'He / She  →  HAS GOT' },
+  { pronoun:'I',   form:'have got',    emoji:'🙋',   feature:'glasses',       es:'Yo tengo gafas.',         rule:'I  →  HAVE GOT' },
+  { pronoun:'He',  form:"hasn't got",  emoji:'🧔‍♂️', feature:'long hair',     es:'Él no tiene pelo largo.', rule:"He / She  →  HASN'T GOT" },
+  { pronoun:'She', form:"hasn't got",  emoji:'👱‍♀️',  feature:'a necklace',    es:'Ella no tiene collar.',   rule:"He / She  →  HASN'T GOT" },
+  { pronoun:'I',   form:"haven't got", emoji:'🙋',   feature:'a beard',       es:'Yo no tengo barba.',      rule:"I  →  HAVEN'T GOT" },
+];
+
+// Phase 2: Characters
+const CHARS = [
+  { name:'Ben',  pronoun:'He',  emoji:'🧔‍♂️', has:['short hair','dark hair','a beard','a moustache'],
+    hasnot:['long hair','blonde hair','curly hair','glasses','a necklace'] },
+  { name:'Emma', pronoun:'She', emoji:'👩‍🦱',  has:['curly hair','long hair','dark hair','a necklace'],
+    hasnot:['straight hair','short hair','blonde hair','a beard','a moustache'] },
+  { name:'Lily', pronoun:'She', emoji:'👱‍♀️',  has:['straight hair','long hair','blonde hair','glasses'],
+    hasnot:['curly hair','short hair','dark hair','a beard','a necklace'] },
+];
+
+// Phase 3: Fill-in sentences
+const FILL_Q = [
+  { charEmoji:'🧔‍♂️', feat:'dark hair',     text:'Ben ___ dark hair.',      correct:'has got',     sub:'He' },
+  { charEmoji:'👩‍🦱',  feat:'straight hair', text:'Emma ___ straight hair.', correct:"hasn't got",  sub:'She' },
+  { charEmoji:'🙋',   feat:'glasses',       text:'I ___ glasses.',           correct:'have got',    sub:'I' },
+  { charEmoji:'👱‍♀️',  feat:'blonde hair',   text:'Lily ___ blonde hair.',   correct:'has got',     sub:'She' },
+  { charEmoji:'🧔‍♂️', feat:'long hair',     text:'Ben ___ long hair.',       correct:"hasn't got",  sub:'He' },
+  { charEmoji:'👩‍🦱',  feat:'curly hair',    text:'Emma ___ curly hair.',    correct:'has got',     sub:'She' },
+  { charEmoji:'🙋',   feat:'a beard',       text:'I ___ a beard.',            correct:"haven't got", sub:'I' },
+  { charEmoji:'👱‍♀️',  feat:'a necklace',   text:'Lily ___ a necklace.',    correct:"hasn't got",  sub:'She' },
+];
+const FILL_OPTS = ['has got', "hasn't got", 'have got', "haven't got"];
+const FCOLORS   = ['#2e7d32','#c62828','#1565c0','#6a1b9a'];
+
+// Feature → image map
+const FEAT_IMG = {
+  'curly hair':   '../assets/eng6/CurlyAir.jpg',
+  'straight hair':'../assets/eng6/Straight.jpg',
+  'long hair':    '../assets/eng6/LongAir.jpg',
+  'short hair':   '../assets/eng6/shortAir.jpg',
+  'dark hair':    '../assets/eng6/BlackAir.jpg',
+  'blonde hair':  '../assets/eng6/Blonde.jpg',
+  'a beard':      '../assets/eng6/Beard.jpg',
+  'a moustache':  '../assets/eng6/Mustache.jpg',
+  'glasses':      '../assets/eng7/Gafas.png',
+  'a necklace':   '../assets/eng7/collar.png',
+};
+const featImg = f => FEAT_IMG[f]
+  ? `<img src="${FEAT_IMG[f]}" alt="${f}">`
+  : '';
+
+// ── Utilities ───────────────────────────────────────────────
+let score = 0;
+const upScore = n => { score += n; document.getElementById('scoreDisp').textContent = score; };
+const flash = ok => { const e = document.getElementById('fov'); e.className = 'flash-ov ' + (ok ? 'g' : 'r'); setTimeout(() => e.className = 'flash-ov', 300); };
+const speak = t => { const u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = .85; speechSynthesis.cancel(); speechSynthesis.speak(u); };
+const shuffle = a => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = 0 | Math.random() * (i + 1); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+
+function goTab(n) {
+  document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+  document.getElementById('phase' + n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t, i) => { t.classList.remove('active', 'done'); if (i + 1 < n) t.classList.add('done'); });
+  document.getElementById('tab' + n).classList.add('active');
+  if (n === 2) initHG();
+  if (n === 3) initFill();
+}
+
+// ── Phase 1: Learn ─────────────────────────────────────────
+let lcIdx = 0, lcSeen = new Set();
+function lcRender() {
+  const c = LEARN[lcIdx];
+  document.getElementById('lCard').innerHTML = `
+    <div class="lc-pronoun">${c.pronoun}</div>
+    <div class="lc-em">${featImg(c.feature) || c.emoji}</div>
+    <div class="lc-sentence">${c.pronoun} <span class="lc-verb">${c.form}</span> ${c.feature}.</div>
+    <div class="lc-es">${c.es}</div>
+    <div class="lc-rule">📌 ${c.rule}</div>`;
+  document.getElementById('lCnt').textContent = (lcIdx + 1) + ' / ' + LEARN.length;
+  document.getElementById('lP').disabled = lcIdx === 0;
+  document.getElementById('lN').disabled = lcIdx === LEARN.length - 1;
+  lcSeen.add(lcIdx);
+  document.getElementById('lDots').innerHTML = LEARN.map((_, i) =>
+    `<div class="l-dot${i === lcIdx ? ' cur' : ''}"></div>`).join('');
+  if (lcSeen.size === LEARN.length) {
+    document.getElementById('btn1').disabled = false;
+    const f = document.getElementById('fb1'); f.className = 'fb ok'; f.textContent = '✅ All examples seen! Ready to practice!';
+  }
+}
+function lcMove(d) { lcIdx = Math.max(0, Math.min(LEARN.length - 1, lcIdx + d)); lcRender(); }
+function speakCard() {
+  const c = LEARN[lcIdx];
+  speak(c.pronoun + ' ' + c.form + ' ' + c.feature + '.');
+}
+lcRender();
+
+// ── Phase 2: Has / Hasn't Got ──────────────────────────────
+let hgN = 0, hgOK = 0, hgCurChar = null, hgCurFeat = '', hgAnswer = false;
+const HG_TOTAL = 10;
+function initHG() { hgN = 0; hgOK = 0; nextHG(); }
+function nextHG() {
+  if (hgN >= HG_TOTAL) {
+    document.getElementById('tab2').classList.add('done');
+    const f = document.getElementById('fb2'); f.className = 'fb ok';
+    f.innerHTML = '🎉 Done! ' + hgOK + '/' + HG_TOTAL + ' correct!';
+    setTimeout(() => goTab(3), 1400); return;
+  }
+  const char = CHARS[0 | Math.random() * CHARS.length];
+  hgCurChar = char;
+  // 50% chance pick from "has", 50% from "hasnot"
+  const useHas = Math.random() < 0.5;
+  const pool = useHas ? char.has : char.hasnot;
+  hgCurFeat = pool[0 | Math.random() * pool.length];
+  hgAnswer = useHas;
+
+  const desc = 'Has: ' + char.has.join(', ');
+  document.getElementById('hgCharEm').textContent = char.emoji;
+  document.getElementById('hgCharName').textContent = char.name;
+  document.getElementById('hgCharDesc').textContent = desc;
+  document.getElementById('hgProg').textContent = 'Question ' + (hgN + 1) + ' of ' + HG_TOTAL;
+  document.getElementById('hgFeatImg').innerHTML = featImg(hgCurFeat);
+  document.getElementById('hgQ').innerHTML =
+    `<b>${char.name}</b> ___ <span class="hg-feat">${hgCurFeat}</span>`;
+  document.getElementById('hgYes').disabled = false;
+  document.getElementById('hgNo').disabled  = false;
+  document.getElementById('hgYes').classList.remove('correct', 'wrong');
+  document.getElementById('hgNo').classList.remove('correct', 'wrong');
+  document.getElementById('fb2').textContent = '';
+}
+function checkHG(clickedYes) {
+  document.getElementById('hgYes').disabled = true;
+  document.getElementById('hgNo').disabled  = true;
+  const ok = clickedYes === hgAnswer;
+  const c = hgCurChar;
+  const correctSentence = c.pronoun + ' ' + (hgAnswer ? 'has got' : "hasn't got") + ' ' + hgCurFeat + '.';
+  if (ok) {
+    (clickedYes ? document.getElementById('hgYes') : document.getElementById('hgNo')).classList.add('correct');
+    hgOK++; upScore(10); flash(true);
+    const f = document.getElementById('fb2'); f.className = 'fb ok'; f.textContent = '✅ ' + correctSentence;
+    speak(correctSentence);
+  } else {
+    (clickedYes ? document.getElementById('hgYes') : document.getElementById('hgNo')).classList.add('wrong');
+    (clickedYes ? document.getElementById('hgNo') : document.getElementById('hgYes')).classList.add('correct');
+    flash(false);
+    const f = document.getElementById('fb2'); f.className = 'fb no'; f.textContent = '❌ ' + correctSentence;
+    speak(correctSentence);
+  }
+  hgN++; setTimeout(nextHG, 1600);
+}
+
+// ── Phase 3: Fill In ───────────────────────────────────────
+let fN = 0, fOK = 0;
+function initFill() { fN = 0; fOK = 0; nextFill(); }
+function nextFill() {
+  if (fN >= FILL_Q.length) {
+    document.getElementById('fill-card') && (document.querySelector('.fill-card').style.display = 'none');
+    document.getElementById('fin').style.display = 'block';
+    document.getElementById('finSc').textContent = score; return;
+  }
+  const q = FILL_Q[fN];
+  document.getElementById('fProg').textContent = 'Sentence ' + (fN + 1) + ' of ' + FILL_Q.length;
+  document.getElementById('fChar').textContent = q.charEmoji;
+  document.getElementById('fFeatImg').innerHTML = featImg(q.feat);
+  document.getElementById('fSent').innerHTML = q.text.replace('___',
+    `<span class="fill-blank">___</span>`);
+  // Show all 4 options shuffled, correct is one of them
+  const opts = shuffle([...FILL_OPTS]);
+  document.getElementById('fBtns').innerHTML = opts.map((o, i) =>
+    `<button class="f-btn" style="background:${FCOLORS[i]}" data-opt="${o}" onclick="checkFill(this,'${q.correct}')">${o}</button>`
+  ).join('');
+  document.getElementById('fb3').textContent = '';
+}
+function checkFill(btn, correct) {
+  document.querySelectorAll('.f-btn').forEach(b => b.disabled = true);
+  const ok = btn.dataset.opt === correct;
+  const q = FILL_Q[fN];
+  const fullSentence = q.text.replace('___', correct);
+  if (ok) {
+    btn.classList.add('correct'); fOK++; upScore(10); flash(true);
+    document.getElementById('fSent').innerHTML = fullSentence.replace(correct,
+      `<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
+    const f = document.getElementById('fb3'); f.className = 'fb ok'; f.textContent = '✅ Correct!';
+    speak(fullSentence);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.f-btn').forEach(b => { if (b.dataset.opt === correct) b.classList.add('correct'); });
+    flash(false);
+    document.getElementById('fSent').innerHTML = fullSentence.replace(correct,
+      `<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
+    const f = document.getElementById('fb3'); f.className = 'fb no'; f.textContent = '❌ ' + fullSentence;
+    speak(fullSentence);
+  }
+  fN++; setTimeout(nextFill, 1600);
+}
+</script>
+</body>
+</html>
