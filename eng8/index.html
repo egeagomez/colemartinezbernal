@@ -50,10 +50,10 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 .hg-char-em{font-size:3.5rem;line-height:1}
 .hg-char-info{display:flex;flex-direction:column;gap:4px}
 .hg-char-name{font-size:1.2rem;font-weight:bold;color:#FFD700}
-.hg-char-desc{font-size:.82rem;color:#90caf9;line-height:1.5}
+.hg-char-desc{font-size:1rem;color:#90caf9;line-height:1.6;font-weight:bold}
 .hg-feat-img{display:flex;justify-content:center;margin:6px 0}
 .hg-feat-img img{width:80px;height:80px;object-fit:cover;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
-.hg-question{font-size:1.2rem;color:#fff;text-align:center;margin:6px 0;line-height:1.4}
+.hg-question{font-size:1.5rem;color:#fff;text-align:center;margin:10px 0;line-height:1.4}
 .hg-feat{color:#FFD700;font-weight:bold}
 .hg-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:10px}
 .hg-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -67,10 +67,10 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 /* ── Phase 3: Fill the blank ── */
 .fill-card{width:100%;background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid #2979ff;border-radius:20px;padding:18px;margin-bottom:10px}
 .fill-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:12px}
-.fill-char{font-size:3rem;text-align:center;margin-bottom:4px}
+.fill-char{font-size:3.5rem;text-align:center;margin-bottom:4px}
 .fill-feat{display:flex;justify-content:center;margin-bottom:10px}
 .fill-feat img{width:80px;height:80px;object-fit:cover;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.4)}
-.fill-sentence{font-size:1.35rem;color:#fff;text-align:center;line-height:1.6;margin-bottom:16px}
+.fill-sentence{font-size:1.5rem;color:#fff;text-align:center;line-height:1.6;margin-bottom:16px}
 .fill-blank{display:inline-block;min-width:110px;border-bottom:3px solid #42a5f5;padding:0 6px;color:#FFD700;font-weight:bold}
 .fill-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f-btn{padding:14px 6px;border-radius:14px;border:none;font-family:inherit;font-size:.95rem;font-weight:bold;color:#fff;cursor:pointer;transition:transform .1s,opacity .2s}
@@ -135,7 +135,6 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
   <p class="ph-title">Choose the correct verb form to complete the sentence! 🎯</p>
   <div class="fill-card">
     <div class="fill-prog"     id="fProg">Sentence 1 of 8</div>
-    <div class="fill-char"     id="fChar"></div>
     <div class="fill-feat"     id="fFeatImg"></div>
     <div class="fill-sentence" id="fSent"></div>
     <div class="fill-btns"     id="fBtns"></div>
@@ -223,9 +222,10 @@ function goTab(n) {
 let lcIdx = 0, lcSeen = new Set();
 function lcRender() {
   const c = LEARN[lcIdx];
+  const isPositive = c.form === 'has got' || c.form === 'have got';
   document.getElementById('lCard').innerHTML = `
     <div class="lc-pronoun">${c.pronoun}</div>
-    <div class="lc-em">${featImg(c.feature) || c.emoji}</div>
+    <div class="lc-em">${isPositive ? (featImg(c.feature) || c.emoji) : c.emoji}</div>
     <div class="lc-sentence">${c.pronoun} <span class="lc-verb">${c.form}</span> ${c.feature}.</div>
     <div class="lc-es">${c.es}</div>
     <div class="lc-rule">📌 ${c.rule}</div>`;
@@ -271,7 +271,7 @@ function nextHG() {
   document.getElementById('hgCharName').textContent = char.name;
   document.getElementById('hgCharDesc').textContent = desc;
   document.getElementById('hgProg').textContent = 'Question ' + (hgN + 1) + ' of ' + HG_TOTAL;
-  document.getElementById('hgFeatImg').innerHTML = featImg(hgCurFeat);
+  document.getElementById('hgFeatImg').innerHTML = useHas ? featImg(hgCurFeat) : '';
   document.getElementById('hgQ').innerHTML =
     `<b>${char.name}</b> ___ <span class="hg-feat">${hgCurFeat}</span>`;
   document.getElementById('hgYes').disabled = false;
@@ -302,7 +302,7 @@ function checkHG(clickedYes) {
 }
 
 // ── Phase 3: Fill In ───────────────────────────────────────
-let fN = 0, fOK = 0;
+let fN = 0, fOK = 0, fCurrentCorrect = '';
 function initFill() { fN = 0; fOK = 0; nextFill(); }
 function nextFill() {
   if (fN >= FILL_Q.length) {
@@ -311,19 +311,21 @@ function nextFill() {
     document.getElementById('finSc').textContent = score; return;
   }
   const q = FILL_Q[fN];
+  fCurrentCorrect = q.correct;
+  const isPositiveFill = q.correct === 'has got' || q.correct === 'have got';
   document.getElementById('fProg').textContent = 'Sentence ' + (fN + 1) + ' of ' + FILL_Q.length;
-  document.getElementById('fChar').textContent = q.charEmoji;
-  document.getElementById('fFeatImg').innerHTML = featImg(q.feat);
+  document.getElementById('fFeatImg').innerHTML = isPositiveFill ? featImg(q.feat) : '';
   document.getElementById('fSent').innerHTML = q.text.replace('___',
     `<span class="fill-blank">___</span>`);
   // Show all 4 options shuffled, correct is one of them
   const opts = shuffle([...FILL_OPTS]);
   document.getElementById('fBtns').innerHTML = opts.map((o, i) =>
-    `<button class="f-btn" style="background:${FCOLORS[i]}" data-opt="${o}" onclick="checkFill(this,'${q.correct}')">${o}</button>`
+    `<button class="f-btn" style="background:${FCOLORS[i]}" data-opt="${o}" onclick="checkFill(this)">${o}</button>`
   ).join('');
   document.getElementById('fb3').textContent = '';
 }
-function checkFill(btn, correct) {
+function checkFill(btn) {
+  const correct = fCurrentCorrect;
   document.querySelectorAll('.f-btn').forEach(b => b.disabled = true);
   const ok = btn.dataset.opt === correct;
   const q = FILL_Q[fN];
