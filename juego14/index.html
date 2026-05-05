@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 14 – El conector perdido</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .sentence-box {
+      font-size:1.3rem; line-height:1.7;
+      background:#fff; border-radius:16px;
+      padding:22px 28px; margin:20px 0;
+      border:2px solid #e0e0e0; text-align:center;
+      min-height:80px; display:flex; align-items:center; justify-content:center;
+    }
+    .blank-word {
+      display:inline-block; min-width:110px; height:36px;
+      border-bottom:3px solid var(--blue);
+      background:#E0F7FA; border-radius:8px;
+      margin:0 2px; vertical-align:middle;
+      line-height:36px; font-weight:bold;
+      color:var(--blue-dk); padding:0 8px;
+      text-align:center;
+    }
+    .opt-row {
+      display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .con-btn {
+      padding:12px 22px; font-size:1.1rem;
+      font-family:'Patrick Hand',cursive;
+      border:3px solid var(--blue); border-radius:14px;
+      background:white; cursor:pointer;
+      transition:background .15s,transform .1s; min-width:100px;
+    }
+    .con-btn:hover:not(:disabled) { background:#E0F7FA; transform:scale(1.04); }
+    .con-btn.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; }
+    .con-btn.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🔗 El conector perdido</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Elige el conector de tiempo correcto</p>
+    <div class="sentence-box" id="sentenceBox"></div>
+    <div class="opt-row" id="optRow"></div>
+    <div style="margin-top:20px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { suffix:', iré al cumpleaños de Alba Lunar.',          answer:'Mañana',  options:['Mañana','Ayer','Hoy'] },
+    { suffix:', compré un regalo para mi amiga.',           answer:'Ayer',    options:['Ayer','Hoy','Mañana'] },
+    { suffix:', hago un dibujo para Alba.',                 answer:'Hoy',     options:['Hoy','Mañana','Después'] },
+    { suffix:' de comer, me lavo las manos.',               answer:'Antes',   options:['Antes','Después','Ayer'] },
+    { suffix:' de cenar, me cepillo los dientes.',          answer:'Después', options:['Después','Antes','Hoy'] },
+    { suffix:', fui al parque con mis amigos.',             answer:'Ayer',    options:['Ayer','Mañana','Ahora'] },
+    { suffix:', habrá una excursión al zoo.',               answer:'Mañana',  options:['Mañana','Ayer','Antes'] },
+    { suffix:', estoy aprendiendo lengua en clase.',        answer:'Ahora',   options:['Ahora','Ayer','Mañana'] },
+    { suffix:' del recreo, entramos a clase.',              answer:'Después', options:['Después','Antes','Luego'] },
+    { suffix:' de las vacaciones, volvemos al colegio.',    answer:'Después', options:['Después','Antes','Ayer'] },
+  ];
+
+  let current = 0, score = 0, answered = false;
+
+  function showEx() {
+    const ex = exercises[current];
+    answered = false;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('progressBar').style.width = (current / exercises.length * 100) + '%';
+    document.getElementById('sentenceBox').innerHTML =
+      `<span class="blank-word" id="filledBlank">&nbsp;</span>${ex.suffix}`;
+
+    const row = document.getElementById('optRow');
+    row.innerHTML = '';
+    ex.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'con-btn';
+      btn.textContent = opt;
+      btn.dataset.idx = i;
+      btn.onclick = () => checkConnector(btn, i);
+      row.appendChild(btn);
+    });
+  }
+
+  function checkConnector(btn, idx) {
+    if (answered) return;
+    answered = true;
+    const ex = exercises[current];
+    const isCorrect = ex.options[idx] === ex.answer;
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    if (!isCorrect) {
+      document.querySelectorAll('.con-btn').forEach(b => {
+        if (ex.options[parseInt(b.dataset.idx)] === ex.answer) b.classList.add('correct');
+      });
+    }
+    document.querySelectorAll('.con-btn').forEach(b => b.disabled = true);
+    document.getElementById('filledBlank').textContent = ex.answer;
+    if (isCorrect) { score += 10; document.getElementById('score').textContent = score; }
+    Sound[isCorrect ? 'correct' : 'wrong']();
+    showFeedback(isCorrect, isCorrect ? '¡Muy bien! 🎉' : `Era <strong>${ex.answer}</strong>`);
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function nextEx() {
+    current++;
+    if (current >= exercises.length) {
+      maybePodio(14, score, exercises.length * 10);
+    } else {
+      showEx();
+    }
+  }
+
+  showEx();
+  </script>
+</body>
+</html>

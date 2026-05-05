@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 11 – Partes del cómic</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .comic-visual {
+      display:flex; align-items:center; justify-content:center;
+      min-height:130px; margin:18px 0 8px;
+      background:#fafafa; border-radius:12px; border:2px dashed #ccc;
+      padding:16px;
+    }
+    .opt-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:10px; max-width:480px; margin:0 auto;
+    }
+    .opt-btn {
+      padding:14px 10px; font-size:1.05rem;
+      font-family:'Patrick Hand',cursive;
+      border:3px solid var(--blue); border-radius:14px;
+      background:white; cursor:pointer;
+      transition:background .15s,transform .1s;
+    }
+    .opt-btn:hover:not(:disabled) { background:#E0F7FA; transform:scale(1.02); }
+    .opt-btn.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; }
+    .opt-btn.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; }
+    .hint-text { font-size:.9rem; color:#666; font-style:italic; margin:4px 0 12px; }
+    .speech-bubble {
+      position:relative; display:inline-block;
+      background:white; border:3px solid #222;
+      border-radius:20px; padding:10px 18px; font-size:1.1rem;
+    }
+    .speech-bubble::after {
+      content:''; position:absolute; bottom:-14px; left:24px;
+      border:7px solid transparent; border-top-color:#222;
+    }
+    .speech-bubble::before {
+      content:''; position:absolute; bottom:-9px; left:26px; z-index:1;
+      border:5px solid transparent; border-top-color:white;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>📰 Partes del cómic</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">¿Cómo se llama esta parte del cómic?</p>
+    <div id="comicVisual" class="comic-visual"></div>
+    <p class="hint-text" id="hintText"></p>
+    <div class="opt-grid" id="optGrid"></div>
+    <div style="margin-top:16px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    {
+      visual:`<div style="font-family:'Patrick Hand',cursive;font-weight:bold;font-size:1.4rem;text-transform:uppercase;border:4px solid #222;padding:6px 18px;background:#fffde7;letter-spacing:2px;font-style:italic">Las aventuras de Alba Lunar</div>`,
+      hint:'Es el nombre de la historia, aparece al principio del cómic.',
+      answer:'Título',
+      options:['Título','Viñeta','Bocadillo','Personaje']
+    },
+    {
+      visual:`<div style="width:160px;height:100px;border:4px solid #222;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:3rem">🌙</div>`,
+      hint:'Cada recuadro o imagen individual del cómic.',
+      answer:'Viñeta',
+      options:['Viñeta','Título','Cartela','Bocadillo']
+    },
+    {
+      visual:`<div class="speech-bubble">¡Sí, mamá, ahora voy!</div>`,
+      hint:'La burbuja donde los personajes dicen o piensan algo.',
+      answer:'Bocadillo',
+      options:['Bocadillo','Cartela','Onomatopeya','Viñeta']
+    },
+    {
+      visual:`<div style="position:relative;width:180px;height:100px;border:3px solid #222;background:#f3e5f5;border-radius:4px"><div style="position:absolute;top:8px;left:8px;right:8px;background:rgba(255,255,255,.9);border:2px solid #222;padding:4px 8px;font-size:.82rem;font-family:'Patrick Hand',cursive">Cae la noche en Zaraluna...</div></div>`,
+      hint:'El cuadro de texto del narrador que explica lo que está pasando.',
+      answer:'Cartela',
+      options:['Cartela','Bocadillo','Título','Viñeta']
+    },
+    {
+      visual:`<div style="font-family:'Patrick Hand',cursive;font-weight:bold;font-size:3.2rem;color:#e53935;text-shadow:3px 3px 0 #b71c1c;font-style:italic;letter-spacing:3px">¡CHOF!</div>`,
+      hint:'Letras que imitan un sonido: ¡PAF!, ¡ZAS!, ¡CHOF!',
+      answer:'Onomatopeya',
+      options:['Onomatopeya','Bocadillo','Cartela','Líneas de movimiento']
+    },
+    {
+      visual:`<div style="text-align:center"><div style="font-size:5rem">👩‍🚀</div><div style="font-size:.85rem;color:#555;margin-top:2px">Aparece en el cómic y protagoniza la historia</div></div>`,
+      hint:'La persona, animal o ser que actúa en el cómic.',
+      answer:'Personaje',
+      options:['Personaje','Viñeta','Onomatopeya','Bocadillo']
+    },
+    {
+      visual:`<div style="position:relative;width:120px;height:80px;display:flex;align-items:center;justify-content:center"><span style="font-size:2.8rem;position:relative;z-index:1">💨</span><div style="position:absolute;top:12px;left:2px;width:55px;height:2px;background:#666;transform:rotate(-12deg);border-radius:2px"></div><div style="position:absolute;top:28px;left:0;width:48px;height:2px;background:#666;transform:rotate(-8deg);border-radius:2px"></div><div style="position:absolute;bottom:18px;left:4px;width:52px;height:2px;background:#666;transform:rotate(-14deg);border-radius:2px"></div><div style="position:absolute;bottom:8px;left:2px;width:44px;height:2px;background:#666;transform:rotate(-10deg);border-radius:2px"></div></div>`,
+      hint:'Rayas paralelas que muestran que algo o alguien se mueve muy rápido.',
+      answer:'Líneas de movimiento',
+      options:['Líneas de movimiento','Onomatopeya','Viñeta','Personaje']
+    },
+  ];
+
+  let current = 0, score = 0, answered = false;
+  const MAX = exercises.length * 10;
+
+  function showEx() {
+    const ex = exercises[current];
+    answered = false;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('progressBar').style.width = (current / exercises.length * 100) + '%';
+    document.getElementById('comicVisual').innerHTML = ex.visual;
+    document.getElementById('hintText').textContent = ex.hint;
+
+    const grid = document.getElementById('optGrid');
+    grid.innerHTML = '';
+    ex.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt;
+      btn.dataset.idx = i;
+      btn.onclick = () => checkAnswer(btn, i);
+      grid.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(btn, idx) {
+    if (answered) return;
+    answered = true;
+    const ex = exercises[current];
+    const isCorrect = ex.options[idx] === ex.answer;
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    if (!isCorrect) {
+      document.querySelectorAll('.opt-btn').forEach(b => {
+        if (ex.options[parseInt(b.dataset.idx)] === ex.answer) b.classList.add('correct');
+      });
+    }
+    document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+    if (isCorrect) { score += 10; document.getElementById('score').textContent = score; }
+    Sound[isCorrect ? 'correct' : 'wrong']();
+    showFeedback(isCorrect, isCorrect ? '¡Muy bien! 🎉' : `Era: <strong>${ex.answer}</strong>`);
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function nextEx() {
+    current++;
+    if (current >= exercises.length) {
+      maybePodio(11, score, MAX);
+    } else {
+      showEx();
+    }
+  }
+
+  showEx();
+  </script>
+</body>
+</html>
