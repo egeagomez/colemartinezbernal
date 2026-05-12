@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💡 Light Detective</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#1b1464 0%,#004d40 55%,#ff8f00 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px;overflow-x:hidden}
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;font-size:1.6rem;opacity:.32;animation:floaty linear infinite}
+.star.s1{left:8%;top:14%;animation-duration:7s}.star.s2{left:78%;top:18%;animation-duration:9s}.star.s3{left:18%;top:76%;animation-duration:8s}.star.s4{left:86%;top:70%;animation-duration:10s}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-18px) rotate(8deg)}}
+main{position:relative;z-index:1;width:100%;display:flex;flex-direction:column;align-items:center}
+.top-bar{width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#231a6d;color:#FFD700;border:2px solid #80cbc4;border-radius:14px;padding:6px 14px;font-family:inherit;font-size:.95rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#80cbc4;color:#102027}
+.score-box{background:#102027;color:#FFD700;border:2px solid #80cbc4;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:8px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.92rem;border:2px solid #80cbc4;background:#102027;color:#b2dfdb}
+.p-tab.active{background:#26a69a;color:#fff;font-weight:bold}.p-tab.done{background:#2e7d32;border-color:#66bb6a;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.15rem;color:#fff59d;text-align:center;margin-bottom:12px}
+.fb{min-height:2rem;font-size:1.08rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff8a80}
+.btn-main{background:linear-gradient(135deg,#ffca28,#ff8f00);color:#1a237e;border:2px solid #fff59d;border-radius:20px;padding:10px 26px;font-family:inherit;font-size:1.03rem;cursor:pointer;margin-top:8px;font-weight:bold}
+.btn-main:hover{filter:brightness(1.08)}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:20}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+.flashcard{width:100%;max-width:360px;min-height:290px;background:linear-gradient(145deg,#1a237e,#004d40);border:3px solid #80cbc4;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px;text-align:center;cursor:pointer;transition:transform .2s}
+.flashcard:hover{transform:scale(1.03)}
+.c-emoji{font-size:4.2rem}.c-title{font-size:1.7rem;color:#FFD700}.c-type{font-size:1rem;color:#80cbc4;font-weight:bold}.c-desc{font-size:1rem;color:#e0f2f1;line-height:1.35}
+.card-nav{display:flex;align-items:center;gap:14px;margin:12px 0 6px}
+.nav-btn{background:#102027;color:#FFD700;border:2px solid #80cbc4;border-radius:50%;width:44px;height:44px;font-size:1.4rem;cursor:pointer}
+.nav-btn:disabled{opacity:.35;cursor:default}
+.prog{display:flex;gap:7px}.dot{width:12px;height:12px;border-radius:50%;border:2px solid #80cbc4;background:#102027}.dot.seen{background:#26a69a}.dot.active{background:#FFD700;border-color:#ffca28}
+.learn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.sort-card{width:100%;max-width:470px;background:linear-gradient(145deg,#1a237e,#004d40);border:2px solid #80cbc4;border-radius:18px;padding:18px;text-align:center}
+.s-emoji{font-size:3rem}.s-name{font-size:1.3rem;color:#FFD700;font-weight:bold}.s-hint{font-size:.95rem;color:#b2dfdb;margin-bottom:10px}
+.sort-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.sort-btn{padding:10px 18px;border-radius:14px;font-family:inherit;font-size:1rem;cursor:pointer;border:2px solid;font-weight:bold}
+.sort-btn.nat{background:#2e7d32;color:#FFD700;border-color:#81c784}.sort-btn.art{background:#1565c0;color:#FFD700;border-color:#64b5f6}
+.sp{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0}.sp-dot{width:26px;height:26px;border-radius:50%;border:2px solid #80cbc4;display:flex;align-items:center;justify-content:center;background:#102027;color:#b2dfdb;font-size:.72rem}.sp-dot.correct{background:#1b5e20;border-color:#69f0ae;color:#69f0ae}.sp-dot.wrong{background:#4e1212;border-color:#ff8a80;color:#ff8a80}.sp-dot.current{border-color:#FFD700;background:#3e2723;color:#FFD700}
+.quiz-card{width:100%;max-width:520px;background:#102027;border:2px solid #80cbc4;border-radius:16px;padding:20px;text-align:center}
+.q-prog{color:#b2dfdb;font-size:.92rem}.q-emoji{font-size:2.8rem;margin:6px 0}.q-q{font-size:1.15rem;color:#FFD700;margin:10px 0 12px}
+.q-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.q-opt{width:100%;max-width:390px;background:linear-gradient(135deg,#1a237e,#004d40);border:2px solid #80cbc4;border-radius:14px;padding:11px 14px;color:#fff;font-family:inherit;font-size:1rem;cursor:pointer;text-align:left}
+.q-opt:hover:not(:disabled){border-color:#FFD700}.q-opt.correct-ans{border-color:#69f0ae;background:#1b5e20;color:#69f0ae}.q-opt.wrong-ans{border-color:#ff8a80;background:#4e1212;color:#ff8a80}
+.finish{display:none;background:#102027;border:2px solid #69f0ae;border-radius:14px;padding:14px 20px;color:#69f0ae;margin-top:12px;text-align:center}
+.finish-row{display:none;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="sky"><span class="star s1">✨</span><span class="star s2">💡</span><span class="star s3">🌟</span><span class="star s4">🔦</span></div>
+<div class="flash-ov" id="fov"></div>
+<main>
+  <div class="top-bar">
+    <a class="back-btn" href="../asignaturas.html#science">← Science</a>
+    <span style="color:#FFD700;font-size:1.08rem">💡 Light Detective</span>
+    <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+  </div>
+
+  <div class="phase-bar">
+    <div class="p-tab active" id="tab1">📚 Learn</div>
+    <div class="p-tab" id="tab2">☀️ Sort</div>
+    <div class="p-tab" id="tab3">❓ Quiz</div>
+  </div>
+
+  <div class="phase active" id="phase1">
+    <p class="ph-title">Learn about light sources: natural and artificial.</p>
+    <div class="flashcard" onclick="speakCurrent()">
+      <div class="c-emoji" id="cEmoji"></div>
+      <div class="c-title" id="cTitle"></div>
+      <div class="c-type" id="cType"></div>
+      <div class="c-desc" id="cDesc"></div>
+    </div>
+    <div class="learn-row">
+      <button class="btn-main" onclick="speakCurrent()">🔊 Say it</button>
+      <button class="btn-main" id="phase1Btn" onclick="goTab(2)" disabled>✅ Sort light</button>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn" id="prevBtn" onclick="prevCard()" disabled>◀</button>
+      <div class="prog" id="prog"></div>
+      <button class="nav-btn" id="nextBtn" onclick="nextCard()">▶</button>
+    </div>
+  </div>
+
+  <div class="phase" id="phase2">
+    <p class="ph-title">Is this source of light natural or artificial?</p>
+    <div class="sp" id="spBar"></div>
+    <div class="sort-card" id="sortCard">
+      <div class="s-emoji" id="sEmoji"></div>
+      <div class="s-name" id="sName"></div>
+      <div class="s-hint" id="sHint"></div>
+      <div class="sort-btns">
+        <button class="sort-btn nat" onclick="sortAnswer('natural')">🌞 Natural</button>
+        <button class="sort-btn art" onclick="sortAnswer('artificial')">💡 Artificial</button>
+      </div>
+    </div>
+    <div class="fb" id="fb2"></div>
+    <button class="btn-main" id="btn2" onclick="goTab(3)" style="display:none">✅ Go to quiz</button>
+  </div>
+
+  <div class="phase" id="phase3">
+    <div class="quiz-card" id="quizCard">
+      <div class="q-prog" id="qProg"></div>
+      <div class="q-emoji" id="qEmoji"></div>
+      <div class="q-q" id="qQ"></div>
+      <div class="q-opts" id="qOpts"></div>
+    </div>
+    <div class="fb" id="fb3"></div>
+    <div class="finish" id="finish"></div>
+    <div class="finish-row" id="finishRow">
+      <button class="btn-main" onclick="location.reload()">🔄 Play again</button>
+      <button class="btn-main" onclick="location.href='../asignaturas.html#science'">🏠 Science menu</button>
+    </div>
+  </div>
+</main>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+const flash=c=>{const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',260);};
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=0.88;speechSynthesis.speak(u);}
+const addScore=n=>{$('scoreDisp').textContent=score+=n;};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;};
+function goTab(n){[1,2,3].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active');});$('phase'+n).classList.add('active');$('tab'+n).classList.add('active');if(n===2)buildSort();if(n===3)buildQuiz();}
+function markDone(n){$('tab'+n).classList.remove('active');$('tab'+n).classList.add('done');}
+
+const CARDS=[
+  {emoji:'☀️',title:'Natural Light',type:'FROM NATURE',desc:'Natural light comes from nature. The sun and stars are natural sources of light.'},
+  {emoji:'💡',title:'Artificial Light',type:'MADE BY PEOPLE',desc:'Artificial light is made by people. Lamps, flashlights and screens make artificial light.'},
+  {emoji:'🎉',title:'Light for Fun',type:'USE OF LIGHT',desc:'We use light for fun in fireworks, party lights, cinema and toys with LEDs.'},
+  {emoji:'📡',title:'Light for Communication',type:'USE OF LIGHT',desc:'We use light to communicate with traffic lights, lighthouse signals and phone screens.'},
+  {emoji:'🌈',title:'Why Light Matters',type:'SCIENCE',desc:'Light helps us see, play and share messages around us every day.'},
+];
+
+const SORT_ITEMS=[
+  {emoji:'☀️',name:'Sun',hint:'It shines in the sky.',type:'natural'},
+  {emoji:'💡',name:'Lamp',hint:'You switch it on at home.',type:'artificial'},
+  {emoji:'⭐',name:'Stars',hint:'They twinkle at night.',type:'natural'},
+  {emoji:'🔦',name:'Flashlight',hint:'Battery-powered light.',type:'artificial'},
+  {emoji:'🔥',name:'Fire',hint:'A campfire gives light.',type:'natural'},
+  {emoji:'🕯️',name:'Candle',hint:'People make it with wax.',type:'artificial'},
+  {emoji:'⚡',name:'Lightning',hint:'Storm light in the sky.',type:'natural'},
+  {emoji:'📱',name:'Phone screen',hint:'Light from a device.',type:'artificial'},
+];
+
+const QUIZ=[
+  {q:'Which one is a natural source of light?',opts:['Lamp','Sun','Flashlight'],ans:1,emoji:'🌞'},
+  {q:'Which one is artificial light?',opts:['Stars','Lightning','Street light'],ans:2,emoji:'💡'},
+  {q:'What does natural light mean?',opts:['Light made by people','Light from nature','Light only at night'],ans:1,emoji:'🌍'},
+  {q:'Traffic lights are an example of light for...',opts:['Fun','Communication','Cooking'],ans:1,emoji:'🚦'},
+  {q:'Fireworks use light mostly for...',opts:['Fun','Communication','Homework'],ans:0,emoji:'🎆'},
+  {q:'A lighthouse uses light to...',opts:['Decorate the sea','Help and guide boats','Cook food'],ans:1,emoji:'🚢'},
+  {q:'Which pair has only natural light?',opts:['Sun and stars','Lamp and candle','Phone and flashlight'],ans:0,emoji:'✨'},
+  {q:'Which pair has only artificial light?',opts:['Sun and fire','Lamp and phone screen','Stars and lightning'],ans:1,emoji:'📱'},
+];
+
+let ci=0,seen=new Set([0]);
+function showCard(){
+  const c=CARDS[ci];
+  $('cEmoji').textContent=c.emoji;$('cTitle').textContent=c.title;$('cType').textContent=c.type;$('cDesc').textContent=c.desc;
+  $('prevBtn').disabled=ci===0;$('nextBtn').disabled=ci===CARDS.length-1;
+  $('prog').innerHTML=CARDS.map((_,i)=>`<div class="dot${seen.has(i)?' seen':''}${i===ci?' active':''}"></div>`).join('');
+  if(seen.size===CARDS.length)$('phase1Btn').disabled=false;
+}
+function nextCard(){if(ci<CARDS.length-1){ci++;seen.add(ci);showCard();}}
+function prevCard(){if(ci>0){ci--;showCard();}}
+function speakCurrent(){const c=CARDS[ci];speak(c.title+'. '+c.desc);} showCard();
+
+let sortItems=[],si=0,sc=0;
+function buildSort(){sortItems=shuffle(SORT_ITEMS);si=0;sc=0;$('btn2').style.display='none';$('fb2').textContent='';renderBar();showSort();}
+function renderBar(){$('spBar').innerHTML=sortItems.map((_,i)=>{let cls='sp-dot';if(i===si)cls+=' current';return `<div class="${cls}" id="sd${i}">${i+1}</div>`;}).join('');}
+function showSort(){
+  if(si>=sortItems.length){endSort();return;}
+  const it=sortItems[si];$('sEmoji').textContent=it.emoji;$('sName').textContent=it.name;$('sHint').textContent=it.hint;renderBar();speak(it.name);
+}
+function sortAnswer(ans){
+  const it=sortItems[si],dot=$('sd'+si);
+  if(ans===it.type){flash('g');addScore(10);sc++;dot.classList.add('correct');$('fb2').className='fb ok';$('fb2').textContent='✅ Correct! '+it.name+' is '+it.type+'.';}
+  else {flash('r');dot.classList.add('wrong');$('fb2').className='fb no';$('fb2').textContent='❌ Try again! '+it.name+' is '+it.type+'.';}
+  si++;setTimeout(showSort,1000);
+}
+function endSort(){markDone(2);$('sortCard').innerHTML='<div style="font-size:2rem">🎉</div><div style="font-size:1.2rem;color:#69f0ae">Great! '+sc+' / '+sortItems.length+' correct.</div>';$('fb2').textContent='';$('btn2').style.display='';}
+
+let quizItems=[],qi=0,qc=0;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;qc=0;$('finish').style.display='none';$('finishRow').style.display='none';$('quizCard').style.display='';$('fb3').textContent='';showQ();}
+function showQ(){
+  if(qi>=quizItems.length){endQuiz();return;}
+  const q=quizItems[qi];$('qProg').textContent='Question '+(qi+1)+' / '+quizItems.length;$('qEmoji').textContent=q.emoji;$('qQ').textContent=q.q;
+  $('qOpts').innerHTML=q.opts.map((o,i)=>`<button class="q-opt" onclick="ansQ(${i})">${o}</button>`).join('');
+}
+function ansQ(i){
+  const q=quizItems[qi],btns=[...document.querySelectorAll('.q-opt')];btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(15);qc++;btns[i].classList.add('correct-ans');$('fb3').className='fb ok';$('fb3').textContent='✅ Nice!';}
+  else {flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb3').className='fb no';$('fb3').textContent='❌ Good try!';}
+  qi++;setTimeout(showQ,1000);
+}
+function endQuiz(){markDone(3);$('quizCard').style.display='none';$('finish').style.display='block';$('finish').textContent='🏁 You got '+qc+' / '+quizItems.length+' in the quiz. Total score: '+score+' ⭐';$('finishRow').style.display='flex';$('fb3').textContent='';}
+</script>
+</body>
+</html>
