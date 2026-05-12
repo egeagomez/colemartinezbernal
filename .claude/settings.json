@@ -1,5 +1,9 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"d:\\\\Python apps\\\\colemartinezbernal\" -Directory)",
+      "Bash(Select-Object Name)"
+    ],
     "additionalDirectories": [
       "c:\\Users\\Miguel Egea\\Desktop\\lenguasegundo"
     ]

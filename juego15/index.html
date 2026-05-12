@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 15 – ¿Cuál es la intención?</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .text-card {
+      font-size:1.3rem; line-height:1.6;
+      background:#fff8e1; border-radius:16px;
+      padding:22px 28px; margin:20px 0;
+      border-left:5px solid var(--yellow);
+      text-align:center; font-style:italic;
+      min-height:80px;
+    }
+    .emoji-big { font-size:3.2rem; display:block; margin-bottom:8px; }
+    .intent-grid {
+      display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+    }
+    .intent-btn {
+      padding:16px 18px; font-size:1.05rem; font-weight:bold;
+      font-family:'Patrick Hand',cursive; border:none; border-radius:18px;
+      cursor:pointer; transition:transform .12s, box-shadow .12s;
+      min-width:130px; line-height:1.4;
+    }
+    .intent-btn:hover:not(:disabled) { transform:scale(1.05); box-shadow:0 4px 14px rgba(0,0,0,.2); }
+    .intent-btn[data-intent="entretener"] { background:#FFE0B2; color:#e65100; }
+    .intent-btn[data-intent="ensenar"]    { background:#C8E6C9; color:#1b5e20; }
+    .intent-btn[data-intent="expresar"]   { background:#F8BBD0; color:#880e4f; }
+    .intent-btn.correct { outline:4px solid #4CAF50; transform:scale(1.08) !important; }
+    .intent-btn.wrong   { outline:4px solid #EF5350; opacity:.65; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🎯 ¿Cuál es la intención?</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">¿Para qué fue escrito este texto?</p>
+    <div class="text-card" id="textCard"></div>
+    <div class="intent-grid">
+      <button class="intent-btn" data-intent="entretener" onclick="checkIntent(this)">🎭 Entretener<br><small>al lector</small></button>
+      <button class="intent-btn" data-intent="ensenar"    onclick="checkIntent(this)">📚 Enseñar<br><small>algo nuevo</small></button>
+      <button class="intent-btn" data-intent="expresar"   onclick="checkIntent(this)">💝 Expresar<br><small>emociones</small></button>
+    </div>
+    <div style="margin-top:20px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextEx()">Siguiente ▶</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const exercises = [
+    { emoji:'📖', text:'"Las aventuras de un superhéroe que salva el planeta"',      answer:'entretener' },
+    { emoji:'👩‍🍳',text:'"Receta: cómo hacer un pastel de chocolate"',               answer:'ensenar' },
+    { emoji:'💕', text:'"Poema: Echo de menos a mi abuela"',                        answer:'expresar' },
+    { emoji:'🐉', text:'"El misterio de la cueva del dragón"',                      answer:'entretener' },
+    { emoji:'🪥', text:'"Instrucciones para lavarse los dientes correctamente"',    answer:'ensenar' },
+    { emoji:'💌', text:'"Carta a mamá: Te quiero mucho y eres la mejor del mundo"', answer:'expresar' },
+    { emoji:'🚀', text:'"El cómic de Alba Lunar y sus aventuras en la Luna"',       answer:'entretener' },
+    { emoji:'🧀', text:'"¿Cómo se fabrica el queso? Pasos para hacerlo en casa"',  answer:'ensenar' },
+    { emoji:'🎵', text:'"Canción: Hoy estoy triste y no sé por qué"',               answer:'expresar' },
+    { emoji:'👸', text:'"Cuento: La princesa y el castillo encantado"',              answer:'entretener' },
+  ];
+
+  const labels = { entretener:'Entretener al lector', ensenar:'Enseñar algo nuevo', expresar:'Expresar emociones' };
+  let current = 0, score = 0, answered = false;
+
+  function showEx() {
+    const ex = exercises[current];
+    answered = false;
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('progressBar').style.width = (current / exercises.length * 100) + '%';
+    document.getElementById('textCard').innerHTML =
+      `<span class="emoji-big">${ex.emoji}</span>${ex.text}`;
+    document.querySelectorAll('.intent-btn').forEach(b => {
+      b.classList.remove('correct','wrong');
+      b.disabled = false;
+    });
+  }
+
+  function checkIntent(btn) {
+    if (answered) return;
+    answered = true;
+    const ex = exercises[current];
+    const isCorrect = btn.dataset.intent === ex.answer;
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    if (!isCorrect) {
+      document.querySelectorAll('.intent-btn').forEach(b => {
+        if (b.dataset.intent === ex.answer) b.classList.add('correct');
+      });
+    }
+    document.querySelectorAll('.intent-btn').forEach(b => b.disabled = true);
+    if (isCorrect) { score += 10; document.getElementById('score').textContent = score; }
+    Sound[isCorrect ? 'correct' : 'wrong']();
+    showFeedback(isCorrect, isCorrect ? '¡Exacto! 🎉' : `Era: <strong>${labels[ex.answer]}</strong>`);
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  function nextEx() {
+    current++;
+    if (current >= exercises.length) {
+      maybePodio(15, score, exercises.length * 10);
+    } else {
+      showEx();
+    }
+  }
+
+  showEx();
+  </script>
+</body>
+</html>
