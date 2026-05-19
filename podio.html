@@ -52,28 +52,46 @@
   </div>
   <script src="assets/score.js"></script>
   <script>
-    const params = new URLSearchParams(location.search);
-    const from   = parseInt(params.get('from')) || 1;
-    const scores = ScoreManager.getAll();
-    const current = scores[from];
+    const params  = new URLSearchParams(location.search);
+    const fromRaw = params.get('from') || '1';   // e.g. 'mat17', 'juego3', '5'
+    const scores  = ScoreManager.getAll();
+    const current = scores[fromRaw];
+
+    // Parse prefix + number from any game id: 'mat17'→{p:'mat',n:17}, '5'→{p:'juego',n:5}
+    function parseId(id) {
+      const m = String(id).match(/^([a-zA-Z]+)(\d+)$/);
+      if (m) return { p: m[1].toLowerCase(), n: parseInt(m[2]) };
+      const n = parseInt(id);
+      return { p: 'juego', n: isNaN(n) ? 1 : n };
+    }
+    const { p: prefix, n: num } = parseId(fromRaw);
+
+    // Last game number per subject
+    const MAX_GAMES = { juego:15, mat:24, eng:9, sci:9, soc:12 };
+    // Menu hash per subject
+    const MENU_HASH = { juego:'#lengua', mat:'#mates', eng:'#english', sci:'#science', soc:'#social' };
 
     function nextGame() {
-      const next = from + 1;
-      if (next <= 10) window.location.href = `../juego${next}/index.html`;
-      else window.location.href = '../index.html';
+      const next = num + 1;
+      const max  = MAX_GAMES[prefix] || 15;
+      if (next <= max) window.location.href = `../${prefix}${next}/index.html`;
+      else             window.location.href = '../asignaturas.html' + (MENU_HASH[prefix] || '');
     }
+
+    // Update menu button href dynamically
+    document.querySelector('.btn-row a.btn-blue').href =
+      '../asignaturas.html' + (MENU_HASH[prefix] || '');
 
     function renderMedal(gameId) {
       const s = scores[gameId];
       if (!s) return '';
       const medals = ['🥇','🥈','🥉'];
       const colors  = ['#FDD835','#CFD8DC','#FFAB91'];
-      const pct = s.percent;
-      const idx = pct >= 80 ? 0 : pct >= 50 ? 1 : 2;
+      const idx = s.percent >= 80 ? 0 : s.percent >= 50 ? 1 : 2;
       return `<div class="medal-card" style="border-top:4px solid ${colors[idx]}">
         <div class="medal-icon">${medals[idx]}</div>
-        <div class="medal-label">Juego ${gameId}</div>
-        <div class="medal-score">${pct}%</div>
+        <div class="medal-label">${gameId}</div>
+        <div class="medal-score">${s.percent}%</div>
       </div>`;
     }
 
@@ -93,7 +111,7 @@
       }
       document.getElementById('mainEmoji').textContent = emoji;
       document.getElementById('podioTitle').textContent = title;
-      document.getElementById('podioSub').textContent   = `Juego ${from}: ${current.score} de ${current.total} puntos`;
+      document.getElementById('podioSub').textContent   = `${fromRaw}: ${current.score} de ${current.total} puntos`;
       document.getElementById('confetti').innerHTML = [...stars].map((s,i)=>
         `<span class="star-anim" style="animation-delay:${i*.15}s">${s}</span>`).join('');
       document.getElementById('resultMsg').textContent = msg;
@@ -101,9 +119,12 @@
 
     // Mostrar medallas de los últimos juegos jugados
     const medalRow = document.getElementById('medalRow');
-    // Mostrar las 4 últimas o las que haya
-    const ids = Object.keys(scores).map(Number).sort((a,b)=>b-a).slice(0,4);
-    medalRow.innerHTML = ids.map(renderMedal).join('') || '<p style="color:#888">Aún no hay puntuaciones guardadas.</p>';
+    const ids = Object.keys(scores).sort((a,b)=>{
+      const da=scores[a].date||'', db=scores[b].date||'';
+      return db.localeCompare(da);
+    }).slice(0,4);
+    medalRow.innerHTML = ids.map(renderMedal).join('') ||
+      '<p style="color:#888">Aún no hay puntuaciones guardadas.</p>';
 
     Sound.fanfare();
   </script>

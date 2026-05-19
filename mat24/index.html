@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡A Repartir! — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    .problem-card {
+      background:#fff; border-radius:16px; padding:18px 22px;
+      max-width:500px; margin:10px auto;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+    }
+    .prob-text { font-size:1.15rem; color:#4a0072; text-align:center; margin-bottom:14px; line-height:1.55; }
+
+    /* Visual: show total objects then groups */
+    .total-row { display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:8px; }
+    .obj-emoji { font-size:1.6rem; }
+    .arrow-row { text-align:center; font-size:1.5rem; margin:4px 0; color:#7c43bd; }
+    .groups-row { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+    .share-box {
+      background:#e8f5e9; border:2px solid #81c784; border-radius:10px;
+      padding:6px 10px; display:flex; flex-direction:column; align-items:center;
+      min-width:50px; gap:4px;
+    }
+    .share-label { font-size:.8rem; color:#2e7d32; font-weight:bold; }
+    .share-inner { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; min-height:28px; }
+
+    /* Answer area */
+    .answer-area { margin-top:12px; border-top:2px dashed #b39ddb; padding-top:12px; }
+    .answer-question { font-size:1.1rem; color:#4a0072; text-align:center; margin-bottom:8px; }
+    .spin-wrap { display:flex; flex-direction:column; align-items:center; gap:0; }
+    .spin-btn { width:52px; height:24px; background:#e1bee7; border:none; cursor:pointer; font-size:.95rem; border-radius:6px 6px 0 0; color:#4a0072; font-weight:bold; transition:background .1s; }
+    .spin-btn.down { border-radius:0 0 6px 6px; }
+    .spin-btn:hover { background:#ce93d8; }
+    .spin-val { width:52px; height:52px; line-height:52px; text-align:center; font-size:2rem; font-family:'Patrick Hand',cursive; background:#fff; border:2px solid #7c43bd; color:#1a0533; user-select:none; cursor:pointer; }
+    .spin-val.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; color:#2E7D32; }
+    .spin-val.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; color:#c62828; animation:snake .4s; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; }
+    .btn-gold { background:#FFD700; color:#2d004a; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; transition:transform .1s; }
+    .btn-magic:hover,.btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes snake { 0%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(6deg)} 60%{transform:rotate(-4deg)} 80%{transform:rotate(4deg)} 100%{transform:rotate(0)} }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>➗ ¡A Repartir!</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Lee el problema y calcula cuántos le tocan a cada uno.</p>
+    </div>
+    <div class="problem-card" id="problemCard"></div>
+    <p id="msgBox"></p>
+    <div style="text-align:center;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+      <button class="btn-magic" id="checkBtn" onclick="checkAnswer()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn"  style="display:none" onclick="newProblem()">✨ Nuevo reparto</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat24_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 15;
+  let questionCount = 0;
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+
+  // Division by divisor per level: L0→÷2, L1→÷2,÷3, L2→÷2,÷3,÷4, L3→÷2,÷3,÷4,÷5
+  const DIVISORS_BY_LEVEL = [[2],[2,3],[2,3,4],[2,3,4,5]];
+
+  const TEMPLATES = [
+    (t,d,q)=>[`Tenemos <strong>${t} caramelos</strong> para repartir entre <strong>${d} niños</strong>. ¿Cuántos le tocan a cada uno?`,'caramelos','🍬','niños'],
+    (t,d,q)=>[`Hay <strong>${t} manzanas</strong> en <strong>${d} cestas</strong> iguales. ¿Cuántas hay en cada cesta?`,'manzanas','🍎','cestas'],
+    (t,d,q)=>[`Repartimos <strong>${t} globos</strong> entre <strong>${d} amigos</strong> por igual. ¿Cuántos globos tiene cada amigo?`,'globos','🎈','amigos'],
+    (t,d,q)=>[`Tenemos <strong>${t} lápices</strong> y los ponemos en <strong>${d} estuches</strong> iguales. ¿Cuántos lápices van en cada estuche?`,'lápices','✏️','estuches'],
+    (t,d,q)=>[`Hay <strong>${t} galletas</strong> para <strong>${d} platos</strong> iguales. ¿Cuántas galletas hay en cada plato?`,'galletas','🍪','platos'],
+    (t,d,q)=>[`Tenemos <strong>${t} flores</strong> para hacer <strong>${d} ramos</strong> iguales. ¿Cuántas flores lleva cada ramo?`,'flores','🌸','ramos'],
+  ];
+
+  let prob = {};
+  let spinVal = 0;
+
+  function genProblem() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+    const divisors = DIVISORS_BY_LEVEL[Math.min(levelIdx,3)];
+    const divisor = divisors[rnd(0,divisors.length-1)];
+    const quotient = rnd(2, 5);  // reasonable per-group count
+    const total = divisor * quotient;
+    const tplFn = TEMPLATES[rnd(0,TEMPLATES.length-1)];
+    const [text, noun, emoji, groupNoun] = tplFn(total, divisor, quotient);
+    prob = { total, divisor, quotient, text, noun, emoji, groupNoun };
+    spinVal = 0;
+    render();
+  }
+
+  function render() {
+    const { total, divisor, quotient, text, emoji, groupNoun } = prob;
+
+    // Total objects display
+    let totalHtml = '';
+    for(let i=0;i<total;i++) totalHtml+=`<span class="obj-emoji">${emoji}</span>`;
+
+    // Groups (boxes with correct count, but shown empty with ?s before check)
+    let groupsHtml = '';
+    for(let g=0;g<divisor;g++) {
+      let items='';
+      for(let i=0;i<quotient;i++) items+=`<span class="obj-emoji">${emoji}</span>`;
+      groupsHtml+=`<div class="share-box" id="box_${g}">
+        <div class="share-label">${groupNoun.charAt(0).toUpperCase()+groupNoun.slice(1,-1)} ${g+1}</div>
+        <div class="share-inner" id="inner_${g}"><span style="font-size:1.5rem;color:#aaa;">?</span></div>
+      </div>`;
+    }
+
+    const maxSpin = Math.min(quotient+5, 20);
+
+    document.getElementById('problemCard').innerHTML = `
+      <div class="prob-text">${text}</div>
+      <div class="total-row">${totalHtml}</div>
+      <div class="arrow-row">↓ reparto igual ↓</div>
+      <div class="groups-row">${groupsHtml}</div>
+      <div class="answer-area">
+        <div class="answer-question">¿Cuántos le tocan a cada uno?</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+          <div class="spin-wrap">
+            <button class="spin-btn" onclick="adjSpin(1,${maxSpin})">▲</button>
+            <div class="spin-val" id="spinVal" onclick="adjSpin(1,${maxSpin})">0</div>
+            <button class="spin-btn down" onclick="adjSpin(-1,${maxSpin})">▼</button>
+          </div>
+          <span style="font-size:1.1rem;color:#4a0072;font-family:'Patrick Hand',cursive;">cada ${groupNoun.slice(0,-1)}</span>
+        </div>
+      </div>`;
+  }
+
+  function adjSpin(delta, maxVal) {
+    const el=document.getElementById('spinVal'); if(!el) return;
+    el.classList.remove('correct','wrong');
+    spinVal=(spinVal+delta+maxVal+1)%(maxVal+1);
+    el.textContent=spinVal;
+  }
+
+  function checkAnswer() {
+    const el=document.getElementById('spinVal'); if(!el) return;
+    document.getElementById('checkBtn').disabled=true;
+    if(spinVal===prob.quotient) {
+      el.classList.add('correct');
+      // Fill the boxes with emoji to show the answer
+      for(let g=0;g<prob.divisor;g++) {
+        const inner=document.getElementById('inner_'+g);
+        if(inner) {
+          let items='';
+          for(let i=0;i<prob.quotient;i++) items+=`<span class="obj-emoji">${prob.emoji}</span>`;
+          inner.innerHTML=items;
+          inner.parentElement.style.background='#C8E6C9';
+          inner.parentElement.style.borderColor='#4CAF50';
+        }
+      }
+      totalScore+=(levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent=totalScore;
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat24_level', levelIdx);
+        document.getElementById('msgBox').textContent=`✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent=['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      el.classList.add('wrong'); streak=0; updateStreak(); Sound.wrong();
+      document.getElementById('msgBox').textContent=`😕 La respuesta es ${prob.quotient}. ${prob.total} ÷ ${prob.divisor} = ${prob.quotient}`;
+      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function newProblem() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('msgBox').textContent='';
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat24', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genProblem();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genProblem();
+  </script>
+</body>
+</html>

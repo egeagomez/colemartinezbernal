@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Círculo o Circunferencia — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    .figure-box {
+      background:#fff; border-radius:18px; padding:14px 18px 10px;
+      max-width:290px; margin:10px auto;
+      box-shadow:0 4px 24px rgba(160,32,240,.4);
+      border:3px solid #7c43bd; text-align:center;
+    }
+    .figure-box svg { display:block; margin:0 auto; }
+    .obj-name {
+      font-family:'Patrick Hand',cursive; font-size:1.2rem;
+      color:#4a0072; font-weight:bold; margin-top:6px;
+    }
+
+    .question-txt { font-size:1.25rem; color:#e1bee7; margin:12px 0 14px; font-family:'Patrick Hand',cursive; text-align:center; }
+    .choices { display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
+    .choice {
+      background:#4a0072; color:#FFD700; border:3px solid #7c43bd;
+      border-radius:16px; padding:14px 32px; font-size:1.2rem;
+      font-family:'Patrick Hand',cursive; cursor:pointer;
+      transition:transform .12s, background .12s;
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+    }
+    .choice .choice-icon { font-size:2rem; }
+    .choice:hover:not([disabled]) { background:#6a2092; transform:scale(1.06); }
+    .choice.ok { background:#2E7D32 !important; border-color:#4CAF50 !important; color:#fff; }
+    .choice.no { background:#c62828 !important; border-color:#EF5350 !important; color:#fff; }
+
+    .explain-box {
+      background:rgba(255,255,255,.1); border-radius:12px; padding:10px 16px;
+      max-width:440px; margin:8px auto; border:2px solid #7c43bd;
+      font-family:'Patrick Hand',cursive; font-size:1rem; color:#e1bee7;
+      text-align:center; line-height:1.5; display:none;
+    }
+    .explain-box strong { color:#FFD700; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 36px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; margin-top:10px; }
+    .btn-magic:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.1rem; text-align:center; color:#FFD700; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>⭕ Círculo o Circunferencia</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Observa la figura y clasifícala.</p>
+    </div>
+
+    <div class="figure-box">
+      <svg id="figSvg" width="250" height="230" viewBox="0 0 250 230"></svg>
+      <div class="obj-name" id="objName"></div>
+    </div>
+
+    <div style="text-align:center">
+      <div class="question-txt">¿Es una <strong>circunferencia</strong> o un <strong>círculo</strong>?</div>
+      <div class="choices">
+        <button class="choice" id="btnCirculo"    onclick="pick(this,'circulo')">
+          <span class="choice-icon">🔵</span>Círculo
+        </button>
+        <button class="choice" id="btnCircunferencia" onclick="pick(this,'circunferencia')">
+          <span class="choice-icon">⭕</span>Circunferencia
+        </button>
+      </div>
+    </div>
+
+    <div class="explain-box" id="explainBox"></div>
+    <p id="msgBox"></p>
+    <div style="text-align:center">
+      <button class="btn-magic" id="nextBtn" style="display:none" onclick="nextQ()">✨ Siguiente figura</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat19_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 15;
+  let questionCount = 0;
+  let correctAnswer = '';
+  let usedIdx = [];
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+
+  // ── OBJECTS ──────────────────────────────────────────────────────────────────
+  const CX=125, CY=115, R=95;
+
+  const OBJECTS = [
+    // ── CÍRCULOS ────────────────────────────────────────────────────────────────
+    {
+      name:'Pizza', type:'circulo',
+      explain:'La <strong>pizza</strong> es un <strong>círculo</strong>: tiene toda la superficie rellena.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#e8832a" stroke="#a05010" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-13}" fill="#c0392b"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-15}" fill="#f1c40f" opacity=".9"/>
+          <circle cx="${CX-28}" cy="${CY-22}" r="12" fill="#2c2c2c"/>
+          <circle cx="${CX-28}" cy="${CY-22}" r="5"  fill="#888"/>
+          <circle cx="${CX+30}" cy="${CY-17}" r="12" fill="#2c2c2c"/>
+          <circle cx="${CX+30}" cy="${CY-17}" r="5"  fill="#888"/>
+          <circle cx="${CX+2}"  cy="${CY+28}" r="12" fill="#2c2c2c"/>
+          <circle cx="${CX+2}"  cy="${CY+28}" r="5"  fill="#888"/>
+          <circle cx="${CX-36}" cy="${CY+22}" r="10" fill="#27ae60"/>
+          <circle cx="${CX+40}" cy="${CY+20}" r="10" fill="#27ae60"/>
+          <circle cx="${CX+8}"  cy="${CY-40}" r="10" fill="#e74c3c"/>`;
+      }
+    },
+    {
+      name:'Moneda', type:'circulo',
+      explain:'La <strong>moneda</strong> es un <strong>círculo</strong>: es una figura plana con el interior completamente relleno.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#f5c518" stroke="#c8900a" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-14}" fill="#f8d030"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-16}" fill="none" stroke="#c8900a" stroke-width="3"/>
+          <text x="${CX}" y="${CY+24}" text-anchor="middle" font-size="80" font-family="Georgia,serif" fill="#c8900a" font-weight="bold">€</text>`;
+      }
+    },
+    {
+      name:'Reloj', type:'circulo',
+      explain:'El <strong>reloj</strong> es un <strong>círculo</strong>: la esfera tiene el interior relleno.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-9}" fill="white" stroke="#aaa" stroke-width="2"/>
+          <text x="${CX}"    y="${CY-68}" text-anchor="middle" font-size="17" font-family="Patrick Hand,cursive" fill="#333">12</text>
+          <text x="${CX+80}" y="${CY+7}"  text-anchor="middle" font-size="17" font-family="Patrick Hand,cursive" fill="#333">3</text>
+          <text x="${CX}"    y="${CY+88}" text-anchor="middle" font-size="17" font-family="Patrick Hand,cursive" fill="#333">6</text>
+          <text x="${CX-80}" y="${CY+7}"  text-anchor="middle" font-size="17" font-family="Patrick Hand,cursive" fill="#333">9</text>
+          <line x1="${CX}" y1="${CY}" x2="${CX}"    y2="${CY-58}" stroke="#2c3e50" stroke-width="7" stroke-linecap="round"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX+52}" y2="${CY-30}" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="${CX}" cy="${CY}" r="7" fill="#e74c3c"/>`;
+      }
+    },
+    {
+      name:'Luna llena', type:'circulo',
+      explain:'La <strong>luna llena</strong> es un <strong>círculo</strong>: tiene toda su superficie rellena.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#fef3a0" stroke="#e8d820" stroke-width="3"/>
+          <circle cx="${CX-30}" cy="${CY-28}" r="18" fill="#f5eb70" stroke="#d4c410" stroke-width="2"/>
+          <circle cx="${CX+40}" cy="${CY-12}" r="13" fill="#f5eb70" stroke="#d4c410" stroke-width="2"/>
+          <circle cx="${CX-18}" cy="${CY+36}" r="22" fill="#f5eb70" stroke="#d4c410" stroke-width="2"/>
+          <circle cx="${CX+38}" cy="${CY+38}" r="12" fill="#f5eb70" stroke="#d4c410" stroke-width="2"/>`;
+      }
+    },
+    {
+      name:'Botón', type:'circulo',
+      explain:'El <strong>botón</strong> es un <strong>círculo</strong>: tiene el interior completamente relleno.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#e74c3c" stroke="#c0392b" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-18}" fill="#c0392b" opacity=".4"/>
+          <circle cx="${CX-16}" cy="${CY-16}" r="13" fill="#7f0000"/>
+          <circle cx="${CX+16}" cy="${CY-16}" r="13" fill="#7f0000"/>
+          <circle cx="${CX-16}" cy="${CY+16}" r="13" fill="#7f0000"/>
+          <circle cx="${CX+16}" cy="${CY+16}" r="13" fill="#7f0000"/>
+          <line x1="${CX-16}" y1="${CY-16}" x2="${CX+16}" y2="${CY-16}" stroke="#ff9999" stroke-width="3" stroke-dasharray="5,3"/>
+          <line x1="${CX-16}" y1="${CY+16}" x2="${CX+16}" y2="${CY+16}" stroke="#ff9999" stroke-width="3" stroke-dasharray="5,3"/>
+          <line x1="${CX-16}" y1="${CY-16}" x2="${CX-16}" y2="${CY+16}" stroke="#ff9999" stroke-width="3" stroke-dasharray="5,3"/>
+          <line x1="${CX+16}" y1="${CY-16}" x2="${CX+16}" y2="${CY+16}" stroke="#ff9999" stroke-width="3" stroke-dasharray="5,3"/>`;
+      }
+    },
+    {
+      name:'Medalla', type:'circulo',
+      explain:'La <strong>medalla</strong> es un <strong>círculo</strong>: tiene el interior totalmente relleno.',
+      svg(){
+        return `
+          <rect x="${CX-20}" y="8"  width="40" height="26" rx="5" fill="#e74c3c"/>
+          <line x1="${CX}" y1="34" x2="${CX}" y2="50" stroke="#777" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY+12}" r="82" fill="#f5c518" stroke="#d4a008" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY+12}" r="70"  fill="#f8d030"/>
+          <text x="${CX}" y="${CY+30}" text-anchor="middle" font-size="68" fill="#c8900a">★</text>
+          <text x="${CX}" y="${CY+62}" text-anchor="middle" font-size="18" font-family="Patrick Hand,cursive" fill="#a07000" font-weight="bold">1º</text>`;
+      }
+    },
+    {
+      name:'Galleta', type:'circulo',
+      explain:'La <strong>galleta</strong> es un <strong>círculo</strong>: tiene toda la masa rellena.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#c8860a" stroke="#9a6408" stroke-width="4"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-12}" fill="#d4940e" opacity=".8"/>
+          <ellipse cx="${CX-28}" cy="${CY-22}" rx="14" ry="11" fill="#5d3000"/>
+          <ellipse cx="${CX+32}" cy="${CY-15}" rx="14" ry="11" fill="#5d3000"/>
+          <ellipse cx="${CX-10}" cy="${CY+32}" rx="14" ry="11" fill="#5d3000"/>
+          <ellipse cx="${CX-38}" cy="${CY+25}" rx="11" ry="9"  fill="#5d3000"/>
+          <ellipse cx="${CX+40}" cy="${CY+28}" rx="11" ry="9"  fill="#5d3000"/>
+          <ellipse cx="${CX+12}" cy="${CY-42}" rx="11" ry="9"  fill="#5d3000"/>`;
+      }
+    },
+    {
+      name:'Semáforo circular', type:'circulo',
+      explain:'La <strong>luz del semáforo</strong> es un <strong>círculo</strong>: tiene el interior relleno de color.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="#27ae60" stroke="#1a8a48" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-12}" fill="#2ecc71"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-28}" fill="#1a8a48" opacity=".5"/>
+          <text x="${CX}" y="${CY+30}" text-anchor="middle" font-size="90" fill="#1a5e2a">✓</text>`;
+      }
+    },
+    // ── CIRCUNFERENCIAS ──────────────────────────────────────────────────────────
+    {
+      name:'Aro de gimnasia', type:'circunferencia',
+      explain:'El <strong>aro de gimnasia</strong> es una <strong>circunferencia</strong>: solo tiene el borde, el interior está vacío.',
+      svg(){
+        const circ = 2*Math.PI*R;
+        const seg  = circ/5;
+        const cols = ['#e74c3c','#3498db','#f1c40f','#2ecc71','#9b59b6'];
+        let rings = '';
+        cols.forEach((c,i)=>{
+          rings += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${c}" stroke-width="26"
+            stroke-dasharray="${seg-2} ${circ-(seg-2)}" stroke-dashoffset="${-i*seg}" stroke-linecap="butt"/>`;
+        });
+        return rings;
+      }
+    },
+    {
+      name:'Anillo', type:'circunferencia',
+      explain:'El <strong>anillo</strong> es una <strong>circunferencia</strong>: solo tiene el aro, el interior está vacío.',
+      svg(){
+        return `
+          <ellipse cx="${CX}" cy="${CY+8}" rx="88" ry="74" fill="none" stroke="#f5c518" stroke-width="28"/>
+          <ellipse cx="${CX}" cy="${CY+8}" rx="88" ry="74" fill="none" stroke="#ffd700" stroke-width="10" opacity=".6"/>
+          <ellipse cx="${CX}" cy="44" rx="24" ry="18" fill="#3498db" stroke="#2980b9" stroke-width="3"/>
+          <ellipse cx="${CX}" cy="44" rx="15" ry="11" fill="#74b9ff" opacity=".7"/>`;
+      }
+    },
+    {
+      name:'Neumático', type:'circunferencia',
+      explain:'El <strong>neumático</strong> es una <strong>circunferencia</strong>: solo tiene el aro de goma, el centro está vacío.',
+      svg(){
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}"    fill="none" stroke="#2c3e50" stroke-width="32"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-32}" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="3"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX}"    y2="${CY-R+32}" stroke="#95a5a6" stroke-width="5"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX+55}" y2="${CY+52}"   stroke="#95a5a6" stroke-width="5"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX-55}" y2="${CY+52}"   stroke="#95a5a6" stroke-width="5"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX-55}" y2="${CY-52}"   stroke="#95a5a6" stroke-width="5"/>
+          <line x1="${CX}" y1="${CY}" x2="${CX+55}" y2="${CY-52}"   stroke="#95a5a6" stroke-width="5"/>
+          <circle cx="${CX}" cy="${CY}" r="16" fill="#7f8c8d"/>`;
+      }
+    },
+    {
+      name:'Flotador', type:'circunferencia',
+      explain:'El <strong>flotador</strong> es una <strong>circunferencia</strong>: es un aro, el interior está vacío.',
+      svg(){
+        const circ = 2*Math.PI*R;
+        const half = circ/2;
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#e74c3c" stroke-width="30"/>
+          <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="white"   stroke-width="30"
+            stroke-dasharray="${half-2} ${half+2}" stroke-dashoffset="0"/>
+          <circle cx="${CX}" cy="${CY}" r="${R-30}" fill="none" stroke="#e74c3c" stroke-width="2"/>`;
+      }
+    },
+    {
+      name:'Pulsera', type:'circunferencia',
+      explain:'La <strong>pulsera</strong> es una <strong>circunferencia</strong>: es un aro, el interior no está relleno.',
+      svg(){
+        const beadCols=['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#e74c3c','#f1c40f','#2ecc71'];
+        const angles=[90,135,180,225,270,315,0,45];
+        let beads='';
+        angles.forEach((a,i)=>{
+          const rad=a*Math.PI/180;
+          const bx=CX+R*Math.cos(rad), by=CY+R*Math.sin(rad);
+          beads+=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="13" fill="${beadCols[i]}" stroke="white" stroke-width="2"/>`;
+        });
+        return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#9b59b6" stroke-width="20"/>${beads}`;
+      }
+    },
+    {
+      name:'Rueda de bicicleta', type:'circunferencia',
+      explain:'La <strong>rueda de bicicleta</strong> es una <strong>circunferencia</strong>: solo tiene el aro y los radios, el interior está vacío.',
+      svg(){
+        let spokes='';
+        const angles=[0,26,51,77,103,128,154,180,205,231,257,282,308,334];
+        angles.forEach(a=>{
+          const rad=a*Math.PI/180;
+          spokes+=`<line x1="${CX}" y1="${CY}" x2="${(CX+R*Math.cos(rad)).toFixed(1)}" y2="${(CY+R*Math.sin(rad)).toFixed(1)}" stroke="#888" stroke-width="2.5"/>`;
+        });
+        return `
+          <circle cx="${CX}" cy="${CY}" r="${R}"  fill="none" stroke="#444" stroke-width="10"/>
+          ${spokes}
+          <circle cx="${CX}" cy="${CY}" r="14" fill="#555"/>
+          <circle cx="${CX}" cy="${CY}" r="7"  fill="#888"/>`;
+      }
+    },
+    {
+      name:'Noria', type:'circunferencia',
+      explain:'La <strong>noria</strong> es una <strong>circunferencia</strong>: la estructura circular solo tiene el borde y los radios, el interior está vacío.',
+      svg(){
+        const gondolaCols=['#e74c3c','#f1c40f','#2ecc71','#9b59b6','#3498db','#e74c3c'];
+        const gAngles=[270,330,30,90,150,210];
+        let spokes='', gondolas='';
+        gAngles.forEach((a,i)=>{
+          const rad=a*Math.PI/180;
+          const gx=CX+(R-5)*Math.cos(rad), gy=(CY-10)+(R-5)*Math.sin(rad);
+          spokes  +=`<line x1="${CX}" y1="${CY-10}" x2="${gx.toFixed(1)}" y2="${gy.toFixed(1)}" stroke="#2980b9" stroke-width="3"/>`;
+          gondolas+=`<rect x="${(gx-12).toFixed(1)}" y="${(gy-9).toFixed(1)}" width="24" height="18" rx="5" fill="${gondolaCols[i]}" stroke="white" stroke-width="1.5"/>`;
+        });
+        return `
+          <circle cx="${CX}" cy="${CY-10}" r="${R}" fill="none" stroke="#3498db" stroke-width="8"/>
+          ${spokes}${gondolas}
+          <circle cx="${CX}" cy="${CY-10}" r="12" fill="#2c3e50"/>
+          <rect x="${CX-5}" y="${CY-10+R}" width="10" height="36" fill="#7f8c8d"/>
+          <rect x="${CX-42}" y="${CY-10+R+34}" width="84" height="12" rx="5" fill="#95a5a6"/>`;
+      }
+    },
+  ];
+
+  // ── GAME LOGIC ────────────────────────────────────────────────────────────────
+  let currentObj = null;
+
+  function getNextObj() {
+    if(usedIdx.length >= OBJECTS.length) usedIdx = [];
+    let idx;
+    do { idx = rnd(0, OBJECTS.length-1); } while(usedIdx.includes(idx));
+    usedIdx.push(idx);
+    return OBJECTS[idx];
+  }
+
+  function genQuestion() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+
+    currentObj = getNextObj();
+    correctAnswer = currentObj.type;
+
+    document.getElementById('figSvg').innerHTML = currentObj.svg();
+    document.getElementById('objName').textContent = currentObj.name;
+    document.getElementById('explainBox').style.display = 'none';
+    document.getElementById('explainBox').innerHTML = '';
+
+    // Reset buttons
+    ['btnCirculo','btnCircunferencia'].forEach(id=>{
+      const b=document.getElementById(id);
+      b.disabled=false;
+      b.className='choice';
+    });
+  }
+
+  function pick(btn, val) {
+    ['btnCirculo','btnCircunferencia'].forEach(id=>document.getElementById(id).disabled=true);
+
+    const expl = document.getElementById('explainBox');
+    expl.innerHTML = currentObj.explain;
+    expl.style.display = 'block';
+
+    if(val === correctAnswer) {
+      btn.classList.add('ok');
+      totalScore += (levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent = totalScore;
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat19_level', levelIdx);
+        document.getElementById('msgBox').textContent=`✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent=['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      btn.classList.add('no'); streak=0; updateStreak(); Sound.wrong();
+      // Mark the correct button
+      const correctBtn = correctAnswer==='circulo' ? 'btnCirculo' : 'btnCircunferencia';
+      document.getElementById(correctBtn).classList.add('ok');
+      document.getElementById('msgBox').textContent=`😕 Era una ${correctAnswer==='circulo'?'Círculo':'Circunferencia'}`;
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function nextQ() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('msgBox').textContent='';
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat19', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genQuestion();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genQuestion();
+  </script>
+</body>
+</html>

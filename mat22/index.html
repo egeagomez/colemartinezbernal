@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot de Lemón — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    /* Robot display */
+    .robot-area {
+      display:flex; align-items:center; justify-content:center;
+      gap:12px; flex-wrap:wrap; margin:12px auto; max-width:560px;
+    }
+    .robot-table-wrap {
+      background:#fff; border-radius:14px; padding:14px 20px;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+      min-width:140px;
+    }
+    .rt-title { text-align:center; font-size:.9rem; color:#7c43bd; font-weight:bold; margin-bottom:6px; }
+    .rt-table { border-collapse:collapse; width:100%; }
+    .rt-table th { background:#e1bee7; color:#4a0072; padding:6px 14px; font-size:1rem; text-align:center; }
+    .rt-table td { padding:6px 14px; text-align:center; font-size:1.15rem; color:#1a0533; border-top:1px solid #e1bee7; }
+    .rt-table td.entra { color:#1565C0; font-weight:bold; }
+    .rt-table td.sale  { color:#c62828; font-weight:bold; }
+
+    .robot-img {
+      font-size:5rem; text-align:center; filter:drop-shadow(0 2px 8px #a020f0);
+      animation: robo 2s infinite ease-in-out;
+    }
+    @keyframes robo { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+    .rule-arrow {
+      font-size:1.8rem; color:#FFD700;
+      font-family:'Patrick Hand',cursive;
+      text-align:center; padding:0 4px;
+    }
+
+    /* Phase 2: apply rule */
+    .apply-box {
+      background:#fff; border-radius:14px; padding:16px 22px;
+      max-width:400px; margin:10px auto; text-align:center;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+    }
+    .apply-txt { font-size:1.15rem; color:#4a0072; margin-bottom:12px; }
+    .spin-wrap { display:flex; flex-direction:column; align-items:center; gap:0; }
+    .spin-btn { width:52px; height:24px; background:#e1bee7; border:none; cursor:pointer; font-size:1rem; border-radius:6px 6px 0 0; color:#4a0072; font-weight:bold; transition:background .1s; }
+    .spin-btn.down { border-radius:0 0 6px 6px; }
+    .spin-btn:hover { background:#ce93d8; }
+    .spin-val { width:52px; height:52px; line-height:52px; text-align:center; font-size:2rem; font-family:'Patrick Hand',cursive; background:#fff; border:2px solid #7c43bd; color:#1a0533; user-select:none; cursor:pointer; }
+    .spin-val.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; color:#2E7D32; }
+    .spin-val.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; color:#c62828; animation:snake .4s; }
+
+    /* Phase 1: choose rule */
+    .rule-choices { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:12px auto; max-width:480px; }
+    .rule-btn { background:#4a0072; color:#FFD700; border:2px solid #7c43bd; border-radius:12px; padding:12px 24px; font-size:1.3rem; font-family:'Patrick Hand',cursive; cursor:pointer; transition:transform .1s, background .1s; min-width:80px; }
+    .rule-btn:hover:not([disabled]) { background:#6a2092; transform:scale(1.06); }
+    .rule-btn.ok { background:#2E7D32 !important; border-color:#4CAF50 !important; color:#fff; }
+    .rule-btn.no { background:#c62828 !important; border-color:#EF5350 !important; color:#fff; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; margin-top:10px; }
+    .btn-gold { background:#FFD700; color:#2d004a; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; transition:transform .1s; margin-top:10px; }
+    .btn-magic:hover,.btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes snake { 0%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(6deg)} 60%{transform:rotate(-4deg)} 80%{transform:rotate(4deg)} 100%{transform:rotate(0)} }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>🤖 El Robot de Lemón</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction" id="instrTxt">Descubre la norma del robot. ¿Qué hace con cada número que entra?</p>
+    </div>
+
+    <div class="robot-area">
+      <div class="robot-table-wrap">
+        <div class="rt-title">📥 ENTRA</div>
+        <table class="rt-table">
+          <thead><tr><th>Entra</th><th>Sale</th></tr></thead>
+          <tbody id="rtBody"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="robot-img">🤖</div>
+        <div class="rule-arrow" id="ruleDisplay">???</div>
+      </div>
+    </div>
+
+    <div id="phase1Div">
+      <div style="text-align:center;color:#e1bee7;font-family:'Patrick Hand',cursive;font-size:1.1rem;margin-bottom:8px;">¿Cuál es la norma del robot?</div>
+      <div class="rule-choices" id="ruleChoices"></div>
+    </div>
+
+    <div id="phase2Div" style="display:none">
+      <div class="apply-box" id="applyBox"></div>
+    </div>
+
+    <p id="msgBox"></p>
+    <div style="text-align:center">
+      <button class="btn-magic" id="checkBtn" style="display:none" onclick="checkApply()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn"  style="display:none" onclick="newProblem()">✨ Nuevo robot</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat22_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 15;
+  let questionCount = 0;
+
+  // Rules: [label, fn(x)]
+  const RULES_BY_LEVEL = [
+    // L0
+    [['×2', x=>x*2],['×5', x=>x*5],['×3', x=>x*3]],
+    // L1
+    [['×2', x=>x*2],['×5', x=>x*5],['×3', x=>x*3],['×4', x=>x*4]],
+    // L2
+    [['×2', x=>x*2],['×5', x=>x*5],['×3', x=>x*3],['×4', x=>x*4],['+5', x=>x+5],['+10',x=>x+10]],
+    // L3
+    [['×2', x=>x*2],['×5', x=>x*5],['×3', x=>x*3],['×4', x=>x*4],['+5', x=>x+5],['+10',x=>x+10],['+3',x=>x+3],['+2',x=>x+2]],
+  ];
+
+  let currentRule = null;
+  let tableData = [];
+  let applyInput = 0;
+  let applyCorrect = 0;
+  let spinVal = 0;
+  let phase = 1; // 1=choose rule, 2=apply rule
+  let recentRules = []; // avoid repeating last 2 rules
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];} }
+
+  function genProblem() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+    const pool = [...RULES_BY_LEVEL[Math.min(levelIdx,3)]];
+    shuffle(pool);
+    // Pick first rule not in recent history; fallback to pool[0] if all are recent
+    currentRule = pool.find(r => !recentRules.includes(r[0])) || pool[0];
+    recentRules.push(currentRule[0]);
+    if(recentRules.length > 2) recentRules.shift();
+    const [label, fn] = currentRule;
+
+    // Generate 3 table pairs with small inputs
+    const inputs = [];
+    while(inputs.length<3) {
+      const n = rnd(1,9);
+      if(!inputs.includes(n)) inputs.push(n);
+    }
+    tableData = inputs.map(n=>[n, fn(n)]);
+
+    // Apply question: give a new input
+    let newInput;
+    do { newInput = rnd(1,9); } while(inputs.includes(newInput));
+    applyInput = newInput;
+    applyCorrect = fn(newInput);
+    spinVal = 0;
+
+    // Distractors: 3 other rules
+    const distractors = pool.slice(1,4).map(r=>r[0]);
+    const choices = [label, ...distractors.slice(0,3)];
+    shuffle(choices);
+
+    // Build table
+    document.getElementById('rtBody').innerHTML = tableData.map(([e,s])=>
+      `<tr><td class="entra">${e}</td><td class="sale">${s}</td></tr>`
+    ).join('');
+    document.getElementById('ruleDisplay').textContent = '???';
+
+    // Build choices
+    document.getElementById('ruleChoices').innerHTML = choices.map(c=>
+      `<button class="rule-btn" onclick="pickRule(this,'${c}','${label}')">${c}</button>`
+    ).join('');
+
+    document.getElementById('phase1Div').style.display='block';
+    document.getElementById('phase2Div').style.display='none';
+    document.getElementById('checkBtn').style.display='none';
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('msgBox').textContent='';
+    phase=1;
+  }
+
+  function pickRule(btn, chosen, correct) {
+    document.querySelectorAll('.rule-btn').forEach(b=>b.disabled=true);
+    if(chosen===correct) {
+      btn.classList.add('ok');
+      document.getElementById('ruleDisplay').textContent = correct;
+      document.getElementById('msgBox').textContent='✅ ¡Correcto! Ahora aplica la norma a un número nuevo.';
+      Sound.correct();
+      setTimeout(()=>showPhase2(), 800);
+    } else {
+      btn.classList.add('no'); streak=0; updateStreak(); Sound.wrong();
+      document.querySelectorAll('.rule-btn').forEach(b=>{ if(b.textContent===correct) b.classList.add('ok'); });
+      document.getElementById('ruleDisplay').textContent = correct;
+      document.getElementById('msgBox').textContent=`😕 La norma era: ${correct}`;
+      document.getElementById('nextBtn').style.display='inline-block';
+    }
+  }
+
+  function showPhase2() {
+    phase=2;
+    document.getElementById('phase1Div').style.display='none';
+    document.getElementById('phase2Div').style.display='block';
+    spinVal=0;
+    const [label] = currentRule;
+    const maxSpin = Math.min(applyCorrect + 15, 60);
+    document.getElementById('applyBox').innerHTML = `
+      <div class="apply-txt">Si el robot recibe <strong style="color:#1565C0;font-size:1.4rem;">${applyInput}</strong>, ¿qué número sale? <span style="color:#7c43bd">(norma: ${label})</span></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;font-size:1.4rem;font-family:'Patrick Hand',cursive;color:#4a0072;">
+        <span>${applyInput}</span>
+        <span>${label}</span>
+        <span>=</span>
+        <div class="spin-wrap">
+          <button class="spin-btn" onclick="adjSpin(1,${maxSpin})">▲</button>
+          <div class="spin-val" id="applySpinVal" onclick="adjSpin(1,${maxSpin})">0</div>
+          <button class="spin-btn down" onclick="adjSpin(-1,${maxSpin})">▼</button>
+        </div>
+      </div>`;
+    document.getElementById('checkBtn').style.display='inline-block';
+    document.getElementById('msgBox').textContent='';
+  }
+
+  function adjSpin(delta, maxVal) {
+    const el=document.getElementById('applySpinVal'); if(!el) return;
+    el.classList.remove('correct','wrong');
+    spinVal=(spinVal+delta+maxVal+1)%(maxVal+1);
+    el.textContent=spinVal;
+  }
+
+  function checkApply() {
+    const el=document.getElementById('applySpinVal');
+    document.getElementById('checkBtn').disabled=true;
+    if(spinVal===applyCorrect) {
+      el.classList.add('correct');
+      totalScore+=(levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent=totalScore;
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat22_level', levelIdx);
+        document.getElementById('msgBox').textContent=`✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent=['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      el.classList.add('wrong'); streak=0; updateStreak(); Sound.wrong();
+      document.getElementById('msgBox').textContent=`😕 Era ${applyCorrect}. (${applyInput} ${currentRule[0]} = ${applyCorrect})`;
+      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function newProblem() {
+    document.getElementById('checkBtn').disabled=false;
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat22', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genProblem();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genProblem();
+  </script>
+</body>
+</html>

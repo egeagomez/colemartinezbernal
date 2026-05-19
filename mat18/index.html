@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordinales del Mago — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    .parade-wrap {
+      background:#fff; border-radius:16px; padding:16px 12px;
+      max-width:560px; margin:10px auto;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+      overflow-x:auto;
+    }
+    .parade-row { display:flex; gap:6px; justify-content:center; align-items:flex-end; flex-wrap:nowrap; }
+    .parade-item {
+      display:flex; flex-direction:column; align-items:center;
+      cursor:pointer; transition:transform .15s;
+      min-width:46px;
+    }
+    .parade-item:hover { transform:scale(1.12); }
+    .parade-emoji { font-size:2.2rem; line-height:1; }
+    .parade-label {
+      font-size:.75rem; color:#7c43bd; font-weight:bold;
+      background:#f3e5f5; border-radius:8px; padding:2px 5px; margin-top:3px;
+      white-space:nowrap;
+    }
+    .parade-item.selected { outline:3px solid #FFD700; border-radius:8px; }
+    .parade-item.correct-item { background:#C8E6C9; border-radius:8px; }
+    .parade-item.wrong-item  { background:#FFCDD2; border-radius:8px; }
+
+    .question-box { max-width:500px; margin:10px auto; text-align:center; }
+    .question-txt { font-size:1.2rem; color:#e1bee7; margin-bottom:14px; font-family:'Patrick Hand',cursive; }
+    .choices { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+    .choice { background:#4a0072; color:#FFD700; border:2px solid #7c43bd; border-radius:12px; padding:10px 18px; font-size:1.05rem; font-family:'Patrick Hand',cursive; cursor:pointer; transition:transform .1s, background .1s; line-height:1.3; text-align:center; }
+    .choice:hover:not([disabled]) { background:#6a2092; transform:scale(1.04); }
+    .choice.ok { background:#2E7D32 !important; border-color:#4CAF50 !important; color:#fff; }
+    .choice.no { background:#c62828 !important; border-color:#EF5350 !important; color:#fff; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; margin-top:12px; }
+    .btn-magic:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>🥇 Ordinales del Mago</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Mira el desfile y responde la pregunta.</p>
+    </div>
+    <div class="parade-wrap">
+      <div class="parade-row" id="paradeRow"></div>
+    </div>
+    <div class="question-box">
+      <div class="question-txt" id="questionTxt"></div>
+      <div class="choices" id="choiceArea"></div>
+    </div>
+    <p id="msgBox"></p>
+    <div style="text-align:center">
+      <button class="btn-magic" id="nextBtn" style="display:none" onclick="nextQ()">✨ Siguiente pregunta</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat18_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 20;
+  let questionCount = 0;
+  let currentChoices = [];   // store choices array to avoid encoding issues in onclick
+
+  const ALL_EMOJIS = ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐸','🐵','🐔','🐧','🐦','🦆','🦅','🦉'];
+  const ORDINAL_NUM  = ['1º','2º','3º','4º','5º','6º','7º','8º','9º','10º'];
+  const ORDINAL_WORD = ['primero','segundo','tercero','cuarto','quinto','sexto','séptimo','octavo','noveno','décimo'];
+
+  let parade = [];  // array of emoji, length 5-10
+  let correctAnswer = '';
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function shuffle(a) { for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]];} }
+
+  function genParade() {
+    const size = levelIdx < 2 ? rnd(5,7) : rnd(7,10);
+    const pool = [...ALL_EMOJIS]; shuffle(pool);
+    parade = pool.slice(0, size);
+  }
+
+  function buildParadeHTML() {
+    return parade.map((e, i) => `
+      <div class="parade-item" id="pi_${i}">
+        <div class="parade-emoji">${e}</div>
+      </div>`).join('');
+  }
+
+  function genQ_posOfEmoji() {
+    // "¿En qué posición está el [emoji]?" → ordinal number + word options
+    const idx = rnd(0, parade.length-1);
+    const emoji = parade[idx];
+    const correct = ORDINAL_NUM[idx] + '\n' + ORDINAL_WORD[idx];
+    const choices = [correct];
+    const others = ORDINAL_NUM.slice(0, parade.length).filter((_,i)=>i!==idx);
+    shuffle(others);
+    while(choices.length < 4 && others.length) {
+      const i2 = ORDINAL_NUM.indexOf(others.shift());
+      choices.push(ORDINAL_NUM[i2] + '\n' + ORDINAL_WORD[i2]);
+    }
+    shuffle(choices);
+    return { text:`¿En qué posición está el <strong>${emoji}</strong>?`, choices, correct, hlIdx: idx };
+  }
+
+  function genQ_emojiAtPos() {
+    // "¿Qué hay en la [ordinal] posición?" → emoji options
+    const idx = rnd(0, parade.length-1);
+    const correct = parade[idx];
+    const others = parade.filter((_,i)=>i!==idx);
+    shuffle(others);
+    const choices = [correct, ...others.slice(0,3)];
+    shuffle(choices);
+    return { text:`¿Qué hay en la <strong>${ORDINAL_NUM[idx]} (${ORDINAL_WORD[idx]})</strong> posición?`, choices, correct, hlIdx: idx };
+  }
+
+  let currentQ = {};
+
+  function genQuestion() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+
+    genParade();
+    document.getElementById('paradeRow').innerHTML = buildParadeHTML();
+
+    const q = rnd(0,1) ? genQ_posOfEmoji() : genQ_emojiAtPos();
+    currentQ = q;
+    correctAnswer = q.correct;
+    currentChoices = q.choices;
+
+    // Highlight parade item for "¿en qué posición está?" questions
+    if(q.text.includes('posición está') && q.hlIdx >= 0) {
+      const item = document.getElementById('pi_' + q.hlIdx);
+      if(item) { item.style.outline='3px solid #FFD700'; item.style.borderRadius='8px'; }
+    }
+
+    document.getElementById('questionTxt').innerHTML = q.text;
+    // Use index in onclick to avoid encoding special chars / newlines
+    document.getElementById('choiceArea').innerHTML = q.choices.map((c, i) => {
+      const display = c.includes('\n') ? c.replace('\n','<br>') : c;
+      return `<button class="choice" onclick="pick(this,${i})">${display}</button>`;
+    }).join('');
+  }
+
+  function pick(btn, idx) {
+    const val = currentChoices[idx];
+    document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+    if(val === correctAnswer) {
+      btn.classList.add('ok');
+      totalScore += (levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent = totalScore;
+      const pi = document.getElementById('pi_' + currentQ.hlIdx);
+      if(pi) pi.classList.add('correct-item');
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat18_level', levelIdx);
+        document.getElementById('msgBox').textContent=`✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent=['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      btn.classList.add('no'); streak=0; updateStreak(); Sound.wrong();
+      const pi = document.getElementById('pi_' + currentQ.hlIdx);
+      if(pi) pi.classList.add('wrong-item');
+      // Mark the correct button green using index comparison
+      document.querySelectorAll('.choice').forEach((b, i) => {
+        if(currentChoices[i] === correctAnswer) b.classList.add('ok');
+      });
+      document.getElementById('msgBox').textContent=`😕 Era: ${correctAnswer.replace('\n',' — ')}`;
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function nextQ() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('msgBox').textContent='';
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat18', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genQuestion();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genQuestion();
+  </script>
+</body>
+</html>

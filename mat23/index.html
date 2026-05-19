@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡A Multiplicar! — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    .problem-card {
+      background:#fff; border-radius:16px; padding:18px 22px;
+      max-width:480px; margin:10px auto;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+    }
+    .prob-text { font-size:1.15rem; color:#4a0072; text-align:center; margin-bottom:12px; line-height:1.5; }
+    .groups-vis { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:10px 0; }
+    .group-box {
+      background:#f3e5f5; border:2px solid #ce93d8; border-radius:10px;
+      padding:6px 8px; display:flex; flex-wrap:wrap; gap:3px;
+      justify-content:center; align-items:center; min-width:44px;
+    }
+    .group-emoji { font-size:1.5rem; }
+
+    .addition-row {
+      display:flex; align-items:center; justify-content:center;
+      gap:6px; flex-wrap:wrap; margin:12px 0;
+      font-family:'Patrick Hand',cursive; font-size:1.2rem; color:#4a0072;
+    }
+    .add-num { color:#1565C0; font-weight:bold; font-size:1.3rem; }
+    .add-plus { color:#7c43bd; font-size:1.3rem; }
+    .add-eq   { color:#555; font-size:1.4rem; }
+
+    .spin-wrap { display:flex; flex-direction:column; align-items:center; gap:0; }
+    .spin-btn { width:52px; height:24px; background:#e1bee7; border:none; cursor:pointer; font-size:.95rem; border-radius:6px 6px 0 0; color:#4a0072; font-weight:bold; transition:background .1s; }
+    .spin-btn.down { border-radius:0 0 6px 6px; }
+    .spin-btn:hover { background:#ce93d8; }
+    .spin-val { width:52px; height:52px; line-height:52px; text-align:center; font-size:2rem; font-family:'Patrick Hand',cursive; background:#fff; border:2px solid #7c43bd; color:#1a0533; user-select:none; cursor:pointer; transition:background .15s; }
+    .spin-val.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; color:#2E7D32; }
+    .spin-val.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; color:#c62828; animation:snake .4s; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; }
+    .btn-gold { background:#FFD700; color:#2d004a; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; transition:transform .1s; }
+    .btn-magic:hover,.btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes snake { 0%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(6deg)} 60%{transform:rotate(-4deg)} 80%{transform:rotate(4deg)} 100%{transform:rotate(0)} }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>✖️ ¡A Multiplicar!</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">Lee el problema y completa la suma repetida.</p>
+    </div>
+    <div class="problem-card" id="problemCard"></div>
+    <p id="msgBox"></p>
+    <div style="text-align:center;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+      <button class="btn-magic" id="checkBtn" onclick="checkAnswer()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn"  style="display:none" onclick="newProblem()">✨ Nuevo problema</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat23_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 15;
+  let questionCount = 0;
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+
+  // Groups and max size per level
+  // Level 0: 2 groups, size 2-5  → sum only
+  // Level 1: 3 groups, size 2-6  → sum only
+  // Level 2: 4 groups, size 2-7  → sum shown as hint, ask multiplication
+  // Level 3: 5 groups, size 2-9  → sum shown as hint, ask multiplication
+
+  const PROBLEM_TEMPLATES = [
+    // [template(groups, size), noun, emoji, context]
+    (g,s)=>[`Hay <strong>${g} grupos</strong> de <strong>${s} estrellas</strong>. ¿Cuántas estrellas hay en total?`,'estrellas','⭐'],
+    (g,s)=>[`Cada niño tiene <strong>${s} globos</strong>. Hay <strong>${g} niños</strong>. ¿Cuántos globos hay en total?`,'globos','🎈'],
+    (g,s)=>[`En cada cesta hay <strong>${s} manzanas</strong>. Hay <strong>${g} cestas</strong>. ¿Cuántas manzanas hay en total?`,'manzanas','🍎'],
+    (g,s)=>[`Hay <strong>${g} ramos</strong> de flores y cada ramo tiene <strong>${s} flores</strong>. ¿Cuántas flores hay?`,'flores','🌸'],
+    (g,s)=>[`Cada mesa tiene <strong>${s} sillas</strong>. Hay <strong>${g} mesas</strong>. ¿Cuántas sillas hay en total?`,'sillas','🪑'],
+    (g,s)=>[`Hay <strong>${g} cajas</strong> con <strong>${s} caramelos</strong> cada una. ¿Cuántos caramelos hay en total?`,'caramelos','🍬'],
+    (g,s)=>[`Cada pata de araña tiene <strong>${s} rayas</strong>. La araña tiene <strong>${g} patas</strong>. ¿Cuántas rayas hay?`,'rayas','🕷️'],
+    (g,s)=>[`Hay <strong>${g} trenes</strong> con <strong>${s} vagones</strong> cada uno. ¿Cuántos vagones hay en total?`,'vagones','🚃'],
+  ];
+
+  let prob = {};
+  let spinVal = 0;
+
+  function genProblem() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+    const groups  = levelIdx + 2; // L0→2, L1→3, L2→4, L3→5
+    const maxSize = [5, 6, 7, 9][levelIdx];
+    const size    = rnd(2, maxSize);
+    const total   = groups * size;
+    const tplFn  = PROBLEM_TEMPLATES[rnd(0, PROBLEM_TEMPLATES.length-1)];
+    const [text, noun, emoji] = tplFn(groups, size);
+    prob = { groups, size, total, text, noun, emoji };
+    spinVal = 0;
+    render();
+  }
+
+  function render() {
+    const { groups, size, total, text, emoji } = prob;
+
+    // Visual: groups of emoji
+    let groupsHtml = '';
+    for(let g=0; g<groups; g++) {
+      let items = '';
+      for(let i=0; i<size; i++) items += `<span class="group-emoji">${emoji}</span>`;
+      groupsHtml += `<div class="group-box">${items}</div>`;
+    }
+
+    const maxSpin = total + 10;
+    const sumHint = Array.from({length:groups}, ()=>size).join(' + ');
+
+    let answerSection;
+    if(levelIdx < 2) {
+      // L0-L1: just the total spinner, no operation shown
+      answerSection = `
+        <div style="text-align:center;font-size:.95rem;color:#7c43bd;font-family:'Patrick Hand',cursive;margin-bottom:8px;">¿Cuántos hay en total?</div>
+        <div class="addition-row">
+          <div class="spin-wrap">
+            <button class="spin-btn" onclick="adjSpin(1,${maxSpin})">▲</button>
+            <div class="spin-val" id="spinVal" onclick="adjSpin(1,${maxSpin})">0</div>
+            <button class="spin-btn down" onclick="adjSpin(-1,${maxSpin})">▼</button>
+          </div>
+        </div>`;
+    } else {
+      // L2-L3: multiplication format, no sum shown
+      answerSection = `
+        <div style="text-align:center;font-size:.95rem;color:#7c43bd;font-family:'Patrick Hand',cursive;margin:4px 0 8px;">Multiplicación:</div>
+        <div class="addition-row">
+          <span class="add-num">${groups}</span>
+          <span style="color:#c62828;font-weight:bold;font-size:1.4rem;"> × </span>
+          <span class="add-num">${size}</span>
+          <span class="add-eq">=</span>
+          <div class="spin-wrap">
+            <button class="spin-btn" onclick="adjSpin(1,${maxSpin})">▲</button>
+            <div class="spin-val" id="spinVal" onclick="adjSpin(1,${maxSpin})">0</div>
+            <button class="spin-btn down" onclick="adjSpin(-1,${maxSpin})">▼</button>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById('problemCard').innerHTML = `
+      <div class="prob-text">${text}</div>
+      <div class="groups-vis">${groupsHtml}</div>
+      <hr style="border:none;border-top:2px dashed #b39ddb;margin:10px 0;">
+      ${answerSection}`;
+  }
+
+  function adjSpin(delta, maxVal) {
+    const el=document.getElementById('spinVal'); if(!el) return;
+    el.classList.remove('correct','wrong');
+    spinVal=(spinVal+delta+maxVal+1)%(maxVal+1);
+    el.textContent=spinVal;
+  }
+
+  function checkAnswer() {
+    const el=document.getElementById('spinVal'); if(!el) return;
+    document.getElementById('checkBtn').disabled=true;
+    if(spinVal===prob.total) {
+      el.classList.add('correct');
+      totalScore+=(levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent=totalScore;
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat23_level', levelIdx);
+        document.getElementById('msgBox').textContent=`✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent=['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      el.classList.add('wrong'); streak=0; updateStreak(); Sound.wrong();
+      const sumStr = Array.from({length:prob.groups},()=>prob.size).join(' + ');
+      document.getElementById('msgBox').textContent=`😕 Era ${prob.total}. (${sumStr} = ${prob.total})`;
+      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function newProblem() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('msgBox').textContent='';
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat23', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genProblem();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genProblem();
+  </script>
+</body>
+</html>
