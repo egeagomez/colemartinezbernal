@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌍 El Planisferio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#030d1a 0%,#061422 55%,#030d1a 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌍 🗺️ 🧭 🌎 🌏 🌍 🗺️ 🧭 🌎 🌏 🌍 🗺️ 🧭 🌎 🌏 🌍 🗺️ 🧭 🌎 🌏 🌍 🗺️ 🧭 🌎 🌏';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.06);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(3,13,26,.7);color:#FFD700;border:2px solid #00e676;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#00e676;color:#030d1a}
+.score-box{background:rgba(3,13,26,.7);color:#FFD700;border:2px solid #00e676;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #00e676;background:rgba(3,13,26,.8);color:#b2dfdb;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#00e676;color:#030d1a;font-weight:bold}
+.p-tab.done{background:#00b248;border-color:#00e676;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(3,15,30,.92),rgba(3,22,44,.92));border:3px solid #00e676;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(0,200,100,.18);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e0f7fa;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#00e676;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#00b248,#00e676);color:#030d1a;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;font-weight:bold;transition:background .15s}
+.btn-next:hover{background:#69f0ae}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(3,18,36,.8),rgba(3,10,22,.8));color:#fff;border:2px solid #00e676;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#00e676;color:#030d1a}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(3,15,30,.85);border:3px solid #00e676;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.6rem;display:block}.pick-card .pc-label{font-size:.9rem;color:#e0f7fa;margin-top:6px;line-height:1.3}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #00e676;background:rgba(3,15,30,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #00e676;background:rgba(3,15,30,.8);color:#e0f7fa;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(3,18,40,.92),rgba(3,13,28,.9));border:3px solid #00e676;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#e0f7fa;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #00e676;background:rgba(3,15,30,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(3,18,40,.92),rgba(3,13,28,.9));border:3px solid #00e676;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(3,15,30,.9);border:2px solid #00e676;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#b2dfdb;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(0,40,20,.8),rgba(3,15,30,.8));border:2px solid #00e676;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(0,60,30,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(3,15,30,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌍 El Planisferio</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌎 Continentes</div>
+  <div class="p-tab"        id="tab2">🌊 Océanos</div>
+  <div class="p-tab"        id="tab3">🗺️ Clasifica</div>
+  <div class="p-tab"        id="tab4">✅ V o F</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz</div>
+</div>
+
+<!-- FASE 1 -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌎 Los 6 Continentes del Mundo</div>
+    <div class="story-text">
+      Imagina que llegas a la Tierra desde el espacio 🚀. Al mirar hacia abajo ves enormes trozos de tierra entre el agua. ¡Esos trozos son los <strong style="color:#00e676">continentes</strong>!<br><br>
+      En el mundo hay <strong style="color:#FFD700">6 continentes</strong>:<br>
+      🟣 <strong style="color:#ce93d8">Asia</strong> — ¡El más grande! China, India y Japón están aquí.<br>
+      🟠 <strong style="color:#ffcc80">África</strong> — El segundo más grande. ¡Leones y elefantes!<br>
+      🔵 <strong style="color:#90caf9">América</strong> — Al oeste, dividida en Norte y Sur.<br>
+      🟢 <strong style="color:#a5d6a7">Europa</strong> — Pequeño pero muy importante. ¡Aquí está España!<br>
+      🟡 <strong style="color:#fff176">Oceanía</strong> — El más pequeño. ¡Australia y muchas islas!<br>
+      ⬜ <strong style="color:#e0e0e0">Antártida</strong> — En el Polo Sur. ¡Todo hielo! ❄️
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="340" height="195" viewBox="0 0 340 195" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="340" height="195" rx="12" fill="rgba(13,71,161,.55)" stroke="#40c4ff" stroke-width="1.5"/>
+      <line x1="170" y1="0" x2="170" y2="195" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+      <line x1="0" y1="97" x2="340" y2="97" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+      <path d="M12,18 L72,14 L80,32 L84,72 L66,98 L48,103 L26,82 L16,52 Z" fill="#2e7d32" opacity=".9"/>
+      <text x="47" y="60" text-anchor="middle" fill="#a5d6a7" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <text x="47" y="71" text-anchor="middle" fill="#a5d6a7" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">del Norte</text>
+      <path d="M53,110 L83,106 L90,138 L83,168 L60,173 L43,153 L40,128 Z" fill="#388e3c" opacity=".85"/>
+      <text x="65" y="143" text-anchor="middle" fill="#c8e6c9" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">América</text>
+      <text x="65" y="154" text-anchor="middle" fill="#c8e6c9" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">del Sur</text>
+      <path d="M146,14 L178,11 L186,28 L181,50 L163,56 L146,46 L140,28 Z" fill="#6a1b9a" opacity=".9"/>
+      <text x="163" y="36" text-anchor="middle" fill="#e1bee7" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">Europa</text>
+      <path d="M148,63 L193,60 L200,88 L196,138 L173,160 L150,146 L138,116 L138,86 Z" fill="#e65100" opacity=".85"/>
+      <text x="169" y="110" text-anchor="middle" fill="#ffccbc" font-size="8.5" font-family="Patrick Hand,cursive" font-weight="bold">África</text>
+      <path d="M192,11 L292,7 L307,28 L312,73 L292,98 L262,106 L217,100 L197,76 L190,48 Z" fill="#4a148c" opacity=".85"/>
+      <text x="254" y="58" text-anchor="middle" fill="#ce93d8" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Asia</text>
+      <path d="M268,116 L307,113 L314,140 L297,160 L268,156 L253,138 Z" fill="#f57f17" opacity=".85"/>
+      <text x="284" y="138" text-anchor="middle" fill="#ffe0b2" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">Oceanía</text>
+      <rect x="18" y="180" width="304" height="12" rx="5" fill="#e0e0e0" opacity=".7"/>
+      <text x="170" y="190" text-anchor="middle" fill="#424242" font-size="8" font-family="Patrick Hand,cursive" font-weight="bold">Antártida ❄️</text>
+      <text x="116" y="62" text-anchor="middle" fill="#90caf9" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">Atlántico</text>
+      <text x="26" y="140" text-anchor="middle" fill="#90caf9" font-size="7.5" font-family="Patrick Hand,cursive">Pacífico</text>
+      <text x="318" y="152" text-anchor="middle" fill="#80deea" font-size="7.5" font-family="Patrick Hand,cursive">Índico</text>
+      <text x="170" y="10" text-anchor="middle" fill="#b3e5fc" font-size="8" font-family="Patrick Hand,cursive">❄️ Ártico</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('En la Tierra hay seis continentes: Asia, que es el más grande; África, el segundo más grande; América, dividida en Norte y Sur; Europa, donde está España; Oceanía, el más pequeño; y la Antártida, cubierta de hielo en el Polo Sur.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: ¿Cuántos continentes hay en el mundo?</div>
+  <div class="pick-grid" id="contGrid">
+    <div class="pick-card" onclick="pickCont('5',this)"><span class="pc-emoji">5️⃣</span><div class="pc-label">Cinco continentes</div></div>
+    <div class="pick-card" onclick="pickCont('6',this)"><span class="pc-emoji">6️⃣</span><div class="pc-label">Seis continentes</div></div>
+    <div class="pick-card" onclick="pickCont('7',this)"><span class="pc-emoji">7️⃣</span><div class="pc-label">Siete continentes</div></div>
+    <div class="pick-card" onclick="pickCont('4',this)"><span class="pc-emoji">4️⃣</span><div class="pc-label">Cuatro continentes</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Los Océanos 🌊 →</button>
+</div>
+
+<!-- FASE 2 -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🌊 Los 5 Océanos en el Planisferio</div>
+    <div class="story-text">
+      Entre los continentes hay grandes masas de agua salada: ¡los <strong style="color:#40c4ff">océanos</strong>! Hay <strong style="color:#FFD700">5 océanos</strong>.<br><br>
+      🌊 <strong style="color:#90caf9">Atlántico</strong> — Entre América y Europa/África.<br>
+      🌊 <strong style="color:#ce93d8">Pacífico</strong> — ¡El más grande! Entre América y Asia.<br>
+      🌊 <strong style="color:#80deea">Índico</strong> — Entre África, Asia y Oceanía.<br>
+      ❄️ <strong style="color:#b3e5fc">Ártico</strong> — En el Polo Norte. ¡Mucho hielo!<br>
+      ❄️ <strong style="color:#e0f7fa">Antártico</strong> — Rodea la Antártida en el Polo Sur.
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('Los cinco océanos son: el Atlántico entre América y Europa. El Pacífico, el más grande, entre América y Asia. El Índico entre África y Oceanía. El Ártico en el Polo Norte. Y el Antártico en el Polo Sur.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿A qué océano corresponde la pista?</div>
+  <div class="tap-q" id="oce2Q">Cargando…</div>
+  <div class="tap-prog" id="oce2Prog"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#90caf9" onclick="tapOce('atlantico')">🌊 Atlántico</button>
+    <button class="tap-btn" style="border-color:#ce93d8" onclick="tapOce('pacifico')">🌊 Pacífico</button>
+    <button class="tap-btn" style="border-color:#80deea" onclick="tapOce('indico')">🌊 Índico</button>
+    <button class="tap-btn" style="border-color:#b3e5fc" onclick="tapOce('artico')">❄️ Ártico</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Clasifica 🗺️ →</button>
+</div>
+
+<!-- FASE 3 -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🗺️ ¿A qué continente pertenece esta pista?</div>
+    <div class="story-text">
+      Lee cada pista y elige el continente correcto. Recuerda:<br><br>
+      🌍 <strong style="color:#FFD700">África</strong> = Sabana, desierto del Sahara, leones y elefantes.<br>
+      🌏 <strong style="color:#FFD700">Asia</strong> = El más grande. China, India, Japón, panda.<br>
+      🌍 <strong style="color:#FFD700">Europa</strong> = España, Francia, Italia. Torre Eiffel, Coliseo.<br>
+      🌎 <strong style="color:#FFD700">América</strong> = EE.UU., Brasil, Canadá, río Amazonas.
+    </div>
+  </div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns3">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#e1bee7;border-color:#ce93d8" onclick="ansSort3('europa')">🌍 Europa</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#4a148c,#38006b);color:#ce93d8;border-color:#9c27b0" onclick="ansSort3('asia')">🌏 Asia</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#bf360c,#e64a19);color:#ffccbc;border-color:#ff8a65" onclick="ansSort3('africa')">🌍 África</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#a5d6a7;border-color:#66bb6a" onclick="ansSort3('america')">🌎 América</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Verdad o Mentira ✅ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">✅ ¿Verdad o Mentira?</div>
+    <div class="story-text">
+      Lee cada frase sobre el planisferio y decide si es <strong style="color:#69f0ae">Verdad</strong> o <strong style="color:#ff5252">Mentira</strong>.
+    </div>
+  </div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initOce2();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickCont(ans,el){
+  $('contGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='6'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! Hay 6 continentes: Asia, África, América, Europa, Oceanía y Antártida. 🌍';
+    speak('¡Correcto! Hay seis continentes.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! Son SEIS continentes. ¡Inténtalo!';speak('No exactamente. Son seis continentes.');
+    setTimeout(()=>{el.classList.remove('wrong');const c=$('contGrid').querySelectorAll('.pick-card');c[0].onclick=()=>pickCont('5',c[0]);c[1].onclick=()=>pickCont('6',c[1]);c[2].onclick=()=>pickCont('7',c[2]);c[3].onclick=()=>pickCont('4',c[3])},1100);
+  }
+}
+
+/* Fase 2 */
+const OCE2_Qs=[
+  {ask:'Está entre Europa, África y América. Los barcos de España a Nueva York lo cruzan.',correct:'atlantico',hint:'¡Es el Atlántico! Separa América de Europa y África.'},
+  {ask:'Es el océano más grande y profundo del mundo. Está entre América, Asia y Oceanía.',correct:'pacifico',hint:'¡Es el Pacífico! El más grande de todos.'},
+  {ask:'Está entre África, Asia y Oceanía. Está al sur de la India.',correct:'indico',hint:'¡Es el Índico! Entre África, Asia y Oceanía.'},
+  {ask:'Está en el Polo Norte. Tiene mucho hielo y es el más pequeño.',correct:'artico',hint:'¡Es el Ártico! El océano del Polo Norte.'},
+  {ask:'China y Japón tienen costa en este inmenso océano del este de Asia.',correct:'pacifico',hint:'¡Es el Pacífico! Las costas de Asia oriental dan al Pacífico.'},
+  {ask:'Brasil, en América del Sur, tiene costa en este océano.',correct:'atlantico',hint:'¡Es el Atlántico! Brasil mira al Atlántico.'},
+  {ask:'Australia está rodeada en parte por este océano cálido.',correct:'indico',hint:'¡Es el Índico! Australia está al este del Índico.'},
+  {ask:'El oso polar vive cerca de este océano helado del Polo Norte.',correct:'artico',hint:'¡Es el Ártico! Está en el Polo Norte.'},
+];
+let oce2Items,oce2Idx;
+function initOce2(){oce2Items=shuffle(OCE2_Qs);oce2Idx=0;$('fb2').textContent='';$('btn2').disabled=true;renderOce2Prog();showOce2Q()}
+function renderOce2Prog(){$('oce2Prog').innerHTML=oce2Items.map((_,i)=>`<div class="pdot" id="o2p_${i}"></div>`).join('')}
+function showOce2Q(){if(oce2Idx>=oce2Items.length){endOce2();return}$('oce2Q').textContent=oce2Items[oce2Idx].ask;$('fb2').textContent='';speak(oce2Items[oce2Idx].ask)}
+function tapOce(ans){
+  if(oce2Idx>=oce2Items.length)return;
+  const q=oce2Items[oce2Idx],dot=$('o2p_'+oce2Idx);
+  const names={atlantico:'🌊 Atlántico',pacifico:'🌊 Pacífico',indico:'🌊 Índico',artico:'❄️ Ártico'};
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');oce2Idx++;setTimeout(showOce2Q,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es el '+names[q.correct]+'. '+q.hint;speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endOce2(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Genial! ¡Conoces los océanos del planisferio!';speak('¡Genial!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3 */
+const SORT3=[
+  {emoji:'🦁',text:'La sabana, el desierto del Sahara y los leones viven aquí.',target:'africa'},
+  {emoji:'🐉',text:'China, India, Japón y la Gran Muralla están en este continente.',target:'asia'},
+  {emoji:'🏰',text:'España, Francia, Italia y la Torre Eiffel están aquí.',target:'europa'},
+  {emoji:'🦅',text:'Estados Unidos, Canadá y México están en este continente.',target:'america'},
+  {emoji:'🐘',text:'El río Nilo, el más largo del mundo, está en este continente.',target:'africa'},
+  {emoji:'🎭',text:'El Big Ben de Londres y la Torre de Pisa están aquí.',target:'europa'},
+  {emoji:'🌵',text:'Brasil, Argentina y el río Amazonas están en este continente.',target:'america'},
+  {emoji:'🐼',text:'El oso panda y el Himalaya, la montaña más alta, están aquí.',target:'asia'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={europa:'🌍 Europa',asia:'🌏 Asia',africa:'🌍 África',america:'🌎 América'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';$('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Conoces todos los continentes!';speak('¡Fantástico!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 */
+const TF4=[
+  {emoji:'🌍',stmt:'En la Tierra hay 6 continentes.',ans:true},
+  {emoji:'🌊',stmt:'El océano Pacífico es el más pequeño del mundo.',ans:false},
+  {emoji:'🌏',stmt:'Asia es el continente más grande del mundo.',ans:true},
+  {emoji:'🌊',stmt:'El océano Atlántico está entre América y Europa.',ans:true},
+  {emoji:'🗺️',stmt:'El planisferio es un mapa plano de toda la Tierra.',ans:true},
+  {emoji:'🌍',stmt:'África tiene costa en el océano Pacífico.',ans:false},
+  {emoji:'❄️',stmt:'La Antártida está en el Polo Norte.',ans:false},
+  {emoji:'🌊',stmt:'El océano Índico está entre África, Asia y Oceanía.',ans:true},
+  {emoji:'🌎',stmt:'Brasil está en América del Sur.',ans:true},
+  {emoji:'🌍',stmt:'España y Francia están en el continente europeo.',ans:true},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Eres un experto del planisferio!';speak('¡Eres un experto del planisferio!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 */
+const QUIZ=[
+  {q:'¿Cuántos continentes hay en el mundo?',opts:['4','5','6 🌍','7'],ans:2,emoji:'🌍'},
+  {q:'¿Cuál es el continente más grande del mundo?',opts:['Europa','América','África','Asia 🌏'],ans:3,emoji:'🌏'},
+  {q:'¿En qué océano está España? (al oeste)',opts:['Pacífico','Índico','Atlántico 🌊','Ártico'],ans:2,emoji:'🌊'},
+  {q:'¿Dónde está el océano Ártico?',opts:['Polo Sur','Ecuador','Polo Norte ❄️','Mediterráneo'],ans:2,emoji:'❄️'},
+  {q:'¿Cómo se llama el mapa plano de toda la Tierra?',opts:['Planisferio 🗺️','Continente','Océano','Globo'],ans:0,emoji:'🗺️'},
+  {q:'¿En qué continente están China e India?',opts:['Europa','Asia 🌏','América','África'],ans:1,emoji:'🌏'},
+  {q:'¿Qué océano está entre América y Europa?',opts:['Pacífico','Índico','Ártico','Atlántico 🌊'],ans:3,emoji:'🌊'},
+  {q:'¿En qué continente están España y Francia?',opts:['Asia','América','África','Europa 🌍'],ans:3,emoji:'🌍'},
+  {q:'¿Cuántos océanos hay en el mundo?',opts:['3','4','5 🌊','6'],ans:2,emoji:'🌊'},
+  {q:'¿En qué continente está el río Amazonas?',opts:['África','Europa','Asia','América 🌎'],ans:3,emoji:'🌎'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Geógrafo Experto!';emoji='🏆🌍🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, explorador del mundo!';emoji='🌟🗺️🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa los continentes un poco más.';emoji='👍🌎';}
+  else{msg='¡Sigue aprendiendo! El mundo tiene muchos secretos.';emoji='💪🌏';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido al planisferio! Hoy vamos a conocer los continentes y los océanos del mundo.');
+</script>
+</body>
+</html>

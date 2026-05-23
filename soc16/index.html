@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌙 La Luna y sus Fases</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#020408 0%,#040812 55%,#020408 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌕 🌙 ⭐ 🌑 🌟 🌕 🌙 ⭐ 🌑 🌟 🌕 🌙 ⭐ 🌑 🌟 🌕 🌙 ⭐ 🌑 🌟 🌕 🌙 ⭐ 🌑 🌟';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.07);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(2,4,8,.7);color:#FFD700;border:2px solid #b0bec5;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#b0bec5;color:#020408}
+.score-box{background:rgba(2,4,8,.7);color:#FFD700;border:2px solid #b0bec5;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #b0bec5;background:rgba(2,4,8,.8);color:#eceff1;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#b0bec5;color:#020408;font-weight:bold}
+.p-tab.done{background:#78909c;border-color:#b0bec5;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(5,8,20,.92),rgba(8,12,30,.92));border:3px solid #b0bec5;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(176,190,197,.12);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#eceff1;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#90a4ae;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#546e7a,#78909c);color:#fff;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;font-weight:bold;transition:background .15s}
+.btn-next:hover{background:#90a4ae}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(5,8,20,.8),rgba(2,4,8,.8));color:#fff;border:2px solid #b0bec5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#b0bec5;color:#020408}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.pick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:480px;margin:12px 0}
+.pick-card{background:rgba(5,8,20,.85);border:3px solid #b0bec5;border-radius:20px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform .12s,border-color .15s;backdrop-filter:blur(2px)}
+.pick-card:hover{transform:scale(1.05);border-color:#FFD700}
+.pick-card .pc-emoji{font-size:2.6rem;display:block}.pick-card .pc-label{font-size:.9rem;color:#eceff1;margin-top:6px;line-height:1.3}
+.pick-card.correct{border-color:#4CAF50;background:rgba(27,90,32,.6)}
+.pick-card.wrong{border-color:#f44336;background:rgba(90,16,16,.5)}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #b0bec5;background:rgba(2,4,8,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #b0bec5;background:rgba(2,4,8,.8);color:#eceff1;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(5,8,20,.92),rgba(2,4,8,.9));border:3px solid #b0bec5;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#eceff1;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #b0bec5;background:rgba(2,4,8,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(5,8,20,.92),rgba(2,4,8,.9));border:3px solid #b0bec5;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(2,4,8,.9);border:2px solid #b0bec5;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#90a4ae;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(10,15,35,.8),rgba(2,4,8,.8));border:2px solid #b0bec5;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(20,25,50,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(2,4,8,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.phase-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:500px;margin:10px 0}
+.phase-tile{background:rgba(5,8,20,.85);border:3px solid #b0bec5;border-radius:20px;padding:20px 10px;text-align:center;cursor:pointer;transition:transform .12s,border-color .15s}
+.phase-tile:hover{transform:scale(1.04);border-color:#FFD700}
+.phase-tile .pt-moon{font-size:3rem;display:block;margin-bottom:6px}
+.phase-tile .pt-name{font-size:1rem;color:#FFD700;font-weight:bold;margin-bottom:4px}
+.phase-tile .pt-desc{font-size:.85rem;color:#b0bec5;line-height:1.3}
+.phase-tile.correct{border-color:#4CAF50;background:rgba(27,90,32,.5)}
+.phase-tile.wrong{border-color:#f44336;background:rgba(90,16,16,.4)}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌙 La Luna y sus Fases</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌙 La Luna</div>
+  <div class="p-tab"        id="tab2">🌕 Las 4 Fases</div>
+  <div class="p-tab"        id="tab3">🔭 Identifica</div>
+  <div class="p-tab"        id="tab4">✅ V o F</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz</div>
+</div>
+
+<!-- FASE 1: La Luna -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌙 La Luna: Nuestro Satélite</div>
+    <div class="story-text">
+      ¿Ves esa bola brillante en el cielo nocturno? ¡Es la <strong style="color:#FFD700">Luna</strong>! 🌕<br><br>
+      La Luna es el único <strong style="color:#fffde7">satélite natural</strong> de la Tierra. Un satélite es algo que gira alrededor de un planeta.<br><br>
+      🌍 La Luna gira <strong style="color:#FFD700">alrededor de la Tierra</strong> sin parar.<br>
+      ⏱️ Tarda <strong style="color:#FFD700">28 días</strong> en dar una vuelta completa.<br>
+      🌙 Mientras orbita, vemos su cara iluminada de formas distintas: ¡son las <strong style="color:#FFD700">fases de la Luna</strong>!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="195" viewBox="0 0 330 195" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="330" height="195" rx="12" fill="rgba(2,4,8,.8)" stroke="#b0bec5" stroke-width="1.5"/>
+      <circle cx="2" cy="12" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="45" cy="28" r="1" fill="white" opacity=".6"/>
+      <circle cx="90" cy="8" r="2" fill="white" opacity=".7"/>
+      <circle cx="155" cy="18" r="1" fill="white" opacity=".5"/>
+      <circle cx="220" cy="10" r="1.5" fill="white" opacity=".8"/>
+      <circle cx="280" cy="25" r="1" fill="white" opacity=".6"/>
+      <circle cx="310" cy="5" r="2" fill="white" opacity=".7"/>
+      <circle cx="15" cy="75" r="1" fill="white" opacity=".4"/>
+      <circle cx="315" cy="80" r="1.5" fill="white" opacity=".5"/>
+      <circle cx="30" cy="155" r="1" fill="white" opacity=".6"/>
+      <circle cx="300" cy="170" r="1.5" fill="white" opacity=".4"/>
+      <ellipse cx="155" cy="100" rx="92" ry="68" fill="none" stroke="rgba(176,190,197,.3)" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <circle cx="155" cy="100" r="30" fill="#1565c0"/>
+      <ellipse cx="145" cy="90" rx="12" ry="9" fill="#2e7d32" opacity=".9"/>
+      <ellipse cx="165" cy="105" rx="8" ry="10" fill="#388e3c" opacity=".8"/>
+      <text x="155" y="152" text-anchor="middle" fill="#90caf9" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">🌍 Tierra</text>
+      <circle cx="247" cy="100" r="18" fill="#fffde7" stroke="#FFD700" stroke-width="1.5"/>
+      <text x="247" y="105" text-anchor="middle" font-size="16">🌕</text>
+      <text x="247" y="132" text-anchor="middle" fill="#fffde7" font-size="9.5" font-family="Patrick Hand,cursive" font-weight="bold">Luna</text>
+      <path d="M247,82 A92,68 0 0,0 155,32" fill="none" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="3,3" opacity=".7" marker-end="url(#lunarrow)"/>
+      <defs><marker id="lunarrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="#FFD700"/></marker></defs>
+      <rect x="5" y="160" width="148" height="28" rx="10" fill="rgba(2,4,8,.8)" stroke="#b0bec5" stroke-width="1.5"/>
+      <text x="79" y="172" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">⏱️ 28 días = 1 órbita</text>
+      <text x="79" y="184" text-anchor="middle" fill="#90a4ae" font-size="9" font-family="Patrick Hand,cursive">¡Gira alrededor de la Tierra!</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('La Luna es el satélite natural de la Tierra. Un satélite es algo que gira alrededor de un planeta. La Luna tarda veintiocho días en dar una vuelta completa alrededor de la Tierra. Mientras orbita, vemos su cara iluminada de distintas formas: esas son las fases de la Luna.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: Datos sobre la Luna</div>
+  <div class="pick-grid" id="lunaGrid">
+    <div class="pick-card" onclick="pickLuna('satelite',this)"><span class="pc-emoji">🌙</span><div class="pc-label">La Luna es el satélite natural de la Tierra</div></div>
+    <div class="pick-card" onclick="pickLuna('planeta',this)"><span class="pc-emoji">🪐</span><div class="pc-label">La Luna es un planeta del sistema solar</div></div>
+    <div class="pick-card" onclick="pickLuna('estrella',this)"><span class="pc-emoji">⭐</span><div class="pc-label">La Luna es una estrella que brilla sola</div></div>
+    <div class="pick-card" onclick="pickLuna('cometa',this)"><span class="pc-emoji">☄️</span><div class="pc-label">La Luna es un cometa que pasa cerca</div></div>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Las 4 Fases 🌕 →</button>
+</div>
+
+<!-- FASE 2: Las 4 fases -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🌕 Las 4 Fases de la Luna</div>
+    <div class="story-text">
+      Mientras la Luna orbita la Tierra, el Sol ilumina distintas partes. ¡Por eso la vemos diferente! Son las <strong style="color:#FFD700">4 fases de la Luna</strong>:<br><br>
+      🌑 <strong style="color:#90a4ae">Luna Nueva</strong> — No se ve. Está entre la Tierra y el Sol.<br>
+      🌒 <strong style="color:#fffde7">Luna Creciente</strong> — Se ve una pequeña parte. ¡Va creciendo!<br>
+      🌕 <strong style="color:#FFD700">Luna Llena</strong> — Se ve toda entera y brillante. ¡La más bonita!<br>
+      🌘 <strong style="color:#eceff1">Luna Menguante</strong> — Va disminuyendo. ¡Está menguando!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="160" viewBox="0 0 330 160" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="330" height="160" rx="12" fill="rgba(2,4,8,.85)" stroke="#b0bec5" stroke-width="1.5"/>
+      <circle cx="40" cy="70" r="28" fill="#1a1a2e" stroke="#546e7a" stroke-width="2"/>
+      <text x="40" y="77" text-anchor="middle" font-size="26">🌑</text>
+      <text x="40" y="115" text-anchor="middle" fill="#90a4ae" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Luna Nueva</text>
+      <text x="40" y="128" text-anchor="middle" fill="#546e7a" font-size="9" font-family="Patrick Hand,cursive">No se ve</text>
+      <circle cx="123" cy="70" r="28" fill="#1a1a2e" stroke="#78909c" stroke-width="2"/>
+      <path d="M123,42 A28,28 0 1,1 123,98 A18,18 0 1,0 123,42" fill="#fffde7"/>
+      <text x="123" y="115" text-anchor="middle" fill="#fffde7" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Luna Creciente</text>
+      <text x="123" y="128" text-anchor="middle" fill="#90a4ae" font-size="9" font-family="Patrick Hand,cursive">Va creciendo</text>
+      <circle cx="207" cy="70" r="28" fill="#fffde7" stroke="#FFD700" stroke-width="2.5"/>
+      <text x="207" y="77" text-anchor="middle" font-size="28">🌕</text>
+      <text x="207" y="115" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Luna Llena</text>
+      <text x="207" y="128" text-anchor="middle" fill="#90a4ae" font-size="9" font-family="Patrick Hand,cursive">¡Entera!</text>
+      <circle cx="290" cy="70" r="28" fill="#1a1a2e" stroke="#78909c" stroke-width="2"/>
+      <path d="M290,42 A18,18 0 1,1 290,98 A28,28 0 1,0 290,42" fill="#fffde7"/>
+      <text x="290" y="115" text-anchor="middle" fill="#eceff1" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Luna Menguante</text>
+      <text x="290" y="128" text-anchor="middle" fill="#90a4ae" font-size="9" font-family="Patrick Hand,cursive">Va menguando</text>
+      <path d="M68,70 L95,70" stroke="rgba(255,215,0,.4)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#phasearrow)"/>
+      <path d="M151,70 L179,70" stroke="rgba(255,215,0,.4)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#phasearrow)"/>
+      <path d="M235,70 L262,70" stroke="rgba(255,215,0,.4)" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#phasearrow)"/>
+      <defs><marker id="phasearrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 Z" fill="#FFD700" opacity=".5"/></marker></defs>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Las cuatro fases de la Luna son: Luna Nueva, que no se ve porque está entre la Tierra y el Sol. Luna Creciente, que se ve poco a poco más grande. Luna Llena, que se ve entera y brillante. Y Luna Menguante, que va haciéndose más pequeña.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿Qué fase de la Luna es?</div>
+  <div class="tap-q" id="faseQ">Cargando…</div>
+  <div class="tap-prog" id="faseProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#546e7a" onclick="tapFase('nueva')">🌑 Nueva</button>
+    <button class="tap-btn" style="border-color:#fffde7" onclick="tapFase('creciente')">🌒 Creciente</button>
+    <button class="tap-btn" style="border-color:#FFD700" onclick="tapFase('llena')">🌕 Llena</button>
+    <button class="tap-btn" style="border-color:#eceff1" onclick="tapFase('menguante')">🌘 Menguante</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Identifica 🔭 →</button>
+</div>
+
+<!-- FASE 3: Sort fases -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🔭 ¿En qué fase está la Luna?</div>
+    <div class="story-text">
+      Lee cada descripción y elige la fase correcta.<br><br>
+      🌑 <strong style="color:#FFD700">Nueva</strong> = No se ve. 🌒 <strong style="color:#FFD700">Creciente</strong> = Va creciendo.<br>
+      🌕 <strong style="color:#FFD700">Llena</strong> = Entera. 🌘 <strong style="color:#FFD700">Menguante</strong> = Va disminuyendo.
+    </div>
+  </div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns3">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#1a1a2e,#263238);color:#90a4ae;border-color:#546e7a" onclick="ansSort3('nueva')">🌑 Nueva</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#263238,#37474f);color:#fffde7;border-color:#90a4ae" onclick="ansSort3('creciente')">🌒 Creciente</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#3e3000,#5d4600);color:#FFD700;border-color:#FFD700" onclick="ansSort3('llena')">🌕 Llena</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#2d2d2d,#424242);color:#eceff1;border-color:#90a4ae" onclick="ansSort3('menguante')">🌘 Menguante</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Verdad o Mentira ✅ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">✅ ¿Verdad o Mentira?</div>
+    <div class="story-text">Lee cada frase sobre la Luna y sus fases y decide si es <strong style="color:#69f0ae">Verdad</strong> o <strong style="color:#ff5252">Mentira</strong>.</div>
+  </div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initFases();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1 */
+function pickLuna(ans,el){
+  $('lunaGrid').querySelectorAll('.pick-card').forEach(e=>e.onclick=null);
+  if(ans==='satelite'){
+    flash('g');addScore(15);el.classList.add('correct');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto! La Luna es el satélite natural de la Tierra. 🌙';
+    speak('¡Correcto! La Luna es el satélite natural de la Tierra.');markDone(1);setTimeout(()=>$('btn1').disabled=false,700);
+  } else {
+    flash('r');el.classList.add('wrong');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! La Luna es el SATÉLITE de la Tierra.';speak('No exactamente. La Luna es el satélite natural de la Tierra.');
+    setTimeout(()=>{el.classList.remove('wrong');const c=$('lunaGrid').querySelectorAll('.pick-card');c[0].onclick=()=>pickLuna('satelite',c[0]);c[1].onclick=()=>pickLuna('planeta',c[1]);c[2].onclick=()=>pickLuna('estrella',c[2]);c[3].onclick=()=>pickLuna('cometa',c[3])},1100);
+  }
+}
+
+/* Fase 2: Fases */
+const FASE_Qs=[
+  {ask:'La Luna está completamente iluminada. Se ve entera y muy brillante en el cielo. 🌕',correct:'llena',hint:'¡Es la Luna Llena! Se ve toda entera y muy brillante.'},
+  {ask:'La Luna no se ve porque está entre la Tierra y el Sol, sin luz visible. 🌑',correct:'nueva',hint:'¡Es la Luna Nueva! Está en la sombra y no la vemos.'},
+  {ask:'Se ve solo una pequeña parte de la Luna, que va haciéndose más grande cada día. 🌒',correct:'creciente',hint:'¡Es la Luna Creciente! Va creciendo poco a poco.'},
+  {ask:'La Luna se ve cada vez más pequeña, disminuyendo hasta desaparecer. 🌘',correct:'menguante',hint:'¡Es la Luna Menguante! Va disminuyendo día a día.'},
+  {ask:'Esta es la fase más brillante. ¡La Luna ilumina la noche completa! 🌕',correct:'llena',hint:'¡Es la Luna Llena! La más luminosa de todas las fases.'},
+  {ask:'En esta fase, la Luna está "creciendo" y se ve como una C en el cielo. 🌒',correct:'creciente',hint:'¡Es la Luna Creciente! Parece una C y va aumentando.'},
+  {ask:'No vemos la Luna esta noche. Está en la oscuridad, sin iluminación visible.',correct:'nueva',hint:'¡Es la Luna Nueva! No la podemos ver.'},
+  {ask:'La Luna pasa de estar llena a volverse cada vez más pequeña. 🌘',correct:'menguante',hint:'¡Es la Luna Menguante! Después de estar llena, va disminuyendo.'},
+];
+let faseItems,faseIdx;
+function initFases(){faseItems=shuffle(FASE_Qs);faseIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderFaseProg();showFaseQ()}
+function renderFaseProg(){$('faseProg').innerHTML=faseItems.map((_,i)=>`<div class="pdot" id="fp_${i}"></div>`).join('')}
+function showFaseQ(){if(faseIdx>=faseItems.length){endFases();return}$('faseQ').textContent=faseItems[faseIdx].ask;$('fb2').textContent='';speak(faseItems[faseIdx].ask)}
+function tapFase(ans){
+  if(faseIdx>=faseItems.length)return;
+  const q=faseItems[faseIdx],dot=$('fp_'+faseIdx);
+  const names={nueva:'🌑 Nueva',creciente:'🌒 Creciente',llena:'🌕 Llena',menguante:'🌘 Menguante'};
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');faseIdx++;setTimeout(showFaseQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es la '+names[q.correct]+'. '+q.hint;speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endFases(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Genial! ¡Conoces las 4 fases de la Luna!';speak('¡Genial!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3: Sort */
+const SORT3=[
+  {emoji:'🌑',text:'La Luna no se puede ver esta noche. Está oculta en la oscuridad.',target:'nueva'},
+  {emoji:'🌕',text:'¡La Luna brilla entera y redonda! Ilumina mucho la noche.',target:'llena'},
+  {emoji:'🌒',text:'Ayer la Luna era muy pequeña y esta noche ya se ve un poco más grande.',target:'creciente'},
+  {emoji:'🌘',text:'La Luna cada día se ve más pequeña. Va desapareciendo poco a poco.',target:'menguante'},
+  {emoji:'🌑',text:'Ni rastro de la Luna. El cielo está completamente oscuro esta noche.',target:'nueva'},
+  {emoji:'🌕',text:'Desde aquí arriba veo la Luna completamente iluminada. ¡Es preciosa!',target:'llena'},
+  {emoji:'🌒',text:'La Luna parece una C y cada noche se va haciendo un poco más grande.',target:'creciente'},
+  {emoji:'🌘',text:'Después de estar llena, la Luna empieza a hacerse cada vez más pequeña.',target:'menguante'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={nueva:'🌑 Nueva',creciente:'🌒 Creciente',llena:'🌕 Llena',menguante:'🌘 Menguante'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es Luna '+names[choice].split(' ')[1]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';$('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Conoces todas las fases!';speak('¡Fantástico!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 */
+const TF4=[
+  {emoji:'🌙',stmt:'La Luna es el satélite natural de la Tierra.',ans:true},
+  {emoji:'⏱️',stmt:'La Luna tarda 28 días en orbitar la Tierra.',ans:true},
+  {emoji:'🌕',stmt:'En la Luna Llena, la Luna no se puede ver.',ans:false},
+  {emoji:'🌑',stmt:'La Luna Nueva es la fase en que no vemos la Luna.',ans:true},
+  {emoji:'🌒',stmt:'La Luna Creciente se hace cada día más pequeña.',ans:false},
+  {emoji:'🌘',stmt:'La Luna Menguante va disminuyendo su tamaño visible.',ans:true},
+  {emoji:'🌙',stmt:'La Luna tiene su propia luz como el Sol.',ans:false},
+  {emoji:'🔢',stmt:'La Luna tiene exactamente 4 fases.',ans:true},
+  {emoji:'🌍',stmt:'La Luna gira alrededor de la Tierra.',ans:true},
+  {emoji:'🌕',stmt:'La Luna Llena es la más brillante de todas las fases.',ans:true},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Eres un experto lunar!';speak('¡Eres un experto lunar!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 */
+const QUIZ=[
+  {q:'¿Cómo se llama el tipo de cuerpo que es la Luna?',opts:['Planeta','Estrella','Satélite natural 🌙','Cometa'],ans:2,emoji:'🌙'},
+  {q:'¿Alrededor de qué gira la Luna?',opts:['El Sol','Venus','Marte','La Tierra 🌍'],ans:3,emoji:'🌍'},
+  {q:'¿Cuánto tarda la Luna en dar una vuelta a la Tierra?',opts:['24 horas','7 días','28 días 🌙','365 días'],ans:2,emoji:'⏱️'},
+  {q:'¿Cuántas fases tiene la Luna?',opts:['2','3','4 🌕','5'],ans:2,emoji:'🔢'},
+  {q:'¿Cómo se llama la fase en que la Luna no se ve?',opts:['Llena','Creciente','Menguante','Nueva 🌑'],ans:3,emoji:'🌑'},
+  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Llena 🌕','Menguante'],ans:2,emoji:'🌕'},
+  {q:'¿Qué significa que la Luna está "creciente"?',opts:['Va disminuyendo','No se ve','Va creciendo 🌒','Está entera'],ans:2,emoji:'🌒'},
+  {q:'¿Qué significa que la Luna está "menguante"?',opts:['Va creciendo','Está entera','No se ve','Va disminuyendo 🌘'],ans:3,emoji:'🌘'},
+  {q:'¿De dónde viene la luz de la Luna?',opts:['La Luna tiene luz propia','Del interior de la Luna','Refleja la luz del Sol ☀️','De las estrellas'],ans:2,emoji:'☀️'},
+  {q:'¿Cuáles son las 4 fases de la Luna?',opts:['Día, noche, amanecer, atardecer','Nueva, creciente, llena, menguante 🌙','Primavera, verano, otoño, invierno','Grande, pequeña, media, entera'],ans:1,emoji:'🌙'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Astro-Experto!';emoji='🏆🌕🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, observador lunar!';emoji='🌟🌙🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa las fases un poco más.';emoji='👍🌕';}
+  else{msg='¡Sigue aprendiendo! La Luna tiene muchos secretos.';emoji='💪🌙';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a conocer la Luna y sus cuatro fases: nueva, creciente, llena y menguante.');
+</script>
+</body>
+</html>

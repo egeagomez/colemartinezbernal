@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🌋 Las Capas de la Tierra</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#0d0200 0%,#1a0500 55%,#0d0200 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌋 🏔️ 💨 🌊 🔥 🌋 🏔️ 💨 🌊 🔥 🌋 🏔️ 💨 🌊 🔥 🌋 🏔️ 💨 🌊 🔥 🌋 🏔️ 💨 🌊 🔥';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.06);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(13,2,0,.7);color:#FFD700;border:2px solid #ff6d00;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#ff6d00;color:#0d0200}
+.score-box{background:rgba(13,2,0,.7);color:#FFD700;border:2px solid #ff6d00;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #ff6d00;background:rgba(13,2,0,.8);color:#ffccbc;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#ff6d00;color:#0d0200;font-weight:bold}
+.p-tab.done{background:#e65100;border-color:#ff6d00;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(20,5,0,.92),rgba(35,8,0,.92));border:3px solid #ff6d00;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(255,100,0,.2);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#ffccbc;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#ff8a65;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#e65100,#ff6d00);color:#fff;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;font-weight:bold;transition:background .15s}
+.btn-next:hover{background:#ff8a65}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(20,5,0,.8),rgba(13,2,0,.8));color:#fff;border:2px solid #ff6d00;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#ff6d00;color:#0d0200}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #ff6d00;background:rgba(13,2,0,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #ff6d00;background:rgba(13,2,0,.8);color:#ffccbc;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(20,5,0,.92),rgba(13,2,0,.9));border:3px solid #ff6d00;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#ffccbc;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #ff6d00;background:rgba(13,2,0,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(20,5,0,.92),rgba(13,2,0,.9));border:3px solid #ff6d00;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(13,2,0,.9);border:2px solid #ff6d00;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#ffccbc;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(40,10,0,.8),rgba(13,2,0,.8));border:2px solid #ff6d00;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(60,15,0,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(13,2,0,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🌋 Las Capas de la Tierra</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">💨 Capas Ext.</div>
+  <div class="p-tab"        id="tab2">🔥 Capas Int.</div>
+  <div class="p-tab"        id="tab3">🔲 ¿Dentro o fuera?</div>
+  <div class="p-tab"        id="tab4">✅ V o F</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz</div>
+</div>
+
+<!-- FASE 1: Capas externas -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">💨 Las 3 Capas Externas</div>
+    <div class="story-text">
+      La Tierra está envuelta por tres capas externas. ¡Como las capas de una cebolla! 🧅<br><br>
+      💨 <strong style="color:#90caf9">Atmósfera</strong> — La capa de <strong style="color:#FFD700">aire</strong> que rodea la Tierra. Nos protege del frío del espacio. ¡Respiramos gracias a ella!<br><br>
+      🌊 <strong style="color:#40c4ff">Hidrosfera</strong> — Toda el <strong style="color:#FFD700">agua</strong> de la Tierra: mares, ríos, lagos, lluvia y hielo.<br><br>
+      🏔️ <strong style="color:#ffccbc">Geosfera</strong> — La parte <strong style="color:#FFD700">sólida</strong> de la Tierra: montañas, continentes y el fondo del mar.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="300" height="255" viewBox="0 0 300 255" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="128" r="118" fill="rgba(144,202,249,.1)" stroke="#90caf9" stroke-width="3" stroke-dasharray="8,4" opacity=".8"/>
+      <text x="150" y="12" text-anchor="middle" fill="#90caf9" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">💨 Atmósfera (aire)</text>
+      <circle cx="150" cy="128" r="97" fill="rgba(13,71,161,.4)" stroke="#40c4ff" stroke-width="2.5" opacity=".9"/>
+      <text x="150" y="36" text-anchor="middle" fill="#40c4ff" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🌊 Hidrosfera (agua)</text>
+      <circle cx="150" cy="128" r="77" fill="rgba(93,64,55,.88)" stroke="#8d6e63" stroke-width="2.5"/>
+      <ellipse cx="138" cy="115" rx="22" ry="16" fill="#2e7d32" opacity=".8"/>
+      <ellipse cx="168" cy="130" rx="12" ry="16" fill="#388e3c" opacity=".7"/>
+      <ellipse cx="135" cy="140" rx="8" ry="6" fill="#1b5e20" opacity=".7"/>
+      <text x="150" y="135" text-anchor="middle" fill="#efebe9" font-size="12" font-family="Patrick Hand,cursive" font-weight="bold">🏔️ Geosfera</text>
+      <text x="150" y="150" text-anchor="middle" fill="#bcaaa4" font-size="10" font-family="Patrick Hand,cursive">(tierra sólida)</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Las tres capas externas de la Tierra son: la Atmósfera, que es la capa de aire que respiramos. La Hidrosfera, que es toda el agua: mares, ríos y lluvia. Y la Geosfera, la parte sólida: montañas y continentes.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: ¿A qué capa externa pertenece?</div>
+  <div class="tap-q" id="extQ">Cargando…</div>
+  <div class="tap-prog" id="extProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#90caf9" onclick="tapExt('atmosfera')">💨 Atmósfera</button>
+    <button class="tap-btn" style="border-color:#40c4ff" onclick="tapExt('hidrosfera')">🌊 Hidrosfera</button>
+    <button class="tap-btn" style="border-color:#8d6e63" onclick="tapExt('geosfera')">🏔️ Geosfera</button>
+  </div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Capas Internas 🔥 →</button>
+</div>
+
+<!-- FASE 2: Capas internas -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🔥 Las 3 Capas Internas</div>
+    <div class="story-text">
+      Si pudieras perforar la Tierra como un túnel ¡encontrarías otras 3 capas!<br><br>
+      🟤 <strong style="color:#bcaaa4">Corteza</strong> — La capa más fina y exterior, donde <strong style="color:#FFD700">vivimos</strong>. Como la cáscara de una naranja. ¡Solo unos kilómetros!<br><br>
+      🔴 <strong style="color:#ff8a65">Manto</strong> — La capa intermedia. Muy caliente, con roca fundida llamada <strong style="color:#FFD700">magma</strong>. Es la más gruesa.<br><br>
+      🟡 <strong style="color:#FFD700">Núcleo</strong> — El centro de la Tierra. ¡Hierro y níquel a temperaturas altísimas! ¡Más caliente que la superficie del Sol!
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="300" height="250" viewBox="0 0 300 250" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="half"><rect x="150" y="0" width="150" height="250"/></clipPath></defs>
+      <circle cx="150" cy="125" r="110" fill="#4e342e"/>
+      <circle cx="150" cy="125" r="95" fill="#bf360c" clip-path="url(#half)"/>
+      <circle cx="150" cy="125" r="52" fill="#f9a825" clip-path="url(#half)"/>
+      <circle cx="150" cy="125" r="30" fill="#FFD700" clip-path="url(#half)"/>
+      <line x1="150" y1="15" x2="150" y2="235" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="4,3" opacity=".6"/>
+      <text x="150" y="12" text-anchor="middle" fill="#bcaaa4" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">🟤 Corteza</text>
+      <line x1="228" y1="60" x2="213" y2="75" stroke="#ff8a65" stroke-width="1.5"/>
+      <text x="245" y="58" text-anchor="middle" fill="#ff8a65" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">Manto</text>
+      <text x="245" y="70" text-anchor="middle" fill="#ff8a65" font-size="9" font-family="Patrick Hand,cursive">(magma 🔴)</text>
+      <text x="225" y="115" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">⭐ Núcleo</text>
+      <text x="225" y="128" text-anchor="middle" fill="#FFD700" font-size="9" font-family="Patrick Hand,cursive">(hierro 🟡)</text>
+      <text x="60" y="60" text-anchor="middle" fill="#bcaaa4" font-size="10" font-family="Patrick Hand,cursive">Vivimos</text>
+      <text x="60" y="72" text-anchor="middle" fill="#bcaaa4" font-size="10" font-family="Patrick Hand,cursive">aquí ↓</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('Las capas internas de la Tierra son: la Corteza, donde vivimos, es la capa más fina exterior. El Manto, con roca fundida llamada magma, muy caliente. Y el Núcleo, el centro de la Tierra, con hierro y níquel a temperaturas altísimas.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: ¿En qué capa interna estamos?</div>
+  <div class="tap-q" id="intQ">Cargando…</div>
+  <div class="tap-prog" id="intProg"></div>
+  <div class="tap-choices">
+    <button class="tap-btn" style="border-color:#bcaaa4" onclick="tapInt('corteza')">🟤 Corteza</button>
+    <button class="tap-btn" style="border-color:#ff8a65" onclick="tapInt('manto')">🔴 Manto</button>
+    <button class="tap-btn" style="border-color:#FFD700" onclick="tapInt('nucleo')">🟡 Núcleo</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: ¿Dentro o fuera? 🔲 →</button>
+</div>
+
+<!-- FASE 3: Sort exterior/interior -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🔲 ¿Capa exterior o capa interior?</div>
+    <div class="story-text">
+      Recuerda:<br>
+      ⬆️ <strong style="color:#90caf9">Exterior</strong> = Atmósfera (aire), Hidrosfera (agua), Geosfera (tierra sólida).<br>
+      ⬇️ <strong style="color:#ff8a65">Interior</strong> = Corteza, Manto (magma) y Núcleo (hierro).<br><br>
+      Lee cada descripción y clasifícala.
+    </div>
+  </div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns3">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#0d47a1,#1565c0);color:#b3e5fc;border-color:#40c4ff;font-size:1rem;padding:12px 20px" onclick="ansSort3('exterior')">⬆️ Capa Exterior</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#bf360c,#e64a19);color:#ffccbc;border-color:#ff8a65;font-size:1rem;padding:12px 20px" onclick="ansSort3('interior')">⬇️ Capa Interior</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Verdad o Mentira ✅ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">✅ ¿Verdad o Mentira?</div>
+    <div class="story-text">Lee cada frase y decide si es <strong style="color:#69f0ae">Verdad</strong> o <strong style="color:#ff5252">Mentira</strong>.</div>
+  </div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initInt();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1: Capas externas */
+const EXT_Qs=[
+  {ask:'Respiramos gracias a esta capa. ¡Es el aire que nos rodea! 💨',correct:'atmosfera',hint:'¡Es la Atmósfera! La capa de aire que rodea la Tierra.'},
+  {ask:'Los ríos, los mares, los lagos y la lluvia forman parte de esta capa. 💧',correct:'hidrosfera',hint:'¡Es la Hidrosfera! Toda el agua de la Tierra.'},
+  {ask:'Las montañas, los continentes y el suelo donde pisamos son de esta capa. 🏔️',correct:'geosfera',hint:'¡Es la Geosfera! La parte sólida de la Tierra.'},
+  {ask:'Las nubes, el viento y la lluvia del cielo pertenecen a esta capa. 🌦️',correct:'atmosfera',hint:'¡Es la Atmósfera! El tiempo y el clima ocurren aquí.'},
+  {ask:'El océano Pacífico, el río Amazonas y el hielo del Polo Norte son parte de esta capa. 🌊',correct:'hidrosfera',hint:'¡Es la Hidrosfera! Incluye toda el agua en cualquier estado.'},
+  {ask:'Los volcanes, los terremotos y las rocas pertenecen a esta capa. 🌋',correct:'geosfera',hint:'¡Es la Geosfera! Los volcanes y la roca sólida son de la Geosfera.'},
+  {ask:'El oxígeno que respiramos y el viento que sentimos vienen de aquí. 🌬️',correct:'atmosfera',hint:'¡Es la Atmósfera! Contiene el aire y el oxígeno.'},
+  {ask:'El agua que bebemos, la nieve y el hielo de los glaciares pertenecen a esto. ❄️',correct:'hidrosfera',hint:'¡Es la Hidrosfera! Incluye el agua en estado sólido como la nieve.'},
+];
+let extItems,extIdx;
+function initExt(){extItems=shuffle(EXT_Qs);extIdx=0;$('fb1').textContent='';$('btn1').disabled=true;renderExtProg();showExtQ()}
+function renderExtProg(){$('extProg').innerHTML=extItems.map((_,i)=>`<div class="pdot" id="ep_${i}"></div>`).join('')}
+function showExtQ(){if(extIdx>=extItems.length){endExt();return}$('extQ').textContent=extItems[extIdx].ask;$('fb1').textContent='';speak(extItems[extIdx].ask)}
+function tapExt(ans){
+  if(extIdx>=extItems.length)return;
+  const q=extItems[extIdx],dot=$('ep_'+extIdx);
+  const names={atmosfera:'💨 Atmósfera',hidrosfera:'🌊 Hidrosfera',geosfera:'🏔️ Geosfera'};
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ '+q.hint;speak('¡Correcto!');extIdx++;setTimeout(showExtQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! Es la '+names[q.correct]+'. '+q.hint;speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb1').textContent=''},1400);
+  }
+}
+function endExt(){markDone(1);$('fb1').className='fb ok';$('fb1').textContent='🎉 ¡Genial! ¡Conoces las capas externas!';speak('¡Genial!');setTimeout(()=>$('btn1').disabled=false,700)}
+initExt();
+
+/* Fase 2: Capas internas */
+const INT_Qs=[
+  {ask:'Es la capa más fina y superficial, donde vivimos. ¡Solo unos kilómetros! 🏠',correct:'corteza',hint:'¡Es la Corteza! La capa exterior delgada donde vivimos.'},
+  {ask:'Es la capa intermedia con roca fundida llamada magma. ¡Muy caliente! 🔴',correct:'manto',hint:'¡Es el Manto! Con magma y roca fundida muy caliente.'},
+  {ask:'Es el centro de la Tierra, con hierro y níquel. ¡La parte más caliente! 🟡',correct:'nucleo',hint:'¡Es el Núcleo! El corazón de la Tierra, de hierro y níquel.'},
+  {ask:'De esta capa salen los volcanes: el magma sube por ella y sale al exterior. 🌋',correct:'manto',hint:'¡Es el Manto! El magma del manto asciende por los volcanes.'},
+  {ask:'Si excavas muy hondo llegas primero a esta capa fina de roca sólida.',correct:'corteza',hint:'¡Es la Corteza! La capa más superficial de la Tierra.'},
+  {ask:'En el centro exacto de la Tierra hay hierro y níquel a miles de grados.',correct:'nucleo',hint:'¡Es el Núcleo! El centro de la Tierra está compuesto de hierro y níquel.'},
+];
+let intItems,intIdx;
+function initInt(){intItems=shuffle(INT_Qs);intIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderIntProg();showIntQ()}
+function renderIntProg(){$('intProg').innerHTML=intItems.map((_,i)=>`<div class="pdot" id="ip_${i}"></div>`).join('')}
+function showIntQ(){if(intIdx>=intItems.length){endInt();return}$('intQ').textContent=intItems[intIdx].ask;$('fb2').textContent='';speak(intItems[intIdx].ask)}
+function tapInt(ans){
+  if(intIdx>=intItems.length)return;
+  const q=intItems[intIdx],dot=$('ip_'+intIdx);
+  const names={corteza:'🟤 Corteza',manto:'🔴 Manto',nucleo:'🟡 Núcleo'};
+  if(ans===q.correct){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ '+q.hint;speak('¡Correcto!');intIdx++;setTimeout(showIntQ,1500);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es el/la '+names[q.correct]+'. '+q.hint;speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent=''},1400);
+  }
+}
+function endInt(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Perfecto! ¡Conoces las capas internas!';speak('¡Perfecto!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3: Sort exterior/interior */
+const SORT3=[
+  {emoji:'💨',text:'El aire que respiramos y el cielo donde vuelan los pájaros.',target:'exterior'},
+  {emoji:'🔴',text:'Roca fundida llamada magma, muy caliente, bajo la corteza.',target:'interior'},
+  {emoji:'🌊',text:'Los mares, los ríos, los lagos y los glaciares de hielo.',target:'exterior'},
+  {emoji:'🟡',text:'El centro de la Tierra, formado por hierro y níquel a miles de grados.',target:'interior'},
+  {emoji:'🏔️',text:'Las montañas, los continentes y el suelo donde vivimos.',target:'exterior'},
+  {emoji:'🟤',text:'La capa fina más exterior de la Tierra donde vivimos y construimos.',target:'interior'},
+  {emoji:'🌦️',text:'Las nubes, el viento, la lluvia y el tiempo que hace.',target:'exterior'},
+  {emoji:'🌋',text:'El magma que asciende por los volcanes viene de aquí.',target:'interior'},
+  {emoji:'❄️',text:'El agua en sus tres estados: líquida, sólida y en forma de vapor.',target:'exterior'},
+  {emoji:'⬇️',text:'Si excavas muy muy hondo, llegarías aquí: la capa más interna.',target:'interior'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={exterior:'⬆️ Capa Exterior',interior:'⬇️ Capa Interior'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';$('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Ya dominas todas las capas!';speak('¡Fantástico!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 */
+const TF4=[
+  {emoji:'💨',stmt:'La Atmósfera es la capa de aire que rodea la Tierra.',ans:true},
+  {emoji:'🌊',stmt:'La Hidrosfera incluye solo el agua de los océanos.',ans:false},
+  {emoji:'🏔️',stmt:'La Geosfera es la parte sólida de la Tierra.',ans:true},
+  {emoji:'🔴',stmt:'El núcleo está en la capa más exterior de la Tierra.',ans:false},
+  {emoji:'🌋',stmt:'El magma del manto sale al exterior a través de los volcanes.',ans:true},
+  {emoji:'🟤',stmt:'La corteza es la capa más gruesa de la Tierra.',ans:false},
+  {emoji:'🟡',stmt:'El núcleo de la Tierra está formado por hierro y níquel.',ans:true},
+  {emoji:'💨',stmt:'Respiramos gracias a la Atmósfera.',ans:true},
+  {emoji:'🌊',stmt:'La lluvia y la nieve forman parte de la Geosfera.',ans:false},
+  {emoji:'🔥',stmt:'El Manto es más caliente que la Corteza.',ans:true},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Eres un experto de las capas!';speak('¡Eres un experto!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 */
+const QUIZ=[
+  {q:'¿Cómo se llama la capa de aire que rodea la Tierra?',opts:['Hidrosfera','Geosfera','Atmósfera 💨','Corteza'],ans:2,emoji:'💨'},
+  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra 🌊','Las montañas','El interior de la Tierra'],ans:1,emoji:'🌊'},
+  {q:'¿Qué es la Geosfera?',opts:['El aire','El agua','La parte sólida de la Tierra 🏔️','El núcleo'],ans:2,emoji:'🏔️'},
+  {q:'¿Cuál es la capa más exterior donde vivimos?',opts:['Manto','Núcleo','Atmósfera','Corteza 🟤'],ans:3,emoji:'🟤'},
+  {q:'¿Cómo se llama la roca fundida del interior de la Tierra?',opts:['Corteza','Núcleo','Magma 🔴','Hidrosfera'],ans:2,emoji:'🔴'},
+  {q:'¿Qué hay en el centro exacto de la Tierra?',opts:['Agua','Aire','Roca sólida','Hierro y níquel 🟡'],ans:3,emoji:'🟡'},
+  {q:'¿Cuántas capas externas tiene la Tierra?',opts:['1','2','3 🌍','4'],ans:2,emoji:'🌍'},
+  {q:'¿De qué está formado el núcleo de la Tierra?',opts:['Agua y hielo','Magma y lava','Roca sólida','Hierro y níquel ⚙️'],ans:3,emoji:'⚙️'},
+  {q:'¿Qué capa de la Tierra respiramos?',opts:['Geosfera','Hidrosfera','Atmósfera 💨','Corteza'],ans:2,emoji:'💨'},
+  {q:'¿Qué es el manto de la Tierra?',opts:['Capa de agua','Capa de aire','Capa más exterior','Capa intermedia con magma 🔥'],ans:3,emoji:'🔥'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Geólogo Experto!';emoji='🏆🌋🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, explorador del interior!';emoji='🌟🔥🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa las capas un poco más.';emoji='👍🏔️';}
+  else{msg='¡Sigue aprendiendo! La Tierra tiene muchos secretos.';emoji='💪🌍';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a explorar las capas de la Tierra, por fuera y por dentro.');
+</script>
+</body>
+</html>

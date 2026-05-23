@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🚀 Si vienes a la Tierra — Gran Repaso</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#050804 0%,#0a1008 55%,#050804 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🚀 🌍 🌙 ⭐ 🌋 🚀 🌍 🌙 ⭐ 🌋 🚀 🌍 🌙 ⭐ 🌋 🚀 🌍 🌙 ⭐ 🌋 🚀 🌍 🌙 ⭐ 🌋';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.06);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(5,8,4,.7);color:#FFD700;border:2px solid #FFD700;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#FFD700;color:#050804}
+.score-box{background:rgba(5,8,4,.7);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #FFD700;background:rgba(5,8,4,.8);color:#fff8e1;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#FFD700;color:#050804;font-weight:bold}
+.p-tab.done{background:#FF8F00;border-color:#FFD700;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(10,15,8,.92),rgba(15,22,10,.92));border:3px solid #FFD700;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(255,215,0,.15);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.5)}
+.story-text{font-size:1.1rem;color:#fff8e1;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#FFD700;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#e65100,#FFD700);color:#050804;border:2px solid #fff;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;font-weight:bold;transition:background .15s}
+.btn-next:hover{background:#fff3e0;color:#050804}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(10,15,8,.8),rgba(5,8,4,.8));color:#fff;border:2px solid #FFD700;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#FFD700;color:#050804}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #FFD700;background:rgba(5,8,4,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #FFD700;background:rgba(5,8,4,.8);color:#fff8e1;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#fff}
+.sort-card-big{background:linear-gradient(145deg,rgba(10,15,8,.92),rgba(5,8,4,.9));border:3px solid #FFD700;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#fff8e1;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #FFD700;background:rgba(5,8,4,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.quiz-card{width:100%;max-width:540px;background:rgba(5,8,4,.9);border:2px solid #FFD700;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#fff8e1;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(20,25,10,.8),rgba(5,8,4,.8));border:2px solid #FFD700;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#fff;background:rgba(40,50,20,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(5,8,4,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🚀 Si vienes a la Tierra</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🌍 Continentes</div>
+  <div class="p-tab"        id="tab2">🌋 Las Capas</div>
+  <div class="p-tab"        id="tab3">🔄 Movimientos</div>
+  <div class="p-tab"        id="tab4">🌙 La Luna</div>
+  <div class="p-tab"        id="tab5">🏆 Gran Quiz</div>
+</div>
+
+<!-- FASE 1: Repaso Continentes y Océanos -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🌍 Repaso: Continentes y Océanos</div>
+    <div class="story-text">
+      ¡Un alienígena llega a la Tierra! 👽 Necesita saber dónde está.<br><br>
+      Vamos a repasar:<br>
+      🌎🌍🌏 Los <strong style="color:#FFD700">6 continentes</strong>: Asia (el más grande), África, América, Europa, Oceanía, Antártida.<br>
+      🌊 Los <strong style="color:#FFD700">5 océanos</strong>: Pacífico (el más grande), Atlántico, Índico, Ártico, Antártico.<br>
+      🗺️ El <strong style="color:#FFD700">planisferio</strong> es el mapa plano de toda la Tierra.
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('Repaso de continentes y océanos. Los seis continentes son: Asia, el más grande; África; América, dividida en Norte y Sur; Europa, donde está España; Oceanía y la Antártida. Los cinco océanos son: Pacífico, el más grande; Atlántico, Índico, Ártico y Antártico.')">🔊 Repasar</button>
+  <div class="mini-title">🎮 Preguntas sobre Continentes y Océanos</div>
+  <div class="tap-q" id="cont1Q">Cargando…</div>
+  <div class="tap-prog" id="cont1Prog"></div>
+  <div class="tap-choices" id="cont1Choices"></div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: Las Capas 🌋 →</button>
+</div>
+
+<!-- FASE 2: Repaso Capas de la Tierra -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🌋 Repaso: Las Capas de la Tierra</div>
+    <div class="story-text">
+      ¡El alienígena quiere explorar dentro de la Tierra! 🕳️<br><br>
+      <strong style="color:#FFD700">Capas externas</strong>: 💨 Atmósfera (aire) · 🌊 Hidrosfera (agua) · 🏔️ Geosfera (tierra sólida).<br>
+      <strong style="color:#FFD700">Capas internas</strong>: 🟤 Corteza (fina, exterior) · 🔴 Manto (magma) · 🟡 Núcleo (hierro, centro).
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('Las capas externas son la Atmósfera o aire, la Hidrosfera o agua, y la Geosfera o tierra sólida. Las capas internas son la Corteza, fina y exterior; el Manto con magma muy caliente; y el Núcleo en el centro, de hierro y níquel.')">🔊 Repasar</button>
+  <div class="mini-title">🎮 ¿A qué capa corresponde?</div>
+  <div class="sort-prog" id="sortProg2"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort2Emoji"></span>
+    <div class="sort-card-text" id="sort2Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns2">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#0d47a1,#1565c0);color:#b3e5fc;border-color:#40c4ff" onclick="ansSort2('atmosfera')">💨 Atmósfera</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#1565c0,#0288d1);color:#e0f7fa;border-color:#00bcd4" onclick="ansSort2('hidrosfera')">🌊 Hidrosfera</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#4e342e,#6d4c41);color:#efebe9;border-color:#8d6e63" onclick="ansSort2('geosfera')">🏔️ Geosfera</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#bf360c,#e64a19);color:#ffccbc;border-color:#ff8a65" onclick="ansSort2('manto')">🔴 Manto</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#3e3000,#5d4600);color:#FFD700;border-color:#FFD700" onclick="ansSort2('nucleo')">🟡 Núcleo</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Movimientos 🔄 →</button>
+</div>
+
+<!-- FASE 3: Repaso Movimientos -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">🔄 Repaso: Los Movimientos de la Tierra</div>
+    <div class="story-text">
+      ¡El alienígena observa cómo se mueve la Tierra!<br><br>
+      🔄 <strong style="color:#FFD700">Rotación</strong>: Gira sobre sí misma · 24 horas · Produce el <strong style="color:#b39ddb">día y la noche</strong>.<br>
+      🌍 <strong style="color:#FFD700">Traslación</strong>: Gira alrededor del Sol · 365 días · Produce las <strong style="color:#b39ddb">4 estaciones</strong>.
+    </div>
+  </div>
+  <div class="mini-title">🎮 ¿Rotación o Traslación?</div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns3">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#5e35b1,#7c4dff);color:#e8eaf6;border-color:#b39ddb;font-size:1rem;padding:12px 24px" onclick="ansSort3('rotacion')">🔄 Rotación</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#0d47a1,#1565c0);color:#e3f2fd;border-color:#64b5f6;font-size:1rem;padding:12px 24px" onclick="ansSort3('traslacion')">🌍 Traslación</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: La Luna 🌙 →</button>
+</div>
+
+<!-- FASE 4: Repaso Luna -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">🌙 Repaso: La Luna y sus Fases</div>
+    <div class="story-text">
+      ¡El alienígena ve la Luna! 🌕 ¿Sabrá todo sobre ella?<br><br>
+      🌙 La Luna es el <strong style="color:#FFD700">satélite natural</strong> de la Tierra.<br>
+      ⏱️ Tarda <strong style="color:#FFD700">28 días</strong> en orbitar la Tierra.<br>
+      🌑 <strong style="color:#FFD700">Nueva</strong> (no se ve) · 🌒 <strong style="color:#FFD700">Creciente</strong> (crece) · 🌕 <strong style="color:#FFD700">Llena</strong> (entera) · 🌘 <strong style="color:#FFD700">Menguante</strong> (disminuye).
+    </div>
+  </div>
+  <button class="speak-btn" onclick="speak('La Luna es el satélite natural de la Tierra. Tarda veintiocho días en orbitar la Tierra. Sus cuatro fases son: luna nueva, que no se ve; luna creciente, que va creciendo; luna llena, que se ve entera; y luna menguante, que va disminuyendo.')">🔊 Repasar</button>
+  <div class="mini-title">🎮 ¿Qué fase de la Luna es?</div>
+  <div class="sort-prog" id="sortProg4"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort4Emoji"></span>
+    <div class="sort-card-text" id="sort4Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns4">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#1a1a2e,#263238);color:#90a4ae;border-color:#546e7a" onclick="ansSort4('nueva')">🌑 Nueva</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#263238,#37474f);color:#fffde7;border-color:#90a4ae" onclick="ansSort4('creciente')">🌒 Creciente</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#3e3000,#5d4600);color:#FFD700;border-color:#FFD700" onclick="ansSort4('llena')">🌕 Llena</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#2d2d2d,#424242);color:#eceff1;border-color:#90a4ae" onclick="ansSort4('menguante')">🌘 Menguante</button>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Gran Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5: Gran Quiz Final -->
+<div class="phase" id="phase5">
+  <div class="story-card" style="margin-bottom:10px">
+    <div class="story-title">🏆 ¡El Gran Quiz Final!</div>
+    <div class="story-text">
+      El alienígena ha aprendido todo sobre la Tierra. ¡Ahora demostremos que TÚ también! 🚀<br>
+      10 preguntas sobre todos los temas.
+    </div>
+  </div>
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initSort2();if(n===3)initSort3();if(n===4)initSort4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1: Continentes y Océanos */
+const CONT1_Qs=[
+  {ask:'¿Cuántos continentes hay en la Tierra?',opts:['4','5','6 🌍','7'],ans:2},
+  {ask:'¿Cuál es el continente más grande del mundo?',opts:['África','América','Europa','Asia 🌏'],ans:3},
+  {ask:'¿Cuántos océanos hay en el mundo?',opts:['3','4','5 🌊','6'],ans:2},
+  {ask:'¿Cuál es el océano más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico 🌊'],ans:3},
+  {ask:'¿Qué océano está entre América y Europa?',opts:['Pacífico','Índico','Ártico','Atlántico 🌊'],ans:3},
+  {ask:'¿En qué continente están España y Francia?',opts:['Asia','América','África','Europa 🌍'],ans:3},
+  {ask:'¿Cómo se llama el mapa plano de toda la Tierra?',opts:['Globo','Planisferio 🗺️','Océano','Continente'],ans:1},
+  {ask:'¿En qué continente está el río Amazonas y Brasil?',opts:['África','Europa','Asia','América 🌎'],ans:3},
+];
+let cont1Items,cont1Idx;
+function initCont1(){cont1Items=shuffle(CONT1_Qs);cont1Idx=0;$('fb1').textContent='';$('btn1').disabled=true;renderCont1Prog();showCont1Q()}
+function renderCont1Prog(){$('cont1Prog').innerHTML=cont1Items.map((_,i)=>`<div class="pdot" id="c1p_${i}"></div>`).join('')}
+function showCont1Q(){
+  if(cont1Idx>=cont1Items.length){endCont1();return}
+  const q=cont1Items[cont1Idx];
+  $('cont1Q').textContent=q.ask;$('fb1').textContent='';
+  $('cont1Choices').innerHTML=q.opts.map((o,i)=>`<button class="tap-btn" onclick="ansCont1(${i})">${o}</button>`).join('');
+  speak(q.ask);
+}
+function ansCont1(i){
+  const q=cont1Items[cont1Idx],dot=$('c1p_'+cont1Idx);
+  $('cont1Choices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=true);
+  if(i===q.ans){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto!';speak('¡Correcto!');cont1Idx++;setTimeout(showCont1Q,1400);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! La respuesta correcta es: '+q.opts[q.ans];speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb1').textContent='';$('cont1Choices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endCont1(){markDone(1);$('fb1').className='fb ok';$('fb1').textContent='🎉 ¡Genial! ¡Conoces los continentes y océanos!';speak('¡Genial!');setTimeout(()=>$('btn1').disabled=false,700)}
+initCont1();
+
+/* Fase 2: Sort capas */
+const SORT2=[
+  {emoji:'💨',text:'El aire que respiramos. El cielo y el viento están aquí.',target:'atmosfera'},
+  {emoji:'🌊',text:'Toda el agua: mares, ríos, lagos, lluvia y nieve.',target:'hidrosfera'},
+  {emoji:'🏔️',text:'Las montañas, los continentes y el suelo sólido.',target:'geosfera'},
+  {emoji:'🔴',text:'Roca fundida (magma). La capa intermedia y muy caliente.',target:'manto'},
+  {emoji:'🟡',text:'El centro exacto de la Tierra, con hierro y níquel.',target:'nucleo'},
+  {emoji:'💨',text:'Las nubes, el viento y la capa que nos protege del espacio.',target:'atmosfera'},
+  {emoji:'🌊',text:'Los océanos, los ríos y el hielo de los glaciares.',target:'hidrosfera'},
+  {emoji:'🌋',text:'El magma que sale por los volcanes viene de aquí.',target:'manto'},
+];
+let sort2Items,sort2Idx;
+function initSort2(){sort2Items=shuffle(SORT2);sort2Idx=0;$('fb2').textContent='';$('btn2').disabled=true;renderSort2Prog();showSort2()}
+function renderSort2Prog(){$('sortProg2').innerHTML=sort2Items.map((_,i)=>`<div class="rpdot" id="s2p_${i}"></div>`).join('')}
+function showSort2(){
+  if(sort2Idx>=sort2Items.length){endSort2();return}
+  const it=sort2Items[sort2Idx];
+  $('sort2Emoji').textContent=it.emoji;$('sort2Text').textContent=it.text;$('fb2').textContent='';
+  renderSort2Prog();const cur=$('s2p_'+sort2Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns2').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort2(choice){
+  const it=sort2Items[sort2Idx],dot=$('s2p_'+sort2Idx);
+  $('sortBtns2').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={atmosfera:'💨 Atmósfera',hidrosfera:'🌊 Hidrosfera',geosfera:'🏔️ Geosfera',manto:'🔴 Manto',nucleo:'🟡 Núcleo'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort2Idx++;setTimeout(showSort2,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb2').textContent='';$('sortBtns2').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort2(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Perfecto! ¡Dominas las capas!';speak('¡Perfecto!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3: Sort movimientos */
+const SORT3=[
+  {emoji:'🔄',text:'La Tierra gira sobre sí misma. Dura 24 horas.',target:'rotacion'},
+  {emoji:'🌍',text:'La Tierra gira alrededor del Sol. Dura 365 días.',target:'traslacion'},
+  {emoji:'🌓',text:'Produce el día y la noche porque una parte mira al Sol.',target:'rotacion'},
+  {emoji:'🌸',text:'Produce las 4 estaciones: primavera, verano, otoño, invierno.',target:'traslacion'},
+  {emoji:'⏱️',text:'Un día completo de 24 horas corresponde a este movimiento.',target:'rotacion'},
+  {emoji:'📅',text:'Un año de 365 días corresponde a este movimiento.',target:'traslacion'},
+  {emoji:'☀️',text:'La parte de la Tierra que da al Sol tiene luz gracias a este movimiento.',target:'rotacion'},
+  {emoji:'❄️',text:'El invierno y el verano ocurren por este movimiento.',target:'traslacion'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="s3p_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('s3p_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('s3p_'+sort3Idx);
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={rotacion:'🔄 Rotación',traslacion:'🌍 Traslación'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';$('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Dominas los movimientos!';speak('¡Fantástico!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4: Sort fases luna */
+const SORT4=[
+  {emoji:'🌑',text:'No se ve la Luna. Está entre la Tierra y el Sol, sin luz.',target:'nueva'},
+  {emoji:'🌕',text:'La Luna se ve entera y brilla mucho. ¡Es la más bonita!',target:'llena'},
+  {emoji:'🌒',text:'Se ve una parte pequeña que va creciendo cada día.',target:'creciente'},
+  {emoji:'🌘',text:'La Luna se va haciendo más pequeña, disminuyendo.',target:'menguante'},
+  {emoji:'🌑',text:'Esta noche no hay Luna. El cielo está completamente oscuro.',target:'nueva'},
+  {emoji:'🌕',text:'La Luna está completamente iluminada. ¡Se ve toda entera!',target:'llena'},
+  {emoji:'🌒',text:'La Luna parece una C y cada noche se ve un poco más grande.',target:'creciente'},
+  {emoji:'🌘',text:'Después de estar llena, la Luna empieza a disminuir.',target:'menguante'},
+];
+let sort4Items,sort4Idx;
+function initSort4(){sort4Items=shuffle(SORT4);sort4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderSort4Prog();showSort4()}
+function renderSort4Prog(){$('sortProg4').innerHTML=sort4Items.map((_,i)=>`<div class="rpdot" id="s4p_${i}"></div>`).join('')}
+function showSort4(){
+  if(sort4Idx>=sort4Items.length){endSort4();return}
+  const it=sort4Items[sort4Idx];
+  $('sort4Emoji').textContent=it.emoji;$('sort4Text').textContent=it.text;$('fb4').textContent='';
+  renderSort4Prog();const cur=$('s4p_'+sort4Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns4').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort4(choice){
+  const it=sort4Items[sort4Idx],dot=$('s4p_'+sort4Idx);
+  $('sortBtns4').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={nueva:'🌑 Nueva',creciente:'🌒 Creciente',llena:'🌕 Llena',menguante:'🌘 Menguante'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Muy bien! Es Luna '+names[choice].split(' ')[1]+'.';speak('¡Muy bien!');sort4Idx++;setTimeout(showSort4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';$('sortBtns4').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Ya sabes todo sobre la Luna!';speak('¡Perfecto!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5: Gran Quiz Final */
+const QUIZ=[
+  {q:'¿Cuántos continentes hay en el mundo?',opts:['4','5','6 🌍','7'],ans:2,emoji:'🌍'},
+  {q:'¿Qué capa de la Tierra es el aire que respiramos?',opts:['Geosfera','Hidrosfera','Corteza','Atmósfera 💨'],ans:3,emoji:'💨'},
+  {q:'¿Cómo se llama el movimiento de la Tierra girando sobre sí misma?',opts:['Traslación','Órbita','Rotación 🔄','Revolución'],ans:2,emoji:'🔄'},
+  {q:'¿Cuánto tarda la Luna en orbitar la Tierra?',opts:['24 horas','365 días','7 días','28 días 🌙'],ans:3,emoji:'🌙'},
+  {q:'¿Qué producen las estaciones del año?',opts:['La rotación','Las mareas','La traslación 🌍','La Luna'],ans:2,emoji:'🌸'},
+  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Menguante','Llena 🌕'],ans:3,emoji:'🌕'},
+  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra 🌊','Las montañas','El núcleo'],ans:1,emoji:'🌊'},
+  {q:'¿Qué océano es el más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico 🌊'],ans:3,emoji:'🌊'},
+  {q:'¿Qué produce la rotación de la Tierra?',opts:['Las estaciones','Los terremotos','El día y la noche 🌓','Las mareas'],ans:2,emoji:'🌓'},
+  {q:'¿Qué es la Luna?',opts:['Un planeta','Una estrella','El satélite natural de la Tierra 🌙','Un cometa'],ans:2,emoji:'🌙'},
+  {q:'¿Cuánto dura la traslación de la Tierra?',opts:['24 horas','28 días','365 días 📅','12 meses exactos'],ans:2,emoji:'📅'},
+  {q:'¿Dónde está el núcleo de la Tierra?',opts:['En la superficie','En el manto','En la corteza','En el centro 🟡'],ans:3,emoji:'🟡'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ).slice(0,10);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(15);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡El alienígena está impresionado! ¡Eres un EXPERTO de la Tierra!';emoji='🏆🚀🌍🏆';}
+  else if(pct>=80){msg='¡Genial! ¡Casi perfecto! El alienígena ya quiere vivir en la Tierra.';emoji='🌟🌍🌟';}
+  else if(pct>=60){msg='¡Buen trabajo! El alienígena aprende contigo.';emoji='👍🚀';}
+  else{msg='¡Sigue practicando! La Tierra tiene muchos secretos que descubrir.';emoji='💪🌍';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Gran Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación total: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido al gran repaso! Un alienígena ha llegado a la Tierra y quiere saber todo sobre nuestro planeta. ¡Demuéstrale lo que sabes!');
+</script>
+</body>
+</html>

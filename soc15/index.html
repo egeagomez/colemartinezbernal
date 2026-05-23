@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔄 Los Movimientos de la Tierra</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(160deg,#04011a 0%,#080228 55%,#04011a 100%) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:40px}
+body::before{content:'🌍 ⭐ 🌙 ☀️ 🔄 🌍 ⭐ 🌙 ☀️ 🔄 🌍 ⭐ 🌙 ☀️ 🔄 🌍 ⭐ 🌙 ☀️ 🔄 🌍 ⭐ 🌙 ☀️ 🔄';position:fixed;inset:0;font-size:.75rem;line-height:2.4rem;color:rgba(255,255,255,.06);overflow:hidden;pointer-events:none;letter-spacing:1.5rem;word-spacing:.5rem;z-index:0}
+.top-bar{position:relative;z-index:1;width:100%;max-width:700px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:rgba(4,1,26,.7);color:#FFD700;border:2px solid #7c4dff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#7c4dff;color:#04011a}
+.score-box{background:rgba(4,1,26,.7);color:#FFD700;border:2px solid #7c4dff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{position:relative;z-index:1;display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 14px;border-radius:20px;font-family:inherit;font-size:.82rem;border:2px solid #7c4dff;background:rgba(4,1,26,.8);color:#d1c4e9;cursor:default;backdrop-filter:blur(2px)}
+.p-tab.active{background:#7c4dff;color:#fff;font-weight:bold}
+.p-tab.done{background:#5e35b1;border-color:#7c4dff;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:700px;padding:0 14px;position:relative;z-index:1}
+.phase.active{display:flex}
+.story-card{background:linear-gradient(145deg,rgba(8,2,30,.92),rgba(12,4,45,.92));border:3px solid #7c4dff;border-radius:24px;padding:22px 20px;width:100%;max-width:580px;margin-bottom:14px;text-align:center;box-shadow:0 8px 32px rgba(124,77,255,.2);backdrop-filter:blur(4px)}
+.story-title{font-size:1.5rem;color:#FFD700;margin-bottom:10px;text-shadow:0 0 16px rgba(255,215,0,.4)}
+.story-text{font-size:1.1rem;color:#e8eaf6;line-height:1.65}
+.mini-title{font-size:1.15rem;color:#b39ddb;text-align:center;margin:12px 0 10px;font-weight:bold}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.22);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.22);opacity:1}
+.fb{min-height:2.2rem;font-size:1.05rem;text-align:center;margin:8px 0}.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-next{background:linear-gradient(135deg,#5e35b1,#7c4dff);color:#fff;border:2px solid #FFD700;border-radius:20px;padding:10px 30px;font-family:inherit;font-size:1.05rem;cursor:pointer;margin-top:10px;font-weight:bold;transition:background .15s}
+.btn-next:hover{background:#9575cd}.btn-next:disabled{opacity:.35;cursor:default}
+.speak-btn{background:linear-gradient(135deg,rgba(8,2,30,.8),rgba(4,1,26,.8));color:#fff;border:2px solid #7c4dff;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:1rem;cursor:pointer;margin:8px 0;backdrop-filter:blur(2px)}
+.speak-btn:hover{background:#7c4dff;color:#04011a}
+.scene{width:100%;max-width:560px;margin:8px auto;display:flex;align-items:center;justify-content:center}
+.tap-q{font-size:1.15rem;color:#FFD700;text-align:center;margin:8px 0 12px;line-height:1.4}
+.tap-prog{display:flex;gap:8px;justify-content:center;margin:6px 0;flex-wrap:wrap}
+.pdot{width:18px;height:18px;border-radius:50%;border:2px solid #7c4dff;background:rgba(4,1,26,.8)}
+.pdot.ok{background:#4CAF50;border-color:#4CAF50}.pdot.ng{background:#f44336;border-color:#f44336}
+.tap-choices{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tap-btn{padding:11px 16px;border-radius:16px;font-family:inherit;font-size:.95rem;cursor:pointer;border:3px solid #7c4dff;background:rgba(4,1,26,.8);color:#e8eaf6;transition:transform .12s;backdrop-filter:blur(2px);min-width:100px;text-align:center}
+.tap-btn:hover{transform:scale(1.06);border-color:#FFD700}
+.sort-card-big{background:linear-gradient(145deg,rgba(8,2,30,.92),rgba(4,1,26,.9));border:3px solid #7c4dff;border-radius:20px;padding:20px 24px;text-align:center;max-width:420px;width:100%;margin:10px auto}
+.sort-card-emoji{font-size:3.5rem;display:block;margin-bottom:8px}
+.sort-card-text{font-size:1.15rem;color:#e8eaf6;line-height:1.5}
+.sort-btns{display:flex;gap:8px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.sort-btn{padding:10px 14px;border-radius:18px;font-family:inherit;font-size:.9rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s;min-width:85px;text-align:center}
+.sort-btn:hover{transform:scale(1.06)}
+.sort-prog{display:flex;gap:6px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.rpdot{width:14px;height:14px;border-radius:50%;border:2px solid #7c4dff;background:rgba(4,1,26,.8)}
+.rpdot.ok{background:#4CAF50;border-color:#4CAF50}.rpdot.ng{background:#f44336;border-color:#f44336}
+.tf-card{background:linear-gradient(145deg,rgba(8,2,30,.92),rgba(4,1,26,.9));border:3px solid #7c4dff;border-radius:20px;padding:20px 24px;text-align:center;max-width:480px;width:100%;margin:10px auto}
+.tf-emoji{font-size:3rem;margin-bottom:8px;display:block}
+.tf-stmt{font-size:1.18rem;color:#FFD700;line-height:1.4;margin-bottom:14px}
+.tf-btns{display:flex;gap:18px;justify-content:center}
+.tf-btn{padding:12px 28px;border-radius:18px;font-family:inherit;font-size:1.1rem;cursor:pointer;border:3px solid;font-weight:bold;transition:transform .12s}
+.tf-btn:hover{transform:scale(1.06)}
+.tf-btn.t-btn{background:linear-gradient(135deg,#1b5e20,#388e3c);color:#fff;border-color:#69f0ae}
+.tf-btn.f-btn{background:linear-gradient(135deg,#7f0000,#c62828);color:#fff;border-color:#ef9a9a}
+.quiz-card{width:100%;max-width:540px;background:rgba(4,1,26,.9);border:2px solid #7c4dff;border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(4px)}
+.quiz-prog{color:#d1c4e9;font-size:.9rem;margin-bottom:8px}
+.quiz-emoji{font-size:3rem;margin:6px 0}
+.quiz-q{font-size:1.15rem;color:#FFD700;margin-bottom:14px;line-height:1.4}
+.quiz-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.quiz-opt{width:100%;max-width:420px;background:linear-gradient(135deg,rgba(20,8,60,.8),rgba(4,1,26,.8));border:2px solid #7c4dff;border-radius:14px;padding:12px 18px;font-family:inherit;font-size:1rem;color:#fff;cursor:pointer;transition:border-color .15s;text-align:left}
+.quiz-opt:hover:not(:disabled){border-color:#FFD700;background:rgba(40,15,100,.9)}
+.quiz-opt.correct-ans{border-color:#4CAF50;background:rgba(27,74,27,.8);color:#69f0ae}
+.quiz-opt.wrong-ans{border-color:#f44336;background:rgba(58,16,16,.8);color:#ff5252}
+.quiz-opt:disabled{cursor:default}
+.quiz-done{background:rgba(4,1,26,.9);border:2px solid #4CAF50;border-radius:16px;padding:18px 24px;color:#69f0ae;text-align:center;margin-top:14px;width:100%;max-width:540px}
+.finish-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Inicio</a>
+  <span style="color:#FFD700;font-size:1rem">🔄 Movimientos de la Tierra</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">🔄 Rotación</div>
+  <div class="p-tab"        id="tab2">🌍 Traslación</div>
+  <div class="p-tab"        id="tab3">↔️ Clasifica</div>
+  <div class="p-tab"        id="tab4">✅ V o F</div>
+  <div class="p-tab"        id="tab5">🏆 Quiz</div>
+</div>
+
+<!-- FASE 1: Rotación -->
+<div class="phase active" id="phase1">
+  <div class="story-card">
+    <div class="story-title">🔄 La Rotación</div>
+    <div class="story-text">
+      La Tierra está siempre moviéndose. ¡Nunca para! Tiene dos movimientos principales.<br><br>
+      El primero se llama <strong style="color:#FFD700">ROTACIÓN</strong>: la Tierra gira sobre sí misma, como una peonza 🪀. ¡Sin parar!<br><br>
+      ⏱️ <strong style="color:#b39ddb">Duración</strong>: 24 horas (¡un día!)<br>
+      🌓 <strong style="color:#b39ddb">Lo que produce</strong>: el <strong style="color:#FFD700">día y la noche</strong>. La parte que mira al Sol tiene día ☀️, y la parte de sombra tiene noche 🌙.
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="200" viewBox="0 0 330 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="330" height="200" rx="12" fill="rgba(4,1,26,.7)" stroke="#7c4dff" stroke-width="1.5"/>
+      <circle cx="50" cy="100" r="28" fill="#FF8F00" opacity=".9"/>
+      <text x="50" y="107" text-anchor="middle" font-size="24">☀️</text>
+      <line x1="78" y1="100" x2="110" y2="100" stroke="#FFD700" stroke-width="2" stroke-dasharray="4,3" opacity=".7"/>
+      <circle cx="165" cy="100" r="55" fill="rgba(13,71,161,.7)"/>
+      <path d="M165,45 A55,55 0 0,1 165,155" fill="rgba(0,0,0,.7)"/>
+      <ellipse cx="150" cy="88" rx="15" ry="12" fill="#2e7d32" opacity=".8"/>
+      <ellipse cx="175" cy="105" rx="10" ry="13" fill="#388e3c" opacity=".7"/>
+      <text x="135" y="102" text-anchor="middle" fill="#FFD700" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">☀️ Día</text>
+      <text x="196" y="102" text-anchor="middle" fill="#b39ddb" font-size="10" font-family="Patrick Hand,cursive" font-weight="bold">🌙 Noche</text>
+      <path d="M118,62 A62,62 0 0,1 212,62" fill="none" stroke="#7c4dff" stroke-width="2.5" marker-end="url(#rot)"/>
+      <path d="M212,138 A62,62 0 0,1 118,138" fill="none" stroke="#7c4dff" stroke-width="2.5" marker-end="url(#rot2)"/>
+      <defs>
+        <marker id="rot" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#7c4dff"/></marker>
+        <marker id="rot2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L0,7 L7,3.5 Z" fill="#7c4dff"/></marker>
+      </defs>
+      <rect x="230" y="60" width="90" height="50" rx="10" fill="rgba(8,2,30,.8)" stroke="#7c4dff" stroke-width="1.5"/>
+      <text x="275" y="78" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Rotación</text>
+      <text x="275" y="94" text-anchor="middle" fill="#d1c4e9" font-size="10" font-family="Patrick Hand,cursive">⏱️ 24 horas</text>
+      <text x="275" y="107" text-anchor="middle" fill="#d1c4e9" font-size="10" font-family="Patrick Hand,cursive">🔄 Gira sola</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('El movimiento de rotación es cuando la Tierra gira sobre sí misma, como una peonza. Tarda veinticuatro horas, que es un día. Gracias a este movimiento tenemos el día y la noche. La parte que mira al Sol tiene luz de día, y la parte de sombra tiene noche.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 1: Preguntas sobre la Rotación</div>
+  <div class="tap-q" id="rotQ">Cargando…</div>
+  <div class="tap-prog" id="rotProg"></div>
+  <div class="tap-choices" id="rotChoices"></div>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-next" id="btn1" onclick="goTab(2)" disabled>Siguiente: La Traslación 🌍 →</button>
+</div>
+
+<!-- FASE 2: Traslación -->
+<div class="phase" id="phase2">
+  <div class="story-card">
+    <div class="story-title">🌍 La Traslación</div>
+    <div class="story-text">
+      El segundo movimiento se llama <strong style="color:#FFD700">TRASLACIÓN</strong>: la Tierra gira <strong style="color:#b39ddb">alrededor del Sol</strong> 🌞, describiendo una vuelta entera.<br><br>
+      ⏱️ <strong style="color:#b39ddb">Duración</strong>: 365 días (¡un año!)<br>
+      🍂 <strong style="color:#b39ddb">Lo que produce</strong>: las <strong style="color:#FFD700">4 estaciones del año</strong>:<br>
+      🌸 Primavera → ☀️ Verano → 🍂 Otoño → ❄️ Invierno
+    </div>
+  </div>
+  <div class="scene">
+    <svg width="330" height="210" viewBox="0 0 330 210" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="330" height="210" rx="12" fill="rgba(4,1,26,.7)" stroke="#7c4dff" stroke-width="1.5"/>
+      <ellipse cx="165" cy="105" rx="130" ry="88" fill="none" stroke="rgba(124,77,255,.35)" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <circle cx="165" cy="105" r="22" fill="#FF8F00" opacity=".9"/>
+      <text x="165" y="112" text-anchor="middle" font-size="20">☀️</text>
+      <circle cx="295" cy="105" r="10" fill="#1565c0"/>
+      <text x="308" y="94" fill="#81d4fa" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">🌸 Primavera</text>
+      <circle cx="165" cy="17" r="10" fill="#1565c0"/>
+      <text x="175" y="11" fill="#FFD700" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">☀️ Verano</text>
+      <circle cx="35" cy="105" r="10" fill="#1565c0"/>
+      <text x="2" y="94" fill="#ff8a65" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">🍂 Otoño</text>
+      <circle cx="165" cy="193" r="10" fill="#1565c0"/>
+      <text x="172" y="207" fill="#b3e5fc" font-size="9" font-family="Patrick Hand,cursive" font-weight="bold">❄️ Invierno</text>
+      <rect x="105" y="125" width="120" height="38" rx="10" fill="rgba(8,2,30,.85)" stroke="#7c4dff" stroke-width="1.5"/>
+      <text x="165" y="141" text-anchor="middle" fill="#FFD700" font-size="11" font-family="Patrick Hand,cursive" font-weight="bold">Traslación</text>
+      <text x="165" y="157" text-anchor="middle" fill="#d1c4e9" font-size="10" font-family="Patrick Hand,cursive">365 días = 1 año 📅</text>
+    </svg>
+  </div>
+  <button class="speak-btn" onclick="speak('El movimiento de traslación es cuando la Tierra gira alrededor del Sol. Tarda trescientos sesenta y cinco días, es decir, un año. Gracias a este movimiento tenemos las cuatro estaciones: primavera, verano, otoño e invierno.')">🔊 ¡Escuchar!</button>
+  <div class="mini-title">🎮 Mini-juego 2: Preguntas sobre la Traslación</div>
+  <div class="tap-q" id="traQ">Cargando…</div>
+  <div class="tap-prog" id="traProg"></div>
+  <div class="tap-choices" id="traChoices"></div>
+  <div class="fb" id="fb2"></div>
+  <button class="btn-next" id="btn2" onclick="goTab(3)" disabled>Siguiente: Clasifica ↔️ →</button>
+</div>
+
+<!-- FASE 3: Sort rotación/traslación -->
+<div class="phase" id="phase3">
+  <div class="story-card">
+    <div class="story-title">↔️ ¿Rotación o Traslación?</div>
+    <div class="story-text">
+      🔄 <strong style="color:#FFD700">Rotación</strong> = Gira sobre sí misma · 24 horas · Día y noche.<br>
+      🌍 <strong style="color:#FFD700">Traslación</strong> = Gira alrededor del Sol · 365 días · Estaciones.
+    </div>
+  </div>
+  <div class="sort-prog" id="sortProg3"></div>
+  <div class="sort-card-big">
+    <span class="sort-card-emoji" id="sort3Emoji"></span>
+    <div class="sort-card-text" id="sort3Text"></div>
+  </div>
+  <div class="sort-btns" id="sortBtns3">
+    <button class="sort-btn" style="background:linear-gradient(135deg,#5e35b1,#7c4dff);color:#e8eaf6;border-color:#b39ddb;font-size:1rem;padding:12px 20px" onclick="ansSort3('rotacion')">🔄 Rotación</button>
+    <button class="sort-btn" style="background:linear-gradient(135deg,#0d47a1,#1565c0);color:#e3f2fd;border-color:#64b5f6;font-size:1rem;padding:12px 20px" onclick="ansSort3('traslacion')">🌍 Traslación</button>
+  </div>
+  <div class="fb" id="fb3"></div>
+  <button class="btn-next" id="btn3" onclick="goTab(4)" disabled>Siguiente: Verdad o Mentira ✅ →</button>
+</div>
+
+<!-- FASE 4 -->
+<div class="phase" id="phase4">
+  <div class="story-card">
+    <div class="story-title">✅ ¿Verdad o Mentira?</div>
+    <div class="story-text">Lee cada frase sobre los movimientos de la Tierra y decide si es <strong style="color:#69f0ae">Verdad</strong> o <strong style="color:#ff5252">Mentira</strong>.</div>
+  </div>
+  <div class="sort-prog" id="tfProg4"></div>
+  <div class="tf-card">
+    <span class="tf-emoji" id="tf4Emoji"></span>
+    <div class="tf-stmt" id="tf4Stmt"></div>
+    <div class="tf-btns">
+      <button class="tf-btn t-btn" onclick="ansTF4(true)">✅ Verdad</button>
+      <button class="tf-btn f-btn" onclick="ansTF4(false)">❌ Mentira</button>
+    </div>
+  </div>
+  <div class="fb" id="fb4"></div>
+  <button class="btn-next" id="btn4" onclick="goTab(5)" disabled>¡Al Quiz Final! 🏆 →</button>
+</div>
+
+<!-- FASE 5 -->
+<div class="phase" id="phase5">
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-prog" id="quizProg"></div>
+    <div class="quiz-emoji" id="quizEmoji"></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+  </div>
+  <div class="fb" id="fb5"></div>
+  <div class="quiz-done" id="quizDone" style="display:none"></div>
+  <div class="finish-row" id="finishRow" style="display:none">
+    <button class="btn-next" onclick="location.reload()">🔄 Jugar de nuevo</button>
+    <button class="btn-next" onclick="location.href='../index.html'">🏠 Inicio</button>
+  </div>
+</div>
+
+<script>
+let score=0;
+const $=id=>document.getElementById(id);
+function flash(c){const e=$('fov');e.className='flash-ov '+c;setTimeout(()=>e.className='flash-ov',280)}
+function speak(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.87;speechSynthesis.speak(u)}
+function addScore(n){score+=n;$('scoreDisp').textContent=score}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function goTab(n){
+  [1,2,3,4,5].forEach(i=>{$('phase'+i).classList.remove('active');$('tab'+i).classList.remove('active')});
+  $('phase'+n).classList.add('active');$('tab'+n).classList.add('active');
+  if(n===2)initTra();if(n===3)initSort3();if(n===4)initTF4();if(n===5)buildQuiz();
+}
+function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.add('done')}
+
+/* Fase 1: Rotación - preguntas de opción múltiple inline */
+const ROT_Qs=[
+  {ask:'¿Cuánto dura el movimiento de rotación?',opts:['12 horas','24 horas ⏱️','365 días','28 días'],ans:1},
+  {ask:'¿Qué produce la rotación de la Tierra?',opts:['Las estaciones','Las mareas','El día y la noche 🌓','Las lluvias'],ans:2},
+  {ask:'¿Cómo gira la Tierra en la rotación?',opts:['Alrededor del Sol','Sobre sí misma 🔄','Alrededor de la Luna','Por el espacio'],ans:1},
+  {ask:'¿Un día completo (24 horas) corresponde a qué movimiento?',opts:['Traslación','La Luna','Rotación 🔄','Un año'],ans:2},
+  {ask:'¿Cuándo es de noche en un lugar de la Tierra?',opts:['Cuando llueve','Cuando hace frío','Cuando ese lugar mira al Sol','Cuando ese lugar no mira al Sol 🌙'],ans:3},
+];
+let rotItems,rotIdx;
+function initRot(){rotItems=shuffle(ROT_Qs);rotIdx=0;$('fb1').textContent='';$('btn1').disabled=true;renderRotProg();showRotQ()}
+function renderRotProg(){$('rotProg').innerHTML=rotItems.map((_,i)=>`<div class="pdot" id="rp_${i}"></div>`).join('')}
+function showRotQ(){
+  if(rotIdx>=rotItems.length){endRot();return}
+  const q=rotItems[rotIdx];
+  $('rotQ').textContent=q.ask;$('fb1').textContent='';
+  $('rotChoices').innerHTML=q.opts.map((o,i)=>`<button class="tap-btn" onclick="ansRot(${i})">${o}</button>`).join('');
+  speak(q.ask);
+}
+function ansRot(i){
+  const q=rotItems[rotIdx],dot=$('rp_'+rotIdx);
+  $('rotChoices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=true);
+  if(i===q.ans){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb1').className='fb ok';$('fb1').textContent='✅ ¡Correcto!';speak('¡Correcto!');rotIdx++;setTimeout(showRotQ,1400);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb1').className='fb no';$('fb1').textContent='❌ ¡Casi! La respuesta correcta es: '+q.opts[q.ans];speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb1').textContent='';$('rotChoices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endRot(){markDone(1);$('fb1').className='fb ok';$('fb1').textContent='🎉 ¡Genial! ¡Ya conoces la rotación!';speak('¡Genial!');setTimeout(()=>$('btn1').disabled=false,700)}
+initRot();
+
+/* Fase 2: Traslación */
+const TRA_Qs=[
+  {ask:'¿Cuánto dura el movimiento de traslación?',opts:['24 horas','12 meses / 365 días 📅','28 días','7 días'],ans:1},
+  {ask:'¿Qué produce la traslación de la Tierra?',opts:['El día y la noche','Las tormentas','Las 4 estaciones del año 🍂','Los terremotos'],ans:2},
+  {ask:'¿Alrededor de qué gira la Tierra en la traslación?',opts:['La Luna','Otro planeta','El Sol ☀️','Sobre sí misma'],ans:2},
+  {ask:'¿Cuántas estaciones produce la traslación?',opts:['2','3','4 🌸☀️🍂❄️','5'],ans:2},
+  {ask:'¿Cuál de estas es una estación del año producida por la traslación?',opts:['Día','Noche','Madrugada','Verano ☀️'],ans:3},
+];
+let traItems,traIdx;
+function initTra(){traItems=shuffle(TRA_Qs);traIdx=0;$('fb2').textContent='';$('btn2').disabled=true;renderTraProg();showTraQ()}
+function renderTraProg(){$('traProg').innerHTML=traItems.map((_,i)=>`<div class="pdot" id="tp_${i}"></div>`).join('')}
+function showTraQ(){
+  if(traIdx>=traItems.length){endTra();return}
+  const q=traItems[traIdx];
+  $('traQ').textContent=q.ask;$('fb2').textContent='';
+  $('traChoices').innerHTML=q.opts.map((o,i)=>`<button class="tap-btn" onclick="ansTra(${i})">${o}</button>`).join('');
+  speak(q.ask);
+}
+function ansTra(i){
+  const q=traItems[traIdx],dot=$('tp_'+traIdx);
+  $('traChoices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=true);
+  if(i===q.ans){
+    flash('g');addScore(12);dot&&dot.classList.add('ok');
+    $('fb2').className='fb ok';$('fb2').textContent='✅ ¡Correcto!';speak('¡Correcto!');traIdx++;setTimeout(showTraQ,1400);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb2').className='fb no';$('fb2').textContent='❌ ¡Casi! La respuesta correcta es: '+q.opts[q.ans];speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&dot.classList.remove('ng');$('fb2').textContent='';$('traChoices').querySelectorAll('.tap-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTra(){markDone(2);$('fb2').className='fb ok';$('fb2').textContent='🎉 ¡Perfecto! ¡Ya conoces la traslación!';speak('¡Perfecto!');setTimeout(()=>$('btn2').disabled=false,700)}
+
+/* Fase 3: Sort rotación/traslación */
+const SORT3=[
+  {emoji:'🔄',text:'La Tierra gira sobre sí misma como una peonza.',target:'rotacion'},
+  {emoji:'🌍',text:'La Tierra viaja alrededor del Sol describiendo una órbita.',target:'traslacion'},
+  {emoji:'⏱️',text:'Dura 24 horas. ¡Es la duración de un día!',target:'rotacion'},
+  {emoji:'📅',text:'Dura 365 días. ¡Es la duración de un año!',target:'traslacion'},
+  {emoji:'🌓',text:'Produce el día y la noche: una parte con luz solar y otra en sombra.',target:'rotacion'},
+  {emoji:'🍂',text:'Produce las cuatro estaciones: primavera, verano, otoño e invierno.',target:'traslacion'},
+  {emoji:'🌙',text:'Gracias a este movimiento, cada 12 horas amanece y anochece.',target:'rotacion'},
+  {emoji:'🌸',text:'En primavera los días son más largos por la posición de la Tierra.',target:'traslacion'},
+  {emoji:'🌞',text:'La parte de la Tierra que mira al Sol tiene este período del día.',target:'rotacion'},
+  {emoji:'❄️',text:'El invierno ocurre cuando nuestra zona está más lejos del Sol.',target:'traslacion'},
+];
+let sort3Items,sort3Idx;
+function initSort3(){sort3Items=shuffle(SORT3);sort3Idx=0;$('fb3').textContent='';$('btn3').disabled=true;renderSort3Prog();showSort3()}
+function renderSort3Prog(){$('sortProg3').innerHTML=sort3Items.map((_,i)=>`<div class="rpdot" id="sp3_${i}"></div>`).join('')}
+function showSort3(){
+  if(sort3Idx>=sort3Items.length){endSort3();return}
+  const it=sort3Items[sort3Idx];
+  $('sort3Emoji').textContent=it.emoji;$('sort3Text').textContent=it.text;$('fb3').textContent='';
+  renderSort3Prog();const cur=$('sp3_'+sort3Idx);if(cur)cur.style.borderColor='#FFD700';
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false);speak(it.text);
+}
+function ansSort3(choice){
+  const it=sort3Items[sort3Idx],dot=$('sp3_'+sort3Idx);
+  $('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=true);
+  const names={rotacion:'🔄 Rotación',traslacion:'🌍 Traslación'};
+  if(choice===it.target){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb3').className='fb ok';$('fb3').textContent='✅ ¡Muy bien! Es '+names[choice]+'.';speak('¡Muy bien!');sort3Idx++;setTimeout(showSort3,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb3').className='fb no';$('fb3').textContent='❌ ¡Casi! Es '+names[it.target]+'. ¡Inténtalo!';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb3').textContent='';$('sortBtns3').querySelectorAll('.sort-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endSort3(){markDone(3);$('fb3').className='fb ok';$('fb3').textContent='🎉 ¡Fantástico! ¡Dominas los dos movimientos!';speak('¡Fantástico!');setTimeout(()=>$('btn3').disabled=false,700)}
+
+/* Fase 4 */
+const TF4=[
+  {emoji:'🔄',stmt:'La rotación es cuando la Tierra gira sobre sí misma.',ans:true},
+  {emoji:'📅',stmt:'La traslación dura 24 horas.',ans:false},
+  {emoji:'🌓',stmt:'El día y la noche son producidos por la rotación.',ans:true},
+  {emoji:'🌸',stmt:'Las estaciones del año son producidas por la traslación.',ans:true},
+  {emoji:'🔄',stmt:'La rotación dura 365 días.',ans:false},
+  {emoji:'🌍',stmt:'En la traslación, la Tierra gira alrededor del Sol.',ans:true},
+  {emoji:'❄️',stmt:'El invierno es una de las 4 estaciones producidas por la traslación.',ans:true},
+  {emoji:'⏱️',stmt:'La rotación dura exactamente 24 horas.',ans:true},
+  {emoji:'🌙',stmt:'La noche se produce porque la Tierra deja de girar.',ans:false},
+  {emoji:'🌍',stmt:'La Tierra tiene dos movimientos: rotación y traslación.',ans:true},
+];
+let tf4Items,tf4Idx;
+function initTF4(){tf4Items=shuffle(TF4);tf4Idx=0;$('fb4').textContent='';$('btn4').disabled=true;renderTFProg4();showTF4()}
+function renderTFProg4(){$('tfProg4').innerHTML=tf4Items.map((_,i)=>`<div class="rpdot" id="tf4d_${i}"></div>`).join('')}
+function showTF4(){
+  if(tf4Idx>=tf4Items.length){endTF4();return}
+  const it=tf4Items[tf4Idx];
+  $('tf4Emoji').textContent=it.emoji;$('tf4Stmt').textContent=it.stmt;$('fb4').textContent='';
+  renderTFProg4();const cur=$('tf4d_'+tf4Idx);if(cur)cur.style.borderColor='#FFD700';
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false);speak(it.stmt);
+}
+function ansTF4(choice){
+  const it=tf4Items[tf4Idx],dot=$('tf4d_'+tf4Idx);
+  document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=true);
+  if(choice===it.ans){
+    flash('g');addScore(10);dot&&dot.classList.add('ok');
+    $('fb4').className='fb ok';$('fb4').textContent='✅ ¡Correcto! Es '+(it.ans?'verdad':'mentira')+'.';speak('¡Correcto!');tf4Idx++;setTimeout(showTF4,1300);
+  } else {
+    flash('r');dot&&dot.classList.add('ng');
+    $('fb4').className='fb no';$('fb4').textContent='❌ ¡Ojo! Es '+(it.ans?'✅ VERDAD':'❌ MENTIRA')+'.';speak('Inténtalo de nuevo.');
+    setTimeout(()=>{dot&&(dot.classList.remove('ng'),dot.style.borderColor='#FFD700');$('fb4').textContent='';document.querySelectorAll('#phase4 .tf-btn').forEach(b=>b.disabled=false)},1400);
+  }
+}
+function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='🎉 ¡Perfecto! ¡Eres un experto de los movimientos!';speak('¡Eres un experto!');setTimeout(()=>$('btn4').disabled=false,700)}
+
+/* Fase 5 */
+const QUIZ=[
+  {q:'¿Cómo se llama el movimiento en que la Tierra gira sobre sí misma?',opts:['Traslación','Revolución','Rotación 🔄','Órbita'],ans:2,emoji:'🔄'},
+  {q:'¿Cuánto dura la rotación de la Tierra?',opts:['12 horas','24 horas ⏱️','365 días','28 días'],ans:1,emoji:'⏱️'},
+  {q:'¿Qué produce la rotación?',opts:['Las estaciones','El día y la noche 🌓','Los años','Las mareas'],ans:1,emoji:'🌓'},
+  {q:'¿Cómo se llama el movimiento en que la Tierra gira alrededor del Sol?',opts:['Rotación','Órbita','Revolución','Traslación 🌍'],ans:3,emoji:'🌍'},
+  {q:'¿Cuánto dura la traslación de la Tierra?',opts:['24 horas','28 días','365 días 📅','12 horas'],ans:2,emoji:'📅'},
+  {q:'¿Qué produce la traslación?',opts:['El día y la noche','Las lluvias','Las 4 estaciones 🍂','Los terremotos'],ans:2,emoji:'🍂'},
+  {q:'¿Cuántas estaciones produce la traslación?',opts:['2','3','5','4 🌸'],ans:3,emoji:'🌸'},
+  {q:'¿En qué estación hay más calor?',opts:['Invierno','Otoño','Primavera','Verano ☀️'],ans:3,emoji:'☀️'},
+  {q:'¿Cuántos movimientos tiene la Tierra?',opts:['1','2 🌍','3','4'],ans:1,emoji:'🌍'},
+  {q:'La Tierra tarda 365 días en dar una vuelta al Sol. ¿Qué movimiento es ese?',opts:['Rotación','Giro lunar','Traslación 🌍','Revolución'],ans:2,emoji:'☀️'},
+];
+let quizItems,qi,quizCorrect;
+function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
+function showQuizQ(){
+  if(qi>=quizItems.length){endQuiz();return}
+  const q=quizItems[qi];
+  $('quizProg').textContent=`Pregunta ${qi+1} / ${quizItems.length}`;
+  $('quizEmoji').textContent=q.emoji;$('quizQ').textContent=q.q;
+  $('quizOpts').innerHTML=q.opts.map((o,i)=>`<button class="quiz-opt" onclick="quizAnswer(${i})">${o}</button>`).join('');speak(q.q);
+}
+function quizAnswer(i){
+  const q=quizItems[qi],btns=$('quizOpts').querySelectorAll('.quiz-opt');
+  btns.forEach(b=>b.disabled=true);
+  if(i===q.ans){flash('g');addScore(10);quizCorrect++;btns[i].classList.add('correct-ans');$('fb5').className='fb ok';$('fb5').textContent='✅ ¡Muy bien!';speak('¡Muy bien!');}
+  else{flash('r');btns[i].classList.add('wrong-ans');btns[q.ans].classList.add('correct-ans');$('fb5').className='fb no';$('fb5').textContent='❌ La respuesta correcta es: '+q.opts[q.ans];speak('La respuesta correcta es '+q.opts[q.ans]);}
+  qi++;setTimeout(()=>{$('fb5').textContent='';showQuizQ()},2000);
+}
+function endQuiz(){
+  markDone(5);$('quizCard').style.display='none';
+  const pct=Math.round(quizCorrect/quizItems.length*100);
+  let msg,emoji;
+  if(pct===100){msg='¡PERFECTO! ¡Eres un Astrónomo Experto!';emoji='🏆🔄🏆';}
+  else if(pct>=75){msg='¡Genial! ¡Casi perfecto, explorador del espacio!';emoji='🌟🌍🌟';}
+  else if(pct>=50){msg='¡Buen trabajo! Repasa los movimientos un poco más.';emoji='👍🔄';}
+  else{msg='¡Sigue aprendiendo! La Tierra no para de moverse.';emoji='💪🌍';}
+  $('quizDone').style.display='';
+  $('quizDone').innerHTML=`<div style="font-size:2.8rem;margin-bottom:8px">${emoji}</div><strong style="font-size:1.3rem">¡Quiz terminado!</strong><br><br>Has acertado <strong>${quizCorrect} / ${quizItems.length}</strong> (${pct}%)<br>Puntuación: <strong style="color:#FFD700">⭐ ${score}</strong><br><br><span style="font-size:1.1rem">${msg}</span>`;
+  $('finishRow').style.display='flex';speak(msg);
+}
+speak('¡Bienvenido! Hoy vamos a aprender los dos movimientos de la Tierra: la rotación y la traslación.');
+</script>
+</body>
+</html>
