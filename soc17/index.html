@@ -215,14 +215,14 @@ function markDone(t){$('tab'+t).classList.remove('active');$('tab'+t).classList.
 
 /* Fase 1: Continentes y Océanos */
 const CONT1_Qs=[
-  {ask:'¿Cuántos continentes hay en la Tierra?',opts:['4','5','6 🌍','7'],ans:2},
-  {ask:'¿Cuál es el continente más grande del mundo?',opts:['África','América','Europa','Asia 🌏'],ans:3},
-  {ask:'¿Cuántos océanos hay en el mundo?',opts:['3','4','5 🌊','6'],ans:2},
-  {ask:'¿Cuál es el océano más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico 🌊'],ans:3},
-  {ask:'¿Qué océano está entre América y Europa?',opts:['Pacífico','Índico','Ártico','Atlántico 🌊'],ans:3},
-  {ask:'¿En qué continente están España y Francia?',opts:['Asia','América','África','Europa 🌍'],ans:3},
-  {ask:'¿Cómo se llama el mapa plano de toda la Tierra?',opts:['Globo','Planisferio 🗺️','Océano','Continente'],ans:1},
-  {ask:'¿En qué continente está el río Amazonas y Brasil?',opts:['África','Europa','Asia','América 🌎'],ans:3},
+  {ask:'¿Cuántos continentes hay en la Tierra?',opts:['4','5','6','7'],ans:2},
+  {ask:'¿Cuál es el continente más grande del mundo?',opts:['África','América','Europa','Asia'],ans:3},
+  {ask:'¿Cuántos océanos hay en el mundo?',opts:['3','4','5','6'],ans:2},
+  {ask:'¿Cuál es el océano más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico'],ans:3},
+  {ask:'¿Qué océano está entre América y Europa?',opts:['Pacífico','Índico','Ártico','Atlántico'],ans:3},
+  {ask:'¿En qué continente están España y Francia?',opts:['Asia','América','África','Europa'],ans:3},
+  {ask:'¿Cómo se llama el mapa plano de toda la Tierra?',opts:['Globo','Planisferio','Océano','Continente'],ans:1},
+  {ask:'¿En qué continente está el río Amazonas y Brasil?',opts:['África','Europa','Asia','América'],ans:3},
 ];
 let cont1Items,cont1Idx;
 function initCont1(){cont1Items=shuffle(CONT1_Qs);cont1Idx=0;$('fb1').textContent='';$('btn1').disabled=true;renderCont1Prog();showCont1Q()}
@@ -359,18 +359,18 @@ function endSort4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent=
 
 /* Fase 5: Gran Quiz Final */
 const QUIZ=[
-  {q:'¿Cuántos continentes hay en el mundo?',opts:['4','5','6 🌍','7'],ans:2,emoji:'🌍'},
-  {q:'¿Qué capa de la Tierra es el aire que respiramos?',opts:['Geosfera','Hidrosfera','Corteza','Atmósfera 💨'],ans:3,emoji:'💨'},
-  {q:'¿Cómo se llama el movimiento de la Tierra girando sobre sí misma?',opts:['Traslación','Órbita','Rotación 🔄','Revolución'],ans:2,emoji:'🔄'},
-  {q:'¿Cuánto tarda la Luna en orbitar la Tierra?',opts:['24 horas','365 días','7 días','28 días 🌙'],ans:3,emoji:'🌙'},
-  {q:'¿Qué producen las estaciones del año?',opts:['La rotación','Las mareas','La traslación 🌍','La Luna'],ans:2,emoji:'🌸'},
-  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Menguante','Llena 🌕'],ans:3,emoji:'🌕'},
-  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra 🌊','Las montañas','El núcleo'],ans:1,emoji:'🌊'},
-  {q:'¿Qué océano es el más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico 🌊'],ans:3,emoji:'🌊'},
-  {q:'¿Qué produce la rotación de la Tierra?',opts:['Las estaciones','Los terremotos','El día y la noche 🌓','Las mareas'],ans:2,emoji:'🌓'},
-  {q:'¿Qué es la Luna?',opts:['Un planeta','Una estrella','El satélite natural de la Tierra 🌙','Un cometa'],ans:2,emoji:'🌙'},
-  {q:'¿Cuánto dura la traslación de la Tierra?',opts:['24 horas','28 días','365 días 📅','12 meses exactos'],ans:2,emoji:'📅'},
-  {q:'¿Dónde está el núcleo de la Tierra?',opts:['En la superficie','En el manto','En la corteza','En el centro 🟡'],ans:3,emoji:'🟡'},
+  {q:'¿Cuántos continentes hay en el mundo?',opts:['4','5','6','7'],ans:2,emoji:'🌍'},
+  {q:'¿Qué capa de la Tierra es el aire que respiramos?',opts:['Geosfera','Hidrosfera','Corteza','Atmósfera'],ans:3,emoji:'💨'},
+  {q:'¿Cómo se llama el movimiento de la Tierra girando sobre sí misma?',opts:['Traslación','Órbita','Rotación','Revolución'],ans:2,emoji:'🔄'},
+  {q:'¿Cuánto tarda la Luna en orbitar la Tierra?',opts:['24 horas','365 días','7 días','28 días'],ans:3,emoji:'🌙'},
+  {q:'¿Qué producen las estaciones del año?',opts:['La rotación','Las mareas','La traslación','La Luna'],ans:2,emoji:'🌸'},
+  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Menguante','Llena'],ans:3,emoji:'🌕'},
+  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra','Las montañas','El núcleo'],ans:1,emoji:'🌊'},
+  {q:'¿Qué océano es el más grande del mundo?',opts:['Atlántico','Índico','Ártico','Pacífico'],ans:3,emoji:'🌊'},
+  {q:'¿Qué produce la rotación de la Tierra?',opts:['Las estaciones','Los terremotos','El día y la noche','Las mareas'],ans:2,emoji:'🌓'},
+  {q:'¿Qué es la Luna?',opts:['Un planeta','Una estrella','El satélite natural de la Tierra','Un cometa'],ans:2,emoji:'🌙'},
+  {q:'¿Cuánto dura la traslación de la Tierra?',opts:['24 horas','28 días','365 días','12 meses exactos'],ans:2,emoji:'📅'},
+  {q:'¿Dónde está el núcleo de la Tierra?',opts:['En la superficie','En el manto','En la corteza','En el centro'],ans:3,emoji:'🟡'},
 ];
 let quizItems,qi,quizCorrect;
 function buildQuiz(){quizItems=shuffle(QUIZ).slice(0,10);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}

@@ -395,16 +395,16 @@ function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='�
 
 /* Fase 5 */
 const QUIZ=[
-  {q:'¿Cómo se llama el tipo de cuerpo que es la Luna?',opts:['Planeta','Estrella','Satélite natural 🌙','Cometa'],ans:2,emoji:'🌙'},
-  {q:'¿Alrededor de qué gira la Luna?',opts:['El Sol','Venus','Marte','La Tierra 🌍'],ans:3,emoji:'🌍'},
-  {q:'¿Cuánto tarda la Luna en dar una vuelta a la Tierra?',opts:['24 horas','7 días','28 días 🌙','365 días'],ans:2,emoji:'⏱️'},
-  {q:'¿Cuántas fases tiene la Luna?',opts:['2','3','4 🌕','5'],ans:2,emoji:'🔢'},
-  {q:'¿Cómo se llama la fase en que la Luna no se ve?',opts:['Llena','Creciente','Menguante','Nueva 🌑'],ans:3,emoji:'🌑'},
-  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Llena 🌕','Menguante'],ans:2,emoji:'🌕'},
-  {q:'¿Qué significa que la Luna está "creciente"?',opts:['Va disminuyendo','No se ve','Va creciendo 🌒','Está entera'],ans:2,emoji:'🌒'},
-  {q:'¿Qué significa que la Luna está "menguante"?',opts:['Va creciendo','Está entera','No se ve','Va disminuyendo 🌘'],ans:3,emoji:'🌘'},
-  {q:'¿De dónde viene la luz de la Luna?',opts:['La Luna tiene luz propia','Del interior de la Luna','Refleja la luz del Sol ☀️','De las estrellas'],ans:2,emoji:'☀️'},
-  {q:'¿Cuáles son las 4 fases de la Luna?',opts:['Día, noche, amanecer, atardecer','Nueva, creciente, llena, menguante 🌙','Primavera, verano, otoño, invierno','Grande, pequeña, media, entera'],ans:1,emoji:'🌙'},
+  {q:'¿Cómo se llama el tipo de cuerpo que es la Luna?',opts:['Planeta','Estrella','Satélite natural','Cometa'],ans:2,emoji:'🌙'},
+  {q:'¿Alrededor de qué gira la Luna?',opts:['El Sol','Venus','Marte','La Tierra'],ans:3,emoji:'🌍'},
+  {q:'¿Cuánto tarda la Luna en dar una vuelta a la Tierra?',opts:['24 horas','7 días','28 días','365 días'],ans:2,emoji:'⏱️'},
+  {q:'¿Cuántas fases tiene la Luna?',opts:['2','3','4','5'],ans:2,emoji:'🔢'},
+  {q:'¿Cómo se llama la fase en que la Luna no se ve?',opts:['Llena','Creciente','Menguante','Nueva'],ans:3,emoji:'🌑'},
+  {q:'¿Cómo se llama la fase en que la Luna se ve entera?',opts:['Nueva','Creciente','Llena','Menguante'],ans:2,emoji:'🌕'},
+  {q:'¿Qué significa que la Luna está "creciente"?',opts:['Va disminuyendo','No se ve','Va creciendo','Está entera'],ans:2,emoji:'🌒'},
+  {q:'¿Qué significa que la Luna está "menguante"?',opts:['Va creciendo','Está entera','No se ve','Va disminuyendo'],ans:3,emoji:'🌘'},
+  {q:'¿De dónde viene la luz de la Luna?',opts:['La Luna tiene luz propia','Del interior de la Luna','Refleja la luz del Sol','De las estrellas'],ans:2,emoji:'☀️'},
+  {q:'¿Cuáles son las 4 fases de la Luna?',opts:['Día, noche, amanecer, atardecer','Nueva, creciente, llena, menguante','Primavera, verano, otoño, invierno','Grande, pequeña, media, entera'],ans:1,emoji:'🌙'},
 ];
 let quizItems,qi,quizCorrect;
 function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}

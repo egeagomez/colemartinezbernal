@@ -373,16 +373,16 @@ function endTF4(){markDone(4);$('fb4').className='fb ok';$('fb4').textContent='�
 
 /* Fase 5 */
 const QUIZ=[
-  {q:'¿Cómo se llama la capa de aire que rodea la Tierra?',opts:['Hidrosfera','Geosfera','Atmósfera 💨','Corteza'],ans:2,emoji:'💨'},
-  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra 🌊','Las montañas','El interior de la Tierra'],ans:1,emoji:'🌊'},
-  {q:'¿Qué es la Geosfera?',opts:['El aire','El agua','La parte sólida de la Tierra 🏔️','El núcleo'],ans:2,emoji:'🏔️'},
-  {q:'¿Cuál es la capa más exterior donde vivimos?',opts:['Manto','Núcleo','Atmósfera','Corteza 🟤'],ans:3,emoji:'🟤'},
-  {q:'¿Cómo se llama la roca fundida del interior de la Tierra?',opts:['Corteza','Núcleo','Magma 🔴','Hidrosfera'],ans:2,emoji:'🔴'},
-  {q:'¿Qué hay en el centro exacto de la Tierra?',opts:['Agua','Aire','Roca sólida','Hierro y níquel 🟡'],ans:3,emoji:'🟡'},
-  {q:'¿Cuántas capas externas tiene la Tierra?',opts:['1','2','3 🌍','4'],ans:2,emoji:'🌍'},
-  {q:'¿De qué está formado el núcleo de la Tierra?',opts:['Agua y hielo','Magma y lava','Roca sólida','Hierro y níquel ⚙️'],ans:3,emoji:'⚙️'},
-  {q:'¿Qué capa de la Tierra respiramos?',opts:['Geosfera','Hidrosfera','Atmósfera 💨','Corteza'],ans:2,emoji:'💨'},
-  {q:'¿Qué es el manto de la Tierra?',opts:['Capa de agua','Capa de aire','Capa más exterior','Capa intermedia con magma 🔥'],ans:3,emoji:'🔥'},
+  {q:'¿Cómo se llama la capa de aire que rodea la Tierra?',opts:['Hidrosfera','Geosfera','Atmósfera','Corteza'],ans:2,emoji:'💨'},
+  {q:'¿Qué es la Hidrosfera?',opts:['La capa de aire','Toda el agua de la Tierra','Las montañas','El interior de la Tierra'],ans:1,emoji:'🌊'},
+  {q:'¿Qué es la Geosfera?',opts:['El aire','El agua','La parte sólida de la Tierra','El núcleo'],ans:2,emoji:'🏔️'},
+  {q:'¿Cuál es la capa más exterior donde vivimos?',opts:['Manto','Núcleo','Atmósfera','Corteza'],ans:3,emoji:'🟤'},
+  {q:'¿Cómo se llama la roca fundida del interior de la Tierra?',opts:['Corteza','Núcleo','Magma','Hidrosfera'],ans:2,emoji:'🔴'},
+  {q:'¿Qué hay en el centro exacto de la Tierra?',opts:['Agua','Aire','Roca sólida','Hierro y níquel'],ans:3,emoji:'🟡'},
+  {q:'¿Cuántas capas externas tiene la Tierra?',opts:['1','2','3','4'],ans:2,emoji:'🌍'},
+  {q:'¿De qué está formado el núcleo de la Tierra?',opts:['Agua y hielo','Magma y lava','Roca sólida','Hierro y níquel'],ans:3,emoji:'⚙️'},
+  {q:'¿Qué capa de la Tierra respiramos?',opts:['Geosfera','Hidrosfera','Atmósfera','Corteza'],ans:2,emoji:'💨'},
+  {q:'¿Qué es el manto de la Tierra?',opts:['Capa de agua','Capa de aire','Capa más exterior','Capa intermedia con magma'],ans:3,emoji:'🔥'},
 ];
 let quizItems,qi,quizCorrect;
 function buildQuiz(){quizItems=shuffle(QUIZ);qi=0;quizCorrect=0;$('quizDone').style.display='none';$('finishRow').style.display='none';$('fb5').textContent='';$('quizCard').style.display='';showQuizQ()}
