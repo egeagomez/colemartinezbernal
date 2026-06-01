@@ -25,7 +25,7 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 .flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
 .flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
 .flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
-/* Learn: dialogue cards */
+/* Learn */
 .learn-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
 .l-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
 .l-dot.cur{background:#FFD700}.l-dot.seen{background:#42a5f5}
@@ -43,18 +43,26 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 .nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
 .spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
-/* Quiz */
-.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;margin-bottom:10px}
-.q-dialogue{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+/* Quiz Phase 2 */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:14px;margin-bottom:10px}
+/* Context strip: shows what the character wants */
+.ctx-strip{display:flex;align-items:center;gap:10px;background:rgba(255,215,0,.1);border:2px solid #FFD700;border-radius:12px;padding:8px 12px;margin-bottom:10px}
+.ctx-em{font-size:2.4rem;flex-shrink:0}
+.ctx-text{font-size:1rem;color:#FFD700;font-weight:bold;line-height:1.3}
+.ctx-text span{color:#90caf9;font-size:.85rem;font-weight:normal;display:block}
+.friend-label{font-size:.85rem;color:#90caf9;margin-bottom:4px;text-align:center}
+.q-dialogue{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
 .q-bubble{border-radius:18px;padding:10px 14px;font-size:1.15rem;font-weight:bold;line-height:1.4}
 .q-bubble.q{background:linear-gradient(135deg,#1565c0,#0d47a1);border:2px solid #42a5f5;border-bottom-left-radius:4px}
-.q-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:4px}
+.q-prog{font-size:.85rem;color:#90caf9;text-align:center}
 .opt-grid{display:grid;grid-template-columns:1fr;gap:8px;width:100%}
 .opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:12px 14px;cursor:pointer;font-family:inherit;font-size:1rem;color:#fff;font-weight:bold;transition:transform .1s;text-align:left}
 .opt-btn:hover:not([disabled]){transform:scale(1.02);border-color:#90caf9}
 .opt-btn:disabled{cursor:default}
 .opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
 .opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+/* Phase 3 */
+.opt-grid.wide{grid-template-columns:1fr}
 .fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
 .recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.98rem;line-height:1.6}
 </style>
@@ -87,10 +95,19 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
   <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>💬 Start Practice! →</button>
 </div>
 
-<!-- Phase 2: complete the dialogue -->
+<!-- Phase 2: context + question → pick correct reply -->
 <div class="phase" id="phase2">
-  <p class="ph-title">Choose the correct reply! 💬</p>
+  <p class="ph-title">What does the person say? Read the situation carefully! 💬</p>
   <div class="q-box">
+    <!-- What the character wants (makes the answer unambiguous) -->
+    <div class="ctx-strip">
+      <div class="ctx-em" id="q2CtxEm"></div>
+      <div class="ctx-text">
+        <span id="q2CtxName"></span>
+        <span id="q2CtxWants"></span>
+      </div>
+    </div>
+    <div class="friend-label">A friend asks:</div>
     <div class="q-dialogue">
       <div style="font-size:1.8rem">🙋</div>
       <div class="q-bubble q" id="q2Q"></div>
@@ -101,17 +118,18 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
   <div class="fb" id="fb2"></div>
 </div>
 
-<!-- Phase 3: what is the question? -->
+<!-- Phase 3: given the answer, what was the question? -->
 <div class="phase" id="phase3">
-  <p class="ph-title">What did A say? Choose the right question! 🎯</p>
+  <p class="ph-title">What did the friend ask? Choose the right question! 🎯</p>
   <div class="q-box">
+    <div class="friend-label">The reply was:</div>
     <div class="q-dialogue" style="justify-content:flex-end">
       <div class="q-bubble q" id="q3A" style="border-radius:18px 18px 4px 18px"></div>
       <div style="font-size:1.8rem">🙋</div>
     </div>
     <div class="q-prog" id="q3Prog">Question 1 of 8</div>
   </div>
-  <div class="opt-grid" id="q3Grid"></div>
+  <div class="opt-grid wide" id="q3Grid"></div>
   <div class="fb" id="fb3"></div>
   <div class="fin" id="fin" style="display:none">
     <div style="font-size:3rem">🎉</div>
@@ -154,39 +172,88 @@ const LEARN_CARDS = [
   },
 ];
 
-const ACTIVITIES = [
-  { phrase:'play the guitar', em:'🎸' },
-  { phrase:'read a comic',    em:'📖' },
-  { phrase:'make a model',    em:'🏗️' },
-  { phrase:'play a board game',em:'🎲'},
-  { phrase:'climb a tree',    em:'🧗' },
-  { phrase:'do yoga',         em:'🧘' },
-  { phrase:'swim in the lake',em:'🏊' },
-  { phrase:'go for a walk',   em:'🚶' },
-];
-
-// Phase 2: given question → pick answer
+// ── Phase 2 ────────────────────────────────────────────────────────────
+// Each item shows the character's preference → the question from a friend
+// → only ONE of the options is logically consistent with that preference.
 const Q2_DATA = [
-  { q:'Do you want to play the guitar?',     correct:'No, thank you. I want to read a comic.',   wrong:['Yes, I want to.','No, thank you. I want to make a model.','No, thank you. I want to play a board game.'], note:'No, thank you. I want to read a comic.' },
-  { q:'Do you want to read a comic?',        correct:'Yes, I want to.',                           wrong:['No, thank you. I want to play the guitar.','No, thank you. I want to make a model.','Yes, I don\'t want to.'], note:'Yes, I want to.' },
-  { q:'Do you want to make a model?',        correct:'No, thank you. I want to play the guitar.',wrong:['Yes, I want to.','No, thank you. I want to swim.','No, I want to.'], note:'No, thank you. I want to play the guitar.' },
-  { q:'Do you want to play a board game?',   correct:'Yes, I want to.',                          wrong:['No, thank you. I want to play a board game.','Yes, thank you.','No, I want to.'], note:'Yes, I want to.' },
-  { q:'Do you want to climb a tree?',        correct:'No, thank you. I want to do yoga.',         wrong:['Yes, I don\'t want to.','No, thank you. I want to climb a tree.','No, thank you.'], note:'No, thank you. I want to do yoga.' },
-  { q:'Do you want to swim in the lake?',    correct:'Yes, I want to.',                           wrong:['No, thank you. I want to swim.','Yes, I don\'t.','No, I want to swim.'], note:'Yes, I want to.' },
-  { q:'Do you want to go for a walk?',       correct:'No, thank you. I want to play the guitar.',wrong:['No, thank you. I want to go for a walk.','Yes, I don\'t want to.','No, thank you. I want to.'], note:'No, thank you. I want to play the guitar.' },
-  { q:'Do you want to do yoga?',             correct:'Yes, I want to.',                           wrong:['No, thank you. I want to do yoga.','Yes, thank you.','No, I want to.'], note:'Yes, I want to.' },
+  {
+    ctxEm:'🎸', ctxName:'Tom',     ctxWants:'Tom wants to play the guitar.',
+    q:'Do you want to read a comic?',
+    correct:'No, thank you. I want to play the guitar.',
+    wrong:['Yes, I want to.', 'No, thank you. I want to make a model.']
+  },
+  {
+    ctxEm:'📖', ctxName:'Lily',    ctxWants:'Lily wants to read a comic.',
+    q:'Do you want to read a comic?',
+    correct:'Yes, I want to.',
+    wrong:['No, thank you. I want to play the guitar.', 'No, thank you. I want to make a model.']
+  },
+  {
+    ctxEm:'🏗️', ctxName:'Sam',     ctxWants:'Sam wants to make a model.',
+    q:'Do you want to play a board game?',
+    correct:'No, thank you. I want to make a model.',
+    wrong:['Yes, I want to.', 'No, thank you. I want to read a comic.']
+  },
+  {
+    ctxEm:'🎲', ctxName:'Emma',    ctxWants:'Emma wants to play a board game.',
+    q:'Do you want to play a board game?',
+    correct:'Yes, I want to.',
+    wrong:['No, thank you. I want to make a model.', 'No, thank you. I want to play the guitar.']
+  },
+  {
+    ctxEm:'🧘', ctxName:'Ben',     ctxWants:'Ben wants to do yoga.',
+    q:'Do you want to climb a tree?',
+    correct:'No, thank you. I want to do yoga.',
+    wrong:['Yes, I want to.', 'No, thank you. I want to go for a walk.']
+  },
+  {
+    ctxEm:'🏊', ctxName:'Grace',   ctxWants:'Grace wants to swim in the lake.',
+    q:'Do you want to swim in the lake?',
+    correct:'Yes, I want to.',
+    wrong:['No, thank you. I want to do yoga.', 'No, thank you. I want to go for a walk.']
+  },
+  {
+    ctxEm:'🎸', ctxName:'Jack',    ctxWants:'Jack wants to play the guitar.',
+    q:'Do you want to go for a walk?',
+    correct:'No, thank you. I want to play the guitar.',
+    wrong:['Yes, I want to.', 'No, thank you. I want to read a comic.']
+  },
+  {
+    ctxEm:'🧘', ctxName:'Rosa',    ctxWants:'Rosa wants to do yoga.',
+    q:'Do you want to do yoga?',
+    correct:'Yes, I want to.',
+    wrong:['No, thank you. I want to play the guitar.', 'No, thank you. I want to go for a walk.']
+  },
 ];
 
-// Phase 3: given answer → pick question
+// ── Phase 3 ────────────────────────────────────────────────────────────
+// Given a reply, choose the grammatically correct question form.
+// Wrong options are incorrect English forms (not alternative valid replies).
 const Q3_DATA = [
-  { a:'Yes, I want to.',                           correct:'Do you want to climb a tree?',        wrong:['Do you want to climb trees?','Want you to climb a tree?','Climb a tree?'] },
-  { a:'No, thank you. I want to read a comic.',    correct:'Do you want to play the guitar?',     wrong:['Do you want to read a comic?','Do you want to make a model?','Do you want to play a board game?'] },
-  { a:'Yes, I want to.',                           correct:'Do you want to play table tennis?',   wrong:['Do you want play table tennis?','Play table tennis?','You want to play table tennis?'] },
-  { a:'No, thank you. I want to make a model.',    correct:'Do you want to play a board game?',   wrong:['Do you want to make a model?','Do you want to play the guitar?','Do you want to read a comic?'] },
-  { a:'Yes, I want to.',                           correct:'Do you want to go for a walk?',       wrong:['Go for a walk?','You want to go for a walk?','Do you want going for a walk?'] },
-  { a:'No, thank you. I want to do yoga.',         correct:'Do you want to play basketball?',     wrong:['Do you want to do yoga?','Do you want to swim?','Do you want to play volleyball?'] },
-  { a:'Yes, I want to.',                           correct:'Do you want to play the guitar?',     wrong:['Do you want to plays the guitar?','Want you to play the guitar?','Do you want play the guitar?'] },
-  { a:'No, thank you. I want to sail a boat.',     correct:'Do you want to swim in the lake?',    wrong:['Do you want to sail a boat?','Do you want to play volleyball?','Do you want to climb a tree?'] },
+  { a:'Yes, I want to.',
+    correct:'Do you want to climb a tree?',
+    wrong:['Do you want climb a tree?','Want you to climb a tree?','Do you want to climbing?'] },
+  { a:'No, thank you. I want to read a comic.',
+    correct:'Do you want to play the guitar?',
+    wrong:['Do you want to read a comic?','Do you want to make a model?','Do you want to play a board game?'] },
+  { a:'Yes, I want to.',
+    correct:'Do you want to play table tennis?',
+    wrong:['Do you want play table tennis?','Want to play table tennis?','Do you wants to play table tennis?'] },
+  { a:'No, thank you. I want to make a model.',
+    correct:'Do you want to play a board game?',
+    wrong:['Do you want to make a model?','Do you want to play the guitar?','Do you want to read a comic?'] },
+  { a:'Yes, I want to.',
+    correct:'Do you want to go for a walk?',
+    wrong:['Go for a walk?','You want to go for a walk?','Do you want going for a walk?'] },
+  { a:'No, thank you. I want to do yoga.',
+    correct:'Do you want to play basketball?',
+    wrong:['Do you want to do yoga?','Do you want to swim?','Do you want to play volleyball?'] },
+  { a:'Yes, I want to.',
+    correct:'Do you want to play the guitar?',
+    wrong:['Do you wants to play the guitar?','Want you to play the guitar?','Do you want play the guitar?'] },
+  { a:'No, thank you. I want to sail a boat.',
+    correct:'Do you want to swim in the lake?',
+    wrong:['Do you want to sail a boat?','Do you want to play volleyball?','Do you want to climb a tree?'] },
 ];
 
 let score=0,lcIdx=0,lcSeen=new Set();
@@ -207,6 +274,7 @@ function goTab(n){
   if(n===3)initQ3();
 }
 
+// Phase 1
 function lcRender(){
   const c=LEARN_CARDS[lcIdx];
   const aClass=c.type==='yes'?'a-yes':'a-no';
@@ -245,14 +313,20 @@ function nextQ2(){
     setTimeout(()=>goTab(3),1400);return;
   }
   const d=Q2_DATA[q2Order[q2N]];
+  // Show context (what the character wants)
+  document.getElementById('q2CtxEm').textContent=d.ctxEm;
+  document.getElementById('q2CtxName').textContent=d.ctxName+' wants:';
+  document.getElementById('q2CtxWants').textContent=d.ctxWants;
   document.getElementById('q2Q').textContent=d.q;
   document.getElementById('q2Prog').textContent='Question '+(q2N+1)+' of '+Q2_DATA.length;
   const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
   document.getElementById('q2Grid').innerHTML=opts.map(o=>
-    `<button class="opt-btn" data-opt="${o}" onclick="checkQ2(this,'${d.correct.replace(/'/g,"\\'")}')">🗣️ ${o}</button>`).join('');
+    `<button class="opt-btn" data-opt="${o.replace(/'/g,'&#39;')}" onclick="checkQ2(this)">🗣️ ${o}</button>`).join('');
   document.getElementById('fb2').textContent='';
+  document.getElementById('q2Grid').dataset.correct=d.correct;
 }
-function checkQ2(btn,correct){
+function checkQ2(btn){
+  const correct=document.getElementById('q2Grid').dataset.correct;
   document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>b.disabled=true);
   const ok=btn.dataset.opt===correct;
   if(ok){btn.classList.add('correct');q2OK++;upScore(10);flash(true);
@@ -279,10 +353,12 @@ function nextQ3(){
   document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+Q3_DATA.length;
   const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
   document.getElementById('q3Grid').innerHTML=opts.map(o=>
-    `<button class="opt-btn" data-opt="${o}" onclick="checkQ3(this,'${d.correct.replace(/'/g,"\\'")}')">❓ ${o}</button>`).join('');
+    `<button class="opt-btn" data-opt="${o.replace(/'/g,'&#39;')}" onclick="checkQ3(this)">❓ ${o}</button>`).join('');
   document.getElementById('fb3').textContent='';
+  document.getElementById('q3Grid').dataset.correct=d.correct;
 }
-function checkQ3(btn,correct){
+function checkQ3(btn){
+  const correct=document.getElementById('q3Grid').dataset.correct;
   document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>b.disabled=true);
   const ok=btn.dataset.opt===correct;
   if(ok){btn.classList.add('correct');q3OK++;upScore(10);flash(true);
