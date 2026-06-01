@@ -44,11 +44,18 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 .nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
 .spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
-/* Quiz */
-.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;margin-bottom:10px}
-.q-scene{font-size:3rem;text-align:center;margin-bottom:6px}
-.q-said{background:rgba(0,0,0,.3);border:2px solid #2979ff;border-radius:14px;padding:10px 14px;font-size:1.2rem;font-weight:bold;color:#FFD700;text-align:center;margin-bottom:8px}
-.q-prog{font-size:.85rem;color:#90caf9;text-align:center}
+/* Quiz Phase 2 */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:14px;margin-bottom:10px}
+/* Story context strip */
+.ctx-strip{background:rgba(255,215,0,.1);border:2px solid #FFD700;border-radius:12px;padding:8px 12px;margin-bottom:10px;font-size:.95rem;color:#FFD700;font-weight:bold;text-align:center;line-height:1.4}
+.ctx-strip .scene{font-size:1.8rem;display:block;margin-bottom:3px}
+.ctx-strip .situation{color:#90caf9;font-size:.85rem;font-weight:normal}
+/* Spoken line */
+.spoken-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.spoken-bubble{border-radius:16px;padding:10px 14px;font-size:1.15rem;font-weight:bold;line-height:1.4;background:linear-gradient(135deg,#1565c0,#0d47a1);border:2px solid #42a5f5;border-bottom-left-radius:4px}
+/* "What do they say next?" label */
+.next-label{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:6px}
+.q-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-top:4px}
 .opt-grid{display:grid;grid-template-columns:1fr;gap:8px;width:100%}
 .opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:12px 14px;cursor:pointer;font-family:inherit;font-size:1rem;color:#fff;font-weight:bold;transition:transform .1s;text-align:left}
 .opt-btn:hover:not([disabled]){transform:scale(1.02);border-color:#90caf9}
@@ -97,12 +104,19 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
   <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>🔗 Start Matching! →</button>
 </div>
 
-<!-- Phase 2: match question → answer -->
+<!-- Phase 2: story context + line → what comes next? -->
 <div class="phase" id="phase2">
-  <p class="ph-title">Choose the correct reply! 🔗</p>
+  <p class="ph-title">What comes next in the story? Read the scene! 🔗</p>
   <div class="q-box">
-    <div class="q-scene" id="q2Scene"></div>
-    <div class="q-said" id="q2Said"></div>
+    <div class="ctx-strip">
+      <span class="scene" id="q2Scene"></span>
+      <span class="situation" id="q2Situation"></span>
+    </div>
+    <div class="spoken-row">
+      <div style="font-size:1.8rem" id="q2SpeakerEm"></div>
+      <div class="spoken-bubble" id="q2Said"></div>
+    </div>
+    <div class="next-label" id="q2NextLabel"></div>
     <div class="q-prog" id="q2Prog">Question 1 of 8</div>
   </div>
   <div class="opt-grid" id="q2Grid"></div>
@@ -171,15 +185,89 @@ const LEARN_PHRASES = [
   },
 ];
 
+// ── Phase 2 ────────────────────────────────────────────────────────
+// Every item has story CONTEXT so the correct answer is the ONLY
+// logical / story-accurate continuation.
+// Wrong answers are other story phrases that CANNOT follow this line.
 const Q2_DATA = [
-  { scene:'❓',said:'Can you help me, please?', correct:'Yes, I can.', wrong:["Yes, I can't.",'Yes, I want to.','No, thank you.'] },
-  { scene:'🏕️',said:'Whose turn is it?',       correct:"It's your turn.",wrong:["It's my turn now.",'Your turn is it.','It is you turn.'] },
-  { scene:'⛵',said:'I want to sail a boat.',   correct:'I want to climb a tree.',wrong:["I can't sail a boat.",'I want to swim.','I don\'t want to sail.'] },
-  { scene:'🔵',said:"I don't want to swim.",   correct:'I want to try the zorb ball!',wrong:['I want to swim.','I want to play volleyball.','I can\'t swim.'] },
-  { scene:'❓',said:'Can you help me, please?', correct:'Yes, I can.', wrong:["No, I can't.",'No, thank you.','Yes, you can.'] },
-  { scene:'🏕️',said:'Whose turn is it now?',   correct:"It's your turn, Grace.",wrong:["It's my turn, Grace.",'Grace is your turn.','Your turn is Grace.'] },
-  { scene:'⛵',said:"I can't stop the boat!",  correct:'Can you help me, please?',wrong:['I want to stop the boat.','I don\'t want to stop.','Help the boat, please!'] },
-  { scene:'🏐',said:"I don't want to play volleyball.", correct:'I want to try the zorb ball!',wrong:['I want to play volleyball.','I don\'t want to try.','I want to swim.'] },
+  {
+    scene:'🏠',
+    situation:'Panel 1 — Two children choose activities.',
+    speakerEm:'👦', said:'I want to sail a boat.',
+    nextLabel:'The other child says:',
+    correct:'I want to climb a tree.',
+    wrong:["Can you help me, please?", "Whose turn is it?"]
+    // wrong options are questions that cannot be replies to a "want to" statement
+  },
+  {
+    scene:'⛵🌊',
+    situation:'Panel 4 — Sam is in the zorb ball on the water and cannot stop!',
+    speakerEm:'😱', said:"I can't stop the boat!",
+    nextLabel:'So Sam shouts:',
+    correct:'Can you help me, please?',
+    wrong:["I want to try the zorb ball!", "It's your turn, Grace."]
+    // wrong: "I want to try the zorb ball" is a desire, not a cry for help
+    // "It's your turn, Grace." is from a completely different scene
+  },
+  {
+    scene:'🔵',
+    situation:"Panel 5 — A child doesn't want to swim.",
+    speakerEm:'👦', said:"I don't want to swim.",
+    nextLabel:'They add what they WANT instead:',
+    correct:'I want to try the zorb ball!',
+    wrong:["I want to swim.", "I can't stop the boat!"]
+    // wrong 1: contradicts "I don't want to swim" directly
+    // wrong 2: shouting about a boat makes no sense as a preference here
+  },
+  {
+    scene:'🏐',
+    situation:"Panel 6 — Another child doesn't want to play volleyball.",
+    speakerEm:'👧', said:"I don't want to play volleyball.",
+    nextLabel:'They add what they WANT instead:',
+    correct:'I want to try the zorb ball!',
+    wrong:["I want to play volleyball.", "I can't stop the boat!"]
+    // wrong 1: contradicts "I don't want to play volleyball" directly
+    // wrong 2: makes no sense as a preference statement
+  },
+  {
+    scene:'⛵🌊',
+    situation:'Panel 7 — Sam is stuck on the water. He asks the squirrel for help.',
+    speakerEm:'🐿️', said:'Can you help me, please?',
+    nextLabel:'The squirrel answers:',
+    correct:'Yes, I can.',
+    wrong:["I can't stop the boat!", "Whose turn is it?"]
+    // wrong 1: what SAM said earlier — the squirrel cannot say this
+    // wrong 2: from a different scene, not a reply to a help request
+  },
+  {
+    scene:'🏕️',
+    situation:'Panel 8 — Everyone wants to try the zorb ball. Sam asks:',
+    speakerEm:'👦', said:'Whose turn is it now?',
+    nextLabel:'Someone replies:',
+    correct:"It's your turn, Grace.",
+    wrong:["I want to try the zorb ball!", "Yes, I can."]
+    // wrong 1: "I want to try" is a desire, not an answer to "Whose turn?"
+    // wrong 2: "Yes, I can." answers a yes/no question, not "Whose turn?"
+  },
+  {
+    scene:'⛵🌊',
+    situation:"Panel 7 (again) — Sam asks the squirrel: 'Can you help me, please?'",
+    speakerEm:'🐿️', said:'Can you help me, please?',
+    nextLabel:'The squirrel replies:',
+    correct:'Yes, I can.',
+    wrong:["Whose turn is it?", "I want to climb a tree."]
+    // wrong: clearly unrelated to a request for help
+  },
+  {
+    scene:'🏕️',
+    situation:"Panel 8 — It is Grace's turn for the zorb ball.",
+    speakerEm:'👦', said:'Whose turn is it now?',
+    nextLabel:'The correct reply is:',
+    correct:"It's your turn, Grace.",
+    wrong:["It's your turn, Sam.", "I can't stop the boat!"]
+    // wrong 1: wrong name — tests if kids remember it is GRACE's turn
+    // wrong 2: completely different scene
+  },
 ];
 
 const FILL_Q = [
@@ -237,8 +325,7 @@ function lcRender(){
 function lcMove(d){lcIdx=Math.max(0,Math.min(LEARN_PHRASES.length-1,lcIdx+d));lcRender();}
 function speakCard(){
   const p=LEARN_PHRASES[lcIdx];
-  const text=p.exchange.map(e=>e.text).join('. ');
-  speak(text);
+  speak(p.exchange.map(e=>e.text).join('. '));
 }
 lcRender();
 
@@ -252,11 +339,14 @@ function nextQ2(){
   }
   const d=Q2_DATA[q2Order[q2N]];
   document.getElementById('q2Scene').textContent=d.scene;
+  document.getElementById('q2Situation').textContent=d.situation;
+  document.getElementById('q2SpeakerEm').textContent=d.speakerEm;
   document.getElementById('q2Said').textContent='"'+d.said+'"';
+  document.getElementById('q2NextLabel').textContent=d.nextLabel;
   document.getElementById('q2Prog').textContent='Question '+(q2N+1)+' of '+Q2_DATA.length;
   const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
   document.getElementById('q2Grid').innerHTML=opts.map(o=>
-    `<button class="opt-btn" data-opt="${o.replace(/"/g,'&quot;')}" onclick="checkQ2(this)">"${o}"</button>`).join('');
+    `<button class="opt-btn" data-opt="${o.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="checkQ2(this)">"${o}"</button>`).join('');
   document.getElementById('fb2').textContent='';
   document.getElementById('q2Grid').dataset.correct=d.correct;
 }
@@ -265,11 +355,11 @@ function checkQ2(btn){
   document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>b.disabled=true);
   const ok=btn.dataset.opt===correct;
   if(ok){btn.classList.add('correct');q2OK++;upScore(10);flash(true);
-    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent='✅ '+correct;
+    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent='✅ "'+correct+'"';
     speak(correct);
   }else{btn.classList.add('wrong');
     document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
-    flash(false);document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent='❌ '+correct;
+    flash(false);document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent='❌ "'+correct+'"';
   }
   q2N++;setTimeout(nextQ2,1800);
 }
