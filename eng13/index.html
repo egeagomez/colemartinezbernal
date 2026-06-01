@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🗣️ Do You Want To?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+/* Learn: dialogue cards */
+.learn-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
+.l-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
+.l-dot.cur{background:#FFD700}.l-dot.seen{background:#42a5f5}
+.dialogue-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #2979ff;border-radius:24px;padding:20px;box-shadow:0 8px 28px rgba(41,121,255,.3)}
+.dlg-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.dlg-row.b{justify-content:flex-end}
+.dlg-avatar{font-size:2rem;flex-shrink:0}
+.dlg-bubble{border-radius:18px;padding:10px 14px;font-size:1.1rem;font-weight:bold;max-width:75%;line-height:1.4}
+.dlg-bubble.q{background:linear-gradient(135deg,#1565c0,#0d47a1);border:2px solid #42a5f5;border-bottom-left-radius:4px}
+.dlg-bubble.a-yes{background:linear-gradient(135deg,#1b5e20,#2e7d32);border:2px solid #69f0ae;border-bottom-right-radius:4px}
+.dlg-bubble.a-no{background:linear-gradient(135deg,#6a1b9a,#4a148c);border:2px solid #ce93d8;border-bottom-right-radius:4px}
+.dlg-es{font-size:.9rem;color:#90caf9;font-style:italic;text-align:center;margin-top:6px}
+.rule-box{background:rgba(41,121,255,.15);border:2px solid #2979ff;border-radius:12px;padding:10px 16px;margin-top:8px;font-size:.9rem;color:#90caf9;text-align:center}
+.learn-nav{display:flex;align-items:center;gap:16px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+/* Quiz */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;margin-bottom:10px}
+.q-dialogue{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.q-bubble{border-radius:18px;padding:10px 14px;font-size:1.15rem;font-weight:bold;line-height:1.4}
+.q-bubble.q{background:linear-gradient(135deg,#1565c0,#0d47a1);border:2px solid #42a5f5;border-bottom-left-radius:4px}
+.q-prog{font-size:.85rem;color:#90caf9;text-align:center;margin-bottom:4px}
+.opt-grid{display:grid;grid-template-columns:1fr;gap:8px;width:100%}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:12px 14px;cursor:pointer;font-family:inherit;font-size:1rem;color:#fff;font-weight:bold;transition:transform .1s;text-align:left}
+.opt-btn:hover:not([disabled]){transform:scale(1.02);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+.recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.98rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🗣️ Do You Want To?</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📖 Learn</div>
+  <div class="p-tab" id="tab2">💬 Complete</div>
+  <div class="p-tab" id="tab3">🎯 Reply</div>
+</div>
+
+<!-- Phase 1: Learn dialogue -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn how to ask and answer! 🗣️</p>
+  <div class="learn-dots" id="lDots"></div>
+  <div class="dialogue-card" id="lCard"></div>
+  <div class="learn-nav">
+    <button class="nav-btn" id="lP" onclick="lcMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="lCnt">1 / 4</span>
+    <button class="nav-btn" id="lN" onclick="lcMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakCard()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>💬 Start Practice! →</button>
+</div>
+
+<!-- Phase 2: complete the dialogue -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Choose the correct reply! 💬</p>
+  <div class="q-box">
+    <div class="q-dialogue">
+      <div style="font-size:1.8rem">🙋</div>
+      <div class="q-bubble q" id="q2Q"></div>
+    </div>
+    <div class="q-prog" id="q2Prog">Question 1 of 8</div>
+  </div>
+  <div class="opt-grid" id="q2Grid"></div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: what is the question? -->
+<div class="phase" id="phase3">
+  <p class="ph-title">What did A say? Choose the right question! 🎯</p>
+  <div class="q-box">
+    <div class="q-dialogue" style="justify-content:flex-end">
+      <div class="q-bubble q" id="q3A" style="border-radius:18px 18px 4px 18px"></div>
+      <div style="font-size:1.8rem">🙋</div>
+    </div>
+    <div class="q-prog" id="q3Prog">Question 1 of 8</div>
+  </div>
+  <div class="opt-grid" id="q3Grid"></div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎉</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">Amazing dialogue!</div>
+    <div style="color:#90caf9">Score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="recommend" id="recommend"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const LEARN_CARDS = [
+  {
+    q:'Do you want to read a comic?',
+    a:'Yes, I want to.',
+    type:'yes',
+    es:'¿Quieres leer un cómic? — Sí, quiero.',
+    rule:'Ask: DO YOU WANT TO + activity? | Say yes: YES, I WANT TO.'
+  },
+  {
+    q:'Do you want to play the guitar?',
+    a:'No, thank you. I want to make a model.',
+    type:'no',
+    es:'¿Quieres tocar la guitarra? — No, gracias. Quiero construir una maqueta.',
+    rule:'Say no: NO, THANK YOU. I WANT TO + different activity.'
+  },
+  {
+    q:'Do you want to play basketball?',
+    a:'No, thank you. I want to go for a walk.',
+    type:'no',
+    es:'¿Quieres jugar al baloncesto? — No, gracias. Quiero dar un paseo.',
+    rule:'Same pattern: NO, THANK YOU. I WANT TO + what you prefer.'
+  },
+  {
+    q:'Do you want to do yoga?',
+    a:'Yes, I want to.',
+    type:'yes',
+    es:'¿Quieres hacer yoga? — Sí, quiero.',
+    rule:'Short answer: YES, I WANT TO. (No need to repeat the activity!)'
+  },
+];
+
+const ACTIVITIES = [
+  { phrase:'play the guitar', em:'🎸' },
+  { phrase:'read a comic',    em:'📖' },
+  { phrase:'make a model',    em:'🏗️' },
+  { phrase:'play a board game',em:'🎲'},
+  { phrase:'climb a tree',    em:'🧗' },
+  { phrase:'do yoga',         em:'🧘' },
+  { phrase:'swim in the lake',em:'🏊' },
+  { phrase:'go for a walk',   em:'🚶' },
+];
+
+// Phase 2: given question → pick answer
+const Q2_DATA = [
+  { q:'Do you want to play the guitar?',     correct:'No, thank you. I want to read a comic.',   wrong:['Yes, I want to.','No, thank you. I want to make a model.','No, thank you. I want to play a board game.'], note:'No, thank you. I want to read a comic.' },
+  { q:'Do you want to read a comic?',        correct:'Yes, I want to.',                           wrong:['No, thank you. I want to play the guitar.','No, thank you. I want to make a model.','Yes, I don\'t want to.'], note:'Yes, I want to.' },
+  { q:'Do you want to make a model?',        correct:'No, thank you. I want to play the guitar.',wrong:['Yes, I want to.','No, thank you. I want to swim.','No, I want to.'], note:'No, thank you. I want to play the guitar.' },
+  { q:'Do you want to play a board game?',   correct:'Yes, I want to.',                          wrong:['No, thank you. I want to play a board game.','Yes, thank you.','No, I want to.'], note:'Yes, I want to.' },
+  { q:'Do you want to climb a tree?',        correct:'No, thank you. I want to do yoga.',         wrong:['Yes, I don\'t want to.','No, thank you. I want to climb a tree.','No, thank you.'], note:'No, thank you. I want to do yoga.' },
+  { q:'Do you want to swim in the lake?',    correct:'Yes, I want to.',                           wrong:['No, thank you. I want to swim.','Yes, I don\'t.','No, I want to swim.'], note:'Yes, I want to.' },
+  { q:'Do you want to go for a walk?',       correct:'No, thank you. I want to play the guitar.',wrong:['No, thank you. I want to go for a walk.','Yes, I don\'t want to.','No, thank you. I want to.'], note:'No, thank you. I want to play the guitar.' },
+  { q:'Do you want to do yoga?',             correct:'Yes, I want to.',                           wrong:['No, thank you. I want to do yoga.','Yes, thank you.','No, I want to.'], note:'Yes, I want to.' },
+];
+
+// Phase 3: given answer → pick question
+const Q3_DATA = [
+  { a:'Yes, I want to.',                           correct:'Do you want to climb a tree?',        wrong:['Do you want to climb trees?','Want you to climb a tree?','Climb a tree?'] },
+  { a:'No, thank you. I want to read a comic.',    correct:'Do you want to play the guitar?',     wrong:['Do you want to read a comic?','Do you want to make a model?','Do you want to play a board game?'] },
+  { a:'Yes, I want to.',                           correct:'Do you want to play table tennis?',   wrong:['Do you want play table tennis?','Play table tennis?','You want to play table tennis?'] },
+  { a:'No, thank you. I want to make a model.',    correct:'Do you want to play a board game?',   wrong:['Do you want to make a model?','Do you want to play the guitar?','Do you want to read a comic?'] },
+  { a:'Yes, I want to.',                           correct:'Do you want to go for a walk?',       wrong:['Go for a walk?','You want to go for a walk?','Do you want going for a walk?'] },
+  { a:'No, thank you. I want to do yoga.',         correct:'Do you want to play basketball?',     wrong:['Do you want to do yoga?','Do you want to swim?','Do you want to play volleyball?'] },
+  { a:'Yes, I want to.',                           correct:'Do you want to play the guitar?',     wrong:['Do you want to plays the guitar?','Want you to play the guitar?','Do you want play the guitar?'] },
+  { a:'No, thank you. I want to sail a boat.',     correct:'Do you want to swim in the lake?',    wrong:['Do you want to sail a boat?','Do you want to play volleyball?','Do you want to climb a tree?'] },
+];
+
+let score=0,lcIdx=0,lcSeen=new Set();
+let q2Order=[],q2N=0,q2OK=0;
+let q3Order=[],q3N=0,q3OK=0;
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;};
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initQ2();
+  if(n===3)initQ3();
+}
+
+function lcRender(){
+  const c=LEARN_CARDS[lcIdx];
+  const aClass=c.type==='yes'?'a-yes':'a-no';
+  document.getElementById('lCard').innerHTML=`
+    <div class="dlg-row">
+      <div class="dlg-avatar">🙋</div>
+      <div class="dlg-bubble q">${c.q}</div>
+    </div>
+    <div class="dlg-row b">
+      <div class="dlg-bubble ${aClass}">${c.a}</div>
+      <div class="dlg-avatar">🙋</div>
+    </div>
+    <div class="dlg-es">${c.es}</div>
+    <div class="rule-box">📌 ${c.rule}</div>`;
+  document.getElementById('lCnt').textContent=(lcIdx+1)+' / '+LEARN_CARDS.length;
+  document.getElementById('lP').disabled=lcIdx===0;
+  document.getElementById('lN').disabled=lcIdx===LEARN_CARDS.length-1;
+  lcSeen.add(lcIdx);
+  document.getElementById('lDots').innerHTML=LEARN_CARDS.map((_,i)=>`<div class="l-dot${i===lcIdx?' cur':lcSeen.has(i)?' seen':''}"></div>`).join('');
+  if(lcSeen.size===LEARN_CARDS.length){
+    document.getElementById('btn1').disabled=false;
+    const f=document.getElementById('fb1');f.className='fb ok';f.textContent='✅ All seen! Ready to practise!';
+  }
+}
+function lcMove(d){lcIdx=Math.max(0,Math.min(LEARN_CARDS.length-1,lcIdx+d));lcRender();}
+function speakCard(){speak(LEARN_CARDS[lcIdx].q+' '+LEARN_CARDS[lcIdx].a);}
+lcRender();
+
+// Phase 2
+function initQ2(){q2N=0;q2OK=0;q2Order=shuffle(Q2_DATA.map((_,i)=>i));nextQ2();}
+function nextQ2(){
+  if(q2N>=Q2_DATA.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 '+q2OK+'/'+Q2_DATA.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const d=Q2_DATA[q2Order[q2N]];
+  document.getElementById('q2Q').textContent=d.q;
+  document.getElementById('q2Prog').textContent='Question '+(q2N+1)+' of '+Q2_DATA.length;
+  const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
+  document.getElementById('q2Grid').innerHTML=opts.map(o=>
+    `<button class="opt-btn" data-opt="${o}" onclick="checkQ2(this,'${d.correct.replace(/'/g,"\\'")}')">🗣️ ${o}</button>`).join('');
+  document.getElementById('fb2').textContent='';
+}
+function checkQ2(btn,correct){
+  document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q2OK++;upScore(10);flash(true);
+    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent='✅ '+correct;
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent='❌ '+correct;
+  }
+  q2N++;setTimeout(nextQ2,1800);
+}
+
+// Phase 3
+function initQ3(){q3N=0;q3OK=0;q3Order=shuffle(Q3_DATA.map((_,i)=>i));nextQ3();}
+function nextQ3(){
+  if(q3N>=Q3_DATA.length){
+    document.getElementById('fin').style.display='block';
+    document.getElementById('finSc').textContent=score;
+    showRecommend(q2OK+q3OK, Q2_DATA.length+Q3_DATA.length);
+    return;
+  }
+  const d=Q3_DATA[q3Order[q3N]];
+  document.getElementById('q3A').textContent=d.a;
+  document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+Q3_DATA.length;
+  const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
+  document.getElementById('q3Grid').innerHTML=opts.map(o=>
+    `<button class="opt-btn" data-opt="${o}" onclick="checkQ3(this,'${d.correct.replace(/'/g,"\\'")}')">❓ ${o}</button>`).join('');
+  document.getElementById('fb3').textContent='';
+}
+function checkQ3(btn,correct){
+  document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q3OK++;upScore(10);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ '+correct;
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ '+correct;
+  }
+  q3N++;setTimeout(nextQ3,1800);
+}
+
+function showRecommend(ok,total){
+  const pct=Math.round(ok/total*100);
+  const el=document.getElementById('recommend');
+  if(pct>=80)el.innerHTML=`<b style="color:#69f0ae">Excellent! ${pct}%</b><br>You can use "Do you want to?" perfectly! 🌟`;
+  else if(pct>=60)el.innerHTML=`<b style="color:#FFD700">Good! ${pct}%</b><br>Practise: <em>Do you want to [activity]? — Yes, I want to. / No, thank you. I want to [activity].</em> 📖`;
+  else el.innerHTML=`<b style="color:#ff5252">Keep practising! ${pct}%</b><br>Remember: ✅ Do you want to...? → Yes, I want to. / No, thank you. I want to... 💪`;
+}
+</script>
+</body>
+</html>

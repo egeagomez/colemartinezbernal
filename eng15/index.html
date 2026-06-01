@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔤 TR- Sounds</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+/* Learn */
+.learn-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
+.l-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
+.l-dot.cur{background:#FFD700}.l-dot.seen{background:#42a5f5}
+.learn-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #2979ff;border-radius:24px;padding:28px 20px;text-align:center;box-shadow:0 8px 28px rgba(41,121,255,.3)}
+.lc-em{font-size:4.5rem;display:block;margin:6px 0}
+.lc-word{font-size:2.4rem;font-weight:bold;color:#fff;margin:6px 0}
+.lc-word .tr{color:#FFD700}
+.lc-es{font-size:1.1rem;color:#90caf9;font-style:italic;margin-top:6px}
+.sound-tip{background:rgba(255,215,0,.1);border:2px solid #FFD700;border-radius:12px;padding:8px 14px;margin-top:10px;font-size:.95rem;color:#FFD700}
+.learn-nav{display:flex;align-items:center;gap:16px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+/* TR or not? */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:20px;text-align:center;margin-bottom:10px}
+.big-word{font-size:2.8rem;font-weight:bold;color:#FFD700;margin-bottom:8px;letter-spacing:2px}
+.q-em{font-size:3.5rem;display:block;margin-bottom:6px}
+.q-prog{font-size:.85rem;color:#90caf9;margin-top:6px}
+.yn-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+.yn-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid;border-radius:16px;padding:18px 8px;cursor:pointer;font-family:inherit;font-size:1.1rem;font-weight:bold;color:#fff;transition:transform .12s}
+.yn-btn.yes{border-color:#69f0ae;background:linear-gradient(145deg,#0a2a14,#1a4a24)}
+.yn-btn.no{border-color:#ff5252;background:linear-gradient(145deg,#2a0a0a,#4a1414)}
+.yn-btn:hover:not([disabled]){transform:scale(1.05)}.yn-btn:disabled{cursor:default;opacity:.5}
+.yn-btn.correct{outline:4px solid #FFD700!important;box-shadow:0 0 16px rgba(255,215,0,.5)!important}
+.yn-btn.wrong{opacity:.3!important;text-decoration:line-through}
+/* Word sort */
+.ws-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;text-align:center;margin-bottom:10px}
+.ws-instruction{font-size:1rem;color:#90caf9;margin-bottom:10px}
+.ws-word{font-size:2rem;font-weight:bold;color:#FFD700;margin-bottom:10px;letter-spacing:3px}
+.ws-em{font-size:3rem;display:block;margin-bottom:8px}
+.ws-prog{font-size:.85rem;color:#90caf9;margin-top:6px}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:14px 8px;cursor:pointer;font-family:inherit;font-size:1.1rem;color:#FFD700;font-weight:bold;transition:transform .1s;letter-spacing:2px}
+.opt-btn:hover:not([disabled]){transform:scale(1.04);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+.recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.98rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🔤 TR- Sounds</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📖 Learn</div>
+  <div class="p-tab" id="tab2">🔍 TR or T?</div>
+  <div class="p-tab" id="tab3">🔤 Which Word?</div>
+</div>
+
+<!-- Phase 1: Learn TR- words -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Learn words with the TR- sound! 🔤</p>
+  <div class="learn-dots" id="lDots"></div>
+  <div class="learn-card" id="lCard"></div>
+  <div class="learn-nav">
+    <button class="nav-btn" id="lP" onclick="lcMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="lCnt">1 / 6</span>
+    <button class="nav-btn" id="lN" onclick="lcMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakCard()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>🔍 Start Practice! →</button>
+</div>
+
+<!-- Phase 2: TR or T? -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Does this word start with TR? 🔍</p>
+  <div class="q-box">
+    <span class="q-em" id="q2Em"></span>
+    <div class="big-word" id="q2Word"></div>
+    <div class="q-prog" id="q2Prog">Word 1 of 12</div>
+  </div>
+  <div class="yn-grid">
+    <button class="yn-btn yes" id="q2Yes" onclick="checkTR(true)">✅ TR!</button>
+    <button class="yn-btn no"  id="q2No"  onclick="checkTR(false)">❌ Just T</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: which is the correct TR- word? -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Choose the correct TR- word! 🔤</p>
+  <div class="ws-box">
+    <div class="ws-em" id="q3Em"></div>
+    <div class="ws-instruction" id="q3Desc"></div>
+    <div class="ws-prog" id="q3Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid" id="q3Grid"></div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎉</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">TR- champion!</div>
+    <div style="color:#90caf9">Score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="recommend" id="recommend"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const TR_WORDS = [
+  { word:'try',      em:'🎯', es:'intentar',   hasTR:true  },
+  { word:'trapeze',  em:'🎪', es:'trapecio',   hasTR:true  },
+  { word:'tree',     em:'🌳', es:'árbol',      hasTR:true  },
+  { word:'train',    em:'🚂', es:'tren',       hasTR:true  },
+  { word:'truck',    em:'🚚', es:'camión',     hasTR:true  },
+  { word:'triangle', em:'🔺', es:'triángulo',  hasTR:true  },
+];
+
+const ALL_WORDS = [
+  { word:'try',      em:'🎯', hasTR:true  },
+  { word:'trapeze',  em:'🎪', hasTR:true  },
+  { word:'tree',     em:'🌳', hasTR:true  },
+  { word:'train',    em:'🚂', hasTR:true  },
+  { word:'truck',    em:'🚚', hasTR:true  },
+  { word:'triangle', em:'🔺', hasTR:true  },
+  { word:'table',    em:'🪑', hasTR:false },
+  { word:'ten',      em:'🔟', hasTR:false },
+  { word:'toy',      em:'🧸', hasTR:false },
+  { word:'touch',    em:'👆', hasTR:false },
+  { word:'time',     em:'⏰', hasTR:false },
+  { word:'town',     em:'🏘️', hasTR:false },
+];
+
+const Q3_DATA = [
+  { em:'🌳', desc:'A plant with a trunk and leaves.', correct:'tree',     wrong:['tray','tram','trot'] },
+  { em:'🎯', desc:'To make an effort to do something.', correct:'try',   wrong:['trip','trim','tray'] },
+  { em:'🎪', desc:'An acrobat swings on this at the circus.', correct:'trapeze', wrong:['train','truck','tree'] },
+  { em:'🚂', desc:'A vehicle that runs on rails.', correct:'train',       wrong:['truck','tree','try'] },
+  { em:'🚚', desc:'A large vehicle that carries things.', correct:'truck', wrong:['train','tree','tray'] },
+  { em:'🔺', desc:'A shape with three sides.', correct:'triangle',        wrong:['trapeze','train','truck'] },
+];
+
+let score=0,lcIdx=0,lcSeen=new Set();
+let q2Order=[],q2N=0,q2OK=0;
+let q3Order=[],q3N=0,q3OK=0;
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;};
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initQ2();
+  if(n===3)initQ3();
+}
+
+function lcRender(){
+  const w=TR_WORDS[lcIdx];
+  const hl=w.word.replace('tr','<span class="tr">tr</span>');
+  document.getElementById('lCard').innerHTML=`
+    <span class="lc-em">${w.em}</span>
+    <div class="lc-word">${hl}</div>
+    <div class="lc-es">${w.es}</div>
+    <div class="sound-tip">🔊 The letters <b>TR</b> make a special sound together!</div>`;
+  document.getElementById('lCnt').textContent=(lcIdx+1)+' / '+TR_WORDS.length;
+  document.getElementById('lP').disabled=lcIdx===0;
+  document.getElementById('lN').disabled=lcIdx===TR_WORDS.length-1;
+  lcSeen.add(lcIdx);
+  document.getElementById('lDots').innerHTML=TR_WORDS.map((_,i)=>`<div class="l-dot${i===lcIdx?' cur':lcSeen.has(i)?' seen':''}"></div>`).join('');
+  if(lcSeen.size===TR_WORDS.length){
+    document.getElementById('btn1').disabled=false;
+    document.getElementById('fb1').className='fb ok';document.getElementById('fb1').textContent='✅ All seen! Ready to practise!';
+  }
+}
+function lcMove(d){lcIdx=Math.max(0,Math.min(TR_WORDS.length-1,lcIdx+d));lcRender();}
+function speakCard(){speak(TR_WORDS[lcIdx].word);}
+lcRender();
+
+function initQ2(){q2N=0;q2OK=0;q2Order=shuffle(ALL_WORDS.map((_,i)=>i));nextQ2();}
+function nextQ2(){
+  if(q2N>=ALL_WORDS.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 '+q2OK+'/'+ALL_WORDS.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const w=ALL_WORDS[q2Order[q2N]];
+  document.getElementById('q2Em').textContent=w.em;
+  document.getElementById('q2Word').textContent=w.word.toUpperCase();
+  document.getElementById('q2Prog').textContent='Word '+(q2N+1)+' of '+ALL_WORDS.length;
+  document.getElementById('q2Yes').disabled=false;
+  document.getElementById('q2No').disabled=false;
+  document.getElementById('q2Yes').classList.remove('correct','wrong');
+  document.getElementById('q2No').classList.remove('correct','wrong');
+  document.getElementById('fb2').textContent='';
+}
+function checkTR(clickedYes){
+  document.getElementById('q2Yes').disabled=true;
+  document.getElementById('q2No').disabled=true;
+  const w=ALL_WORDS[q2Order[q2N]];
+  const ok=clickedYes===w.hasTR;
+  const yBtn=document.getElementById('q2Yes');
+  const nBtn=document.getElementById('q2No');
+  if(ok){
+    (clickedYes?yBtn:nBtn).classList.add('correct');
+    q2OK++;upScore(10);flash(true);
+    const msg=w.hasTR?`✅ Yes! "${w.word}" has TR!`:`✅ Correct! "${w.word}" just starts with T.`;
+    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent=msg;
+    speak(w.word);
+  }else{
+    (clickedYes?yBtn:nBtn).classList.add('wrong');
+    (clickedYes?nBtn:yBtn).classList.add('correct');
+    flash(false);
+    const msg=w.hasTR?`❌ "${w.word}" DOES have TR!`:`❌ "${w.word}" just starts with T, not TR.`;
+    document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent=msg;
+  }
+  q2N++;setTimeout(nextQ2,1700);
+}
+
+function initQ3(){q3N=0;q3OK=0;q3Order=shuffle(Q3_DATA.map((_,i)=>i));nextQ3();}
+function nextQ3(){
+  if(q3N>=Q3_DATA.length){
+    document.getElementById('fin').style.display='block';
+    document.getElementById('finSc').textContent=score;
+    showRecommend(q2OK+q3OK,ALL_WORDS.length+Q3_DATA.length);
+    return;
+  }
+  const d=Q3_DATA[q3Order[q3N]];
+  document.getElementById('q3Em').textContent=d.em;
+  document.getElementById('q3Desc').textContent=d.desc;
+  document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+Q3_DATA.length;
+  const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,3)]);
+  document.getElementById('q3Grid').innerHTML=opts.map(o=>
+    `<button class="opt-btn" data-opt="${o}" onclick="checkQ3(this,'${d.correct}')">${o}</button>`).join('');
+  document.getElementById('fb3').textContent='';
+}
+function checkQ3(btn,correct){
+  document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q3OK++;upScore(15);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ '+correct+'!';
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ It was: '+correct;
+  }
+  q3N++;setTimeout(nextQ3,1700);
+}
+
+function showRecommend(ok,total){
+  const pct=Math.round(ok/total*100);
+  const el=document.getElementById('recommend');
+  if(pct>=80)el.innerHTML=`<b style="color:#69f0ae">Excellent! ${pct}%</b><br>You can spot TR- words perfectly! 🌟`;
+  else if(pct>=60)el.innerHTML=`<b style="color:#FFD700">Good! ${pct}%</b><br>Review the TR- words: <em>try · trapeze · tree · train · truck · triangle</em> 📖`;
+  else el.innerHTML=`<b style="color:#ff5252">Keep practising! ${pct}%</b><br>Remember: <b style="color:#FFD700">TR</b>y · <b style="color:#FFD700">TR</b>apeze · <b style="color:#FFD700">TR</b>ee — listen for the TR sound! 💪`;
+}
+</script>
+</body>
+</html>

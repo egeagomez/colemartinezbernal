@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎓 Grand Review — Unit 5</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:680px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:8px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+/* Question card */
+.q-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;margin-bottom:10px}
+.q-section{font-size:.8rem;color:#FFD700;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.q-em{font-size:3.5rem;display:block;text-align:center;margin-bottom:4px}
+.q-text{font-size:1.3rem;font-weight:bold;color:#fff;text-align:center;margin:6px 0;line-height:1.4}
+.q-text .blank{display:inline-block;min-width:110px;border-bottom:3px solid #42a5f5;color:#FFD700;font-weight:bold;padding:0 4px}
+.q-prog{font-size:.85rem;color:#90caf9;text-align:center}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-grid.wide{grid-template-columns:1fr}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:13px 8px;cursor:pointer;font-family:inherit;font-size:.95rem;color:#fff;font-weight:bold;transition:transform .1s;text-align:left;line-height:1.3}
+.opt-btn:hover:not([disabled]){transform:scale(1.02);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+.opt-em{font-size:2rem;display:block;margin-bottom:2px;text-align:center}
+/* Progress tracker */
+.area-bar{width:100%;display:flex;gap:8px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.area-chip{padding:4px 12px;border-radius:20px;font-size:.82rem;border:2px solid;font-weight:bold}
+.area-chip.vocab{border-color:#42a5f5;color:#42a5f5;background:rgba(66,165,245,.1)}
+.area-chip.grammar{border-color:#ce93d8;color:#ce93d8;background:rgba(206,147,216,.1)}
+.area-chip.dialogue{border-color:#69f0ae;color:#69f0ae;background:rgba(105,240,174,.1)}
+/* Final report */
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:20px;text-align:center;width:100%}
+.report-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
+.report-card{border-radius:14px;padding:12px 8px;text-align:center}
+.report-card.green{background:rgba(105,240,174,.15);border:2px solid #69f0ae}
+.report-card.yellow{background:rgba(255,215,0,.1);border:2px solid #FFD700}
+.report-card.red{background:rgba(255,82,82,.1);border:2px solid #ff5252}
+.report-title{font-size:.8rem;color:#90caf9;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.report-pct{font-size:1.6rem;font-weight:bold}
+.report-label{font-size:.78rem;margin-top:4px;line-height:1.3}
+.rec-box{background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:14px;margin-top:12px;text-align:left;font-size:.95rem;line-height:1.7}
+.rec-item{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🎓 Grand Review</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Vocabulary</div>
+  <div class="p-tab" id="tab2">📝 Grammar</div>
+  <div class="p-tab" id="tab3">💬 Dialogues</div>
+  <div class="p-tab" id="tab4">📊 Results</div>
+</div>
+
+<!-- Phase 1: Vocabulary (8 questions) -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Part 1: Vocabulary — Which activity is this? 📚</p>
+  <div class="area-bar"><div class="area-chip vocab">📚 Vocabulary</div></div>
+  <div class="q-card">
+    <div class="q-section">Find the activity</div>
+    <div class="q-em" id="v1Em"></div>
+    <div class="q-prog" id="v1Prog">Question 1 of 8</div>
+  </div>
+  <div class="opt-grid" id="v1Grid"></div>
+  <div class="fb" id="fb1"></div>
+</div>
+
+<!-- Phase 2: Grammar (6 questions) -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Part 2: Grammar — Complete the sentence! 📝</p>
+  <div class="area-bar"><div class="area-chip grammar">📝 Grammar</div></div>
+  <div class="q-card">
+    <div class="q-section" id="v2Section">Complete the sentence</div>
+    <div class="q-em" id="v2Em"></div>
+    <div class="q-text" id="v2Text"></div>
+    <div class="q-prog" id="v2Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid wide" id="v2Grid"></div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: Dialogues (6 questions) -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Part 3: Dialogues — Choose the correct reply! 💬</p>
+  <div class="area-bar"><div class="area-chip dialogue">💬 Dialogues</div></div>
+  <div class="q-card">
+    <div class="q-section">What's the reply?</div>
+    <div class="q-text" id="v3Q" style="color:#42a5f5;font-size:1.2rem"></div>
+    <div class="q-prog" id="v3Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid wide" id="v3Grid"></div>
+  <div class="fb" id="fb3"></div>
+</div>
+
+<!-- Phase 4: Results -->
+<div class="phase" id="phase4">
+  <p class="ph-title">Your results for Unit 5! 📊</p>
+  <div class="fin" id="fin">
+    <div style="font-size:2.5rem" id="finEmoji">🎉</div>
+    <div style="font-size:1.4rem;font-weight:bold;margin:8px 0;color:#FFD700" id="finTitle">Grand Review Complete!</div>
+    <div style="color:#90caf9">Total score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="report-grid" id="reportGrid"></div>
+    <div class="rec-box" id="recBox"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const ACTS = [
+  { phrase:'climb a tree',     em:'🧗' },
+  { phrase:'sail a boat',      em:'⛵' },
+  { phrase:'play volleyball',  em:'🏐' },
+  { phrase:'swim in the lake', em:'🏊' },
+  { phrase:'play basketball',  em:'🏀' },
+  { phrase:'go for a walk',    em:'🚶' },
+  { phrase:'do yoga',          em:'🧘' },
+  { phrase:'play table tennis',em:'🏓' },
+  { phrase:'play the guitar',  em:'🎸' },
+  { phrase:'read a comic',     em:'📖' },
+  { phrase:'make a model',     em:'🏗️' },
+  { phrase:'play a board game',em:'🎲' },
+];
+
+// Phase 1: Vocabulary — emoji → phrase (8 questions)
+const VOCAB_Q = shuffle(ACTS.map((_,i)=>i)).slice(0,8);
+
+// Phase 2: Grammar questions (6)
+const GRAMMAR_Q = [
+  { em:'🧘', text:'I ___ do yoga.',                   correct:'want to',       opts:['want to','don\'t want to','can','do'] },
+  { em:'🏊', text:"I ___ swim in the lake.",           correct:"don't want to", opts:['want to','don\'t want to','can','do'] },
+  { em:'🎸', text:'I want ___ play the guitar.',       correct:'to',            opts:['to','the','a','do'] },
+  { em:'🏀', text:'She ___ play basketball.',          correct:'wants to',      opts:['wants to','want to','don\'t want to','does want'] },
+  { em:'📖', text:'___ you want to read a comic?',    correct:'Do',            opts:['Do','Can','Want','Are'] },
+  { em:'🚶', text:'No, thank you. I want ___ go for a walk.', correct:'to',    opts:['to','the','a','do'] },
+];
+
+// Phase 3: Dialogue questions (6)
+const DIALOGUE_Q = [
+  { q:'Can you help me, please?',               correct:'Yes, I can.',               wrong:["Yes, I can't.",'No, thank you.','Yes, I want to.'] },
+  { q:'Whose turn is it?',                      correct:"It's your turn.",            wrong:["It's my turn.",'You turn.','Turn is yours.'] },
+  { q:'Do you want to play the guitar?',        correct:'No, thank you. I want to read a comic.', wrong:['No, thank you. I want to play the guitar.','Yes, thank you.','No, I want to.'] },
+  { q:'Do you want to climb a tree?',           correct:'Yes, I want to.',            wrong:["Yes, I don't want to.",'Yes, want to.','No, thank you. I want to climb.'] },
+  { q:'Whose turn is it now?',                  correct:"It's your turn, Grace.",     wrong:["It's my turn, Grace.",'Grace is your turn.',"It's turn your, Grace."] },
+  { q:'Do you want to make a model?',           correct:'No, thank you. I want to play a board game.', wrong:['No, thank you. I want to make a model.','Yes, I don\'t want to.','No, I can\'t.'] },
+];
+
+let score=0;
+let vN=0,vOK=0,vOrder=[];
+let gN=0,gOK=0,gMissed=[];
+let dN=0,dOK=0,dMissed=[];
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initGrammar();
+  if(n===3)initDialogue();
+  if(n===4)showResults();
+}
+
+// Phase 1: Vocab
+(function initVocab(){
+  vOrder=shuffle(ACTS.map((_,i)=>i)).slice(0,8);
+  nextVocab();
+})();
+
+function nextVocab(){
+  if(vN>=8){
+    document.getElementById('tab1').classList.add('done');
+    document.getElementById('fb1').className='fb ok';
+    document.getElementById('fb1').innerHTML='🎉 Vocab: '+vOK+'/8 correct!';
+    setTimeout(()=>goTab(2),1400);return;
+  }
+  const ci=vOrder[vN];
+  document.getElementById('v1Em').textContent=ACTS[ci].em;
+  document.getElementById('v1Prog').textContent='Question '+(vN+1)+' of 8';
+  const opts=shuffle([ci,...shuffle(ACTS.map((_,i)=>i).filter(i=>i!==ci)).slice(0,3)]);
+  document.getElementById('v1Grid').innerHTML=opts.map(oi=>
+    `<button class="opt-btn" data-ci="${oi}" onclick="checkVocab(this,${ci})">${ACTS[oi].phrase}</button>`).join('');
+  document.getElementById('fb1').textContent='';
+}
+function checkVocab(btn,ci){
+  document.querySelectorAll('#v1Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=parseInt(btn.dataset.ci)===ci;
+  if(ok){btn.classList.add('correct');vOK++;upScore(10);flash(true);
+    document.getElementById('fb1').className='fb ok';document.getElementById('fb1').textContent='✅ '+ACTS[ci].phrase+'!';
+    speak(ACTS[ci].phrase);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#v1Grid .opt-btn').forEach(b=>{if(parseInt(b.dataset.ci)===ci)b.classList.add('correct');});
+    flash(false);document.getElementById('fb1').className='fb no';document.getElementById('fb1').textContent='❌ It was: '+ACTS[ci].phrase;
+  }
+  vN++;setTimeout(nextVocab,1600);
+}
+
+// Phase 2: Grammar
+function initGrammar(){gN=0;nextGrammar();}
+function nextGrammar(){
+  if(gN>=GRAMMAR_Q.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 Grammar: '+gOK+'/'+GRAMMAR_Q.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const q=GRAMMAR_Q[gN];
+  document.getElementById('v2Em').textContent=q.em;
+  document.getElementById('v2Text').innerHTML=q.text.replace('___','<span class="blank">___</span>');
+  document.getElementById('v2Prog').textContent='Question '+(gN+1)+' of '+GRAMMAR_Q.length;
+  const opts=shuffle(q.opts);
+  document.getElementById('v2Grid').innerHTML=opts.map(o=>
+    `<button class="opt-btn" data-opt="${o.replace(/'/g,"&#39;")}" onclick="checkGrammar(this)">${o}</button>`).join('');
+  document.getElementById('fb2').textContent='';
+  document.getElementById('v2Grid').dataset.correct=q.correct;
+}
+function checkGrammar(btn){
+  const correct=document.getElementById('v2Grid').dataset.correct;
+  document.querySelectorAll('#v2Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  const q=GRAMMAR_Q[gN];
+  const full=q.text.replace('___',correct);
+  if(ok){btn.classList.add('correct');gOK++;upScore(10);flash(true);
+    document.getElementById('v2Text').innerHTML=full.replace(correct,`<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
+    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent='✅ Correct!';
+    speak(full);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#v2Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);
+    document.getElementById('v2Text').innerHTML=full.replace(correct,`<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
+    document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent='❌ '+full;
+    gMissed.push(q.text);
+  }
+  gN++;setTimeout(nextGrammar,1800);
+}
+
+// Phase 3: Dialogues
+function initDialogue(){dN=0;nextDialogue();}
+function nextDialogue(){
+  if(dN>=DIALOGUE_Q.length){
+    document.getElementById('tab3').classList.add('done');
+    document.getElementById('fb3').className='fb ok';
+    document.getElementById('fb3').innerHTML='🎉 Dialogues: '+dOK+'/'+DIALOGUE_Q.length+' correct!';
+    setTimeout(()=>goTab(4),1400);return;
+  }
+  const d=DIALOGUE_Q[dN];
+  document.getElementById('v3Q').textContent='👤 "'+d.q+'"';
+  document.getElementById('v3Prog').textContent='Question '+(dN+1)+' of '+DIALOGUE_Q.length;
+  const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
+  document.getElementById('v3Grid').innerHTML=opts.map(o=>
+    `<button class="opt-btn" data-opt="${o.replace(/"/g,'&quot;').replace(/'/g,"&#39;")}" onclick="checkDialogue(this)">"${o}"</button>`).join('');
+  document.getElementById('fb3').textContent='';
+  document.getElementById('v3Grid').dataset.correct=d.correct;
+}
+function checkDialogue(btn){
+  const correct=document.getElementById('v3Grid').dataset.correct;
+  document.querySelectorAll('#v3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');dOK++;upScore(10);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ "'+correct+'"';
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#v3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ "'+correct+'"';
+    dMissed.push(DIALOGUE_Q[dN].q);
+  }
+  dN++;setTimeout(nextDialogue,1800);
+}
+
+// Results
+function showResults(){
+  document.getElementById('finSc').textContent=score;
+  const vPct=Math.round(vOK/8*100);
+  const gPct=Math.round(gOK/GRAMMAR_Q.length*100);
+  const dPct=Math.round(dOK/DIALOGUE_Q.length*100);
+  const total=vOK+gOK+dOK;
+  const totalQ=8+GRAMMAR_Q.length+DIALOGUE_Q.length;
+  const totalPct=Math.round(total/totalQ*100);
+
+  function gradeClass(p){return p>=80?'green':p>=55?'yellow':'red';}
+  function gradeEmoji(p){return p>=80?'🌟':p>=55?'👍':'💪';}
+
+  document.getElementById('reportGrid').innerHTML=`
+    <div class="report-card ${gradeClass(vPct)}">
+      <div class="report-title">📚 Vocab</div>
+      <div class="report-pct" style="color:${vPct>=80?'#69f0ae':vPct>=55?'#FFD700':'#ff5252'}">${vPct}%</div>
+      <div class="report-label">${vOK}/8 ${gradeEmoji(vPct)}</div>
+    </div>
+    <div class="report-card ${gradeClass(gPct)}">
+      <div class="report-title">📝 Grammar</div>
+      <div class="report-pct" style="color:${gPct>=80?'#69f0ae':gPct>=55?'#FFD700':'#ff5252'}">${gPct}%</div>
+      <div class="report-label">${gOK}/${GRAMMAR_Q.length} ${gradeEmoji(gPct)}</div>
+    </div>
+    <div class="report-card ${gradeClass(dPct)}">
+      <div class="report-title">💬 Dialogues</div>
+      <div class="report-pct" style="color:${dPct>=80?'#69f0ae':dPct>=55?'#FFD700':'#ff5252'}">${dPct}%</div>
+      <div class="report-label">${dOK}/${DIALOGUE_Q.length} ${gradeEmoji(dPct)}</div>
+    </div>`;
+
+  // Emoji and title
+  if(totalPct>=80){document.getElementById('finEmoji').textContent='🏆';document.getElementById('finTitle').textContent='Excellent! Ready for the exam!';}
+  else if(totalPct>=60){document.getElementById('finEmoji').textContent='👍';document.getElementById('finTitle').textContent='Good work! Almost ready!';}
+  else{document.getElementById('finEmoji').textContent='💪';document.getElementById('finTitle').textContent='Keep practising! You can do it!';}
+
+  // Detailed recommendations
+  let recs=[];
+  if(vPct<80){
+    recs.push(`<div class="rec-item">📚 <b>Vocabulary</b> (${vPct}%): Review the camp activities in <b>eng10</b> and <b>eng11</b>.<br><em>climb a tree · sail a boat · play volleyball · swim in the lake · play basketball · go for a walk · do yoga · play table tennis · play the guitar · read a comic · make a model · play a board game</em></div>`);
+  }
+  if(gPct<80){
+    recs.push(`<div class="rec-item">📝 <b>Grammar</b> (${gPct}%): Practise <b>eng12</b> and <b>eng13</b>.<br><em>✅ I <b>want to</b> play. ❌ I <b>don't want to</b> play. ❓ <b>Do you want to</b> play? → Yes, I want to. / No, thank you. I want to...</em></div>`);
+  }
+  if(dPct<80){
+    recs.push(`<div class="rec-item">💬 <b>Dialogues</b> (${dPct}%): Review <b>eng14</b>.<br><em>Can you help me, please? → Yes, I can. | Whose turn is it? → It's your turn, [name].</em></div>`);
+  }
+  if(recs.length===0){
+    document.getElementById('recBox').innerHTML=`<b style="color:#69f0ae">Amazing work!</b> You scored ${totalPct}%! You know all the content of Unit 5. Good luck on your exam! 🌟🎓`;
+  }else{
+    document.getElementById('recBox').innerHTML=`<b style="color:#FFD700">To improve before the exam, review:</b><br><br>${recs.join('')}`;
+  }
+}
+</script>
+</body>
+</html>
