@@ -122,6 +122,13 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 <div class="phase" id="phase3">
   <p class="ph-title">What did the friend ask? Choose the right question! 🎯</p>
   <div class="q-box">
+    <div class="ctx-strip" id="q3Ctx">
+      <div class="ctx-em" id="q3CtxEm"></div>
+      <div class="ctx-text">
+        A friend is suggesting:
+        <span id="q3CtxHint"></span>
+      </div>
+    </div>
     <div class="friend-label">The reply was:</div>
     <div class="q-dialogue" style="justify-content:flex-end">
       <div class="q-bubble q" id="q3A" style="border-radius:18px 18px 4px 18px"></div>
@@ -227,31 +234,38 @@ const Q2_DATA = [
 ];
 
 // ── Phase 3 ────────────────────────────────────────────────────────────
-// Given a reply, choose the grammatically correct question form.
-// Wrong options are incorrect English forms (not alternative valid replies).
+// Given context (what the friend suggests) + the reply, pick the correct question.
 const Q3_DATA = [
-  { a:'Yes, I want to.',
+  { ctxEm:'🧗', ctxHint:'climbing a tree',
+    a:'Yes, I want to.',
     correct:'Do you want to climb a tree?',
     wrong:['Do you want climb a tree?','Want you to climb a tree?','Do you want to climbing?'] },
-  { a:'No, thank you. I want to read a comic.',
+  { ctxEm:'🎸', ctxHint:'playing the guitar',
+    a:'No, thank you. I want to read a comic.',
     correct:'Do you want to play the guitar?',
     wrong:['Do you want to read a comic?','Do you want to make a model?','Do you want to play a board game?'] },
-  { a:'Yes, I want to.',
+  { ctxEm:'🏓', ctxHint:'playing table tennis',
+    a:'Yes, I want to.',
     correct:'Do you want to play table tennis?',
     wrong:['Do you want play table tennis?','Want to play table tennis?','Do you wants to play table tennis?'] },
-  { a:'No, thank you. I want to make a model.',
+  { ctxEm:'🎲', ctxHint:'playing a board game',
+    a:'No, thank you. I want to make a model.',
     correct:'Do you want to play a board game?',
     wrong:['Do you want to make a model?','Do you want to play the guitar?','Do you want to read a comic?'] },
-  { a:'Yes, I want to.',
+  { ctxEm:'🚶', ctxHint:'going for a walk',
+    a:'Yes, I want to.',
     correct:'Do you want to go for a walk?',
     wrong:['Go for a walk?','You want to go for a walk?','Do you want going for a walk?'] },
-  { a:'No, thank you. I want to do yoga.',
+  { ctxEm:'🏀', ctxHint:'playing basketball',
+    a:'No, thank you. I want to do yoga.',
     correct:'Do you want to play basketball?',
     wrong:['Do you want to do yoga?','Do you want to swim?','Do you want to play volleyball?'] },
-  { a:'Yes, I want to.',
+  { ctxEm:'🎸', ctxHint:'playing the guitar',
+    a:'Yes, I want to.',
     correct:'Do you want to play the guitar?',
     wrong:['Do you wants to play the guitar?','Want you to play the guitar?','Do you want play the guitar?'] },
-  { a:'No, thank you. I want to sail a boat.',
+  { ctxEm:'🏊', ctxHint:'swimming in the lake',
+    a:'No, thank you. I want to sail a boat.',
     correct:'Do you want to swim in the lake?',
     wrong:['Do you want to sail a boat?','Do you want to play volleyball?','Do you want to climb a tree?'] },
 ];
@@ -349,6 +363,8 @@ function nextQ3(){
     return;
   }
   const d=Q3_DATA[q3Order[q3N]];
+  document.getElementById('q3CtxEm').textContent=d.ctxEm;
+  document.getElementById('q3CtxHint').textContent=d.ctxHint;
   document.getElementById('q3A').textContent=d.a;
   document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+Q3_DATA.length;
   const opts=shuffle([d.correct,...shuffle(d.wrong).slice(0,2)]);
