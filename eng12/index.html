@@ -55,15 +55,16 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 .opt-btn:disabled{cursor:default}
 .opt-btn.correct{outline:4px solid #FFD700!important;box-shadow:0 0 14px rgba(255,215,0,.5)!important}
 .opt-btn.wrong{opacity:.3!important;text-decoration:line-through}
-/* Fill blank */
+/* Fill blank / Write */
 .fill-card{width:100%;background:linear-gradient(145deg,#0f1f35,#18304e);border:3px solid #2979ff;border-radius:20px;padding:18px;margin-bottom:10px}
 .fill-scene{font-size:3rem;text-align:center;margin-bottom:6px}
 .fill-sentence{font-size:1.4rem;color:#fff;text-align:center;line-height:1.6;margin-bottom:16px}
-.fill-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f-btn{padding:14px 6px;border-radius:14px;border:3px solid;font-family:inherit;font-size:1rem;font-weight:bold;cursor:pointer;transition:transform .1s;color:#fff}
-.f-btn:hover:not([disabled]){transform:scale(1.04)}.f-btn:disabled{cursor:default}
-.f-btn.correct{outline:4px solid #FFD700!important;box-shadow:0 0 14px rgba(255,215,0,.5)!important}
-.f-btn.wrong{opacity:.3;text-decoration:line-through}
+.write-row{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.write-input{font-family:'Patrick Hand',cursive;font-size:1.1rem;padding:10px 14px;border-radius:14px;border:3px solid #42a5f5;background:#0d1b2a;color:#FFD700;width:220px;outline:none;text-align:center}
+.write-input:focus{border-color:#FFD700}
+.write-input:disabled{opacity:.6}
+.check-btn{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:14px;padding:10px 20px;font-family:inherit;font-size:1rem;cursor:pointer}
+.check-btn:disabled{opacity:.35;cursor:default}
 .fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
 .recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.98rem;line-height:1.6}
 </style>
@@ -112,13 +113,16 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
   <div class="fb" id="fb2"></div>
 </div>
 
-<!-- Phase 3: fill in the blank -->
+<!-- Phase 3: write in the blank -->
 <div class="phase" id="phase3">
-  <p class="ph-title">Complete the sentence! Pick the right words! ✍️</p>
+  <p class="ph-title">Type the missing words! ✍️</p>
   <div class="fill-card">
     <div class="fill-scene" id="f3Scene"></div>
     <div class="fill-sentence" id="f3Sent"></div>
-    <div class="fill-btns" id="f3Btns"></div>
+    <div class="write-row">
+      <input class="write-input" type="text" id="f3Input" placeholder="want to / don't want to" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="check-btn" id="f3Btn" onclick="checkF3()">✅ Check</button>
+    </div>
   </div>
   <div style="font-size:.85rem;color:#90caf9;margin-bottom:4px" id="f3Prog">Sentence 1 of 8</div>
   <div class="fb" id="fb3"></div>
@@ -248,7 +252,7 @@ function checkQ2(clicked){
   q2N++;setTimeout(nextQ2,1700);
 }
 
-// Phase 3: fill blank
+// Phase 3: write the blank
 let f3Order=[];
 function initF3(){f3N=0;f3OK=0;f3Order=shuffle(FILL_Q.map((_,i)=>i));nextF3();}
 function nextF3(){
@@ -262,30 +266,36 @@ function nextF3(){
   document.getElementById('f3Scene').textContent=q.scene;
   document.getElementById('f3Sent').innerHTML=q.sentence.replace('___','<span class="blank">___</span>');
   document.getElementById('f3Prog').textContent='Sentence '+(f3N+1)+' of '+FILL_Q.length;
-  const colors=['#1b5e20','#7f0000','#1565c0','#6a1b9a'];
-  const opts=shuffle([...q.options]);
-  document.getElementById('f3Btns').innerHTML=opts.map((o,i)=>
-    `<button class="f-btn" style="background:${colors[i]};border-color:${colors[i]}" data-opt="${o}" onclick="checkF3(this,'${q.correct}')">${o}</button>`
-  ).join('');
-  document.getElementById('fb3').textContent='';
+  document.getElementById('fb3').className='fb';document.getElementById('fb3').textContent='';
+  const inp=document.getElementById('f3Input');
+  inp.value='';inp.disabled=false;
+  document.getElementById('f3Btn').disabled=false;
+  setTimeout(()=>inp.focus(),120);
 }
-function checkF3(btn,correct){
-  document.querySelectorAll('#f3Btns .f-btn').forEach(b=>b.disabled=true);
-  const ok=btn.dataset.opt===correct;
+function checkF3(){
+  const inp=document.getElementById('f3Input');
   const q=FILL_Q[f3Order[f3N]];
-  const full=q.sentence.replace('___',correct);
-  if(ok){btn.classList.add('correct');f3OK++;upScore(10);flash(true);
-    document.getElementById('f3Sent').innerHTML=full.replace(correct,`<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
+  const userAns=inp.value.trim().toLowerCase().replace(/\s+/g,' ');
+  const correct=q.correct.toLowerCase();
+  const ok=userAns===correct;
+  const full=q.sentence.replace('___',q.correct);
+  inp.disabled=true;
+  document.getElementById('f3Btn').disabled=true;
+  if(ok){
+    f3OK++;upScore(10);flash(true);
+    document.getElementById('f3Sent').innerHTML=full.replace(q.correct,`<span style="color:#69f0ae;font-weight:bold">${q.correct}</span>`);
     document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ Correct!';
     speak(full);
-  }else{btn.classList.add('wrong');
-    document.querySelectorAll('#f3Btns .f-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+  }else{
     flash(false);
-    document.getElementById('f3Sent').innerHTML=full.replace(correct,`<span style="color:#69f0ae;font-weight:bold">${correct}</span>`);
-    document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ '+full;
+    document.getElementById('f3Sent').innerHTML=full.replace(q.correct,`<span style="color:#69f0ae;font-weight:bold">${q.correct}</span>`);
+    document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ The answer is: '+q.correct;
   }
-  f3N++;setTimeout(nextF3,1700);
+  f3N++;setTimeout(nextF3,1800);
 }
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!document.getElementById('f3Btn').disabled&&document.getElementById('phase3').classList.contains('active'))checkF3();
+});
 
 function showRecommend(ok,total){
   const pct=Math.round(ok/total*100);
