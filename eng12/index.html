@@ -116,8 +116,11 @@ body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2
 <!-- Phase 3: write in the blank -->
 <div class="phase" id="phase3">
   <p class="ph-title">Type the missing words! ✍️</p>
-  <div class="fill-card">
-    <div class="fill-scene" id="f3Scene"></div>
+  <div class="fill-card" id="f3Card">
+    <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:3rem" id="f3Mood"></span>
+      <span style="font-size:3rem" id="f3Scene"></span>
+    </div>
     <div class="fill-sentence" id="f3Sent"></div>
     <div class="write-row">
       <input class="write-input" type="text" id="f3Input" placeholder="want to / don't want to" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -159,14 +162,14 @@ const Q2_DATA = [
 ];
 
 const FILL_Q = [
-  { scene:'🧗', sentence:'I ___ climb a tree.',        correct:'want to',     options:['want to','don\'t want to'] },
-  { scene:'🏊', sentence:"I ___ swim in the lake.",    correct:"don't want to",options:['want to','don\'t want to'] },
-  { scene:'🎸', sentence:'I ___ play the guitar.',     correct:'want to',     options:['want to','don\'t want to'] },
-  { scene:'🏐', sentence:"I ___ play volleyball.",     correct:"don't want to",options:['want to','don\'t want to'] },
-  { scene:'📖', sentence:'I ___ read a comic.',        correct:'want to',     options:['want to','don\'t want to'] },
-  { scene:'🏀', sentence:"I ___ play basketball.",     correct:"don't want to",options:['want to','don\'t want to'] },
-  { scene:'🚶', sentence:'I ___ go for a walk.',       correct:'want to',     options:['want to','don\'t want to'] },
-  { scene:'🎲', sentence:"I ___ play a board game.",   correct:"don't want to",options:['want to','don\'t want to'] },
+  { scene:'🧗', mood:'😄', sentence:'I ___ climb a tree.',        correct:'want to'      },
+  { scene:'🏊', mood:'😒', sentence:"I ___ swim in the lake.",    correct:"don't want to"},
+  { scene:'🎸', mood:'😄', sentence:'I ___ play the guitar.',     correct:'want to'      },
+  { scene:'🏐', mood:'😒', sentence:"I ___ play volleyball.",     correct:"don't want to"},
+  { scene:'📖', mood:'😄', sentence:'I ___ read a comic.',        correct:'want to'      },
+  { scene:'🏀', mood:'😒', sentence:"I ___ play basketball.",     correct:"don't want to"},
+  { scene:'🚶', mood:'😄', sentence:'I ___ go for a walk.',       correct:'want to'      },
+  { scene:'🎲', mood:'😒', sentence:"I ___ play a board game.",   correct:"don't want to"},
 ];
 
 let score=0, lcIdx=0, lcSeen=new Set();
@@ -263,7 +266,10 @@ function nextF3(){
     return;
   }
   const q=FILL_Q[f3Order[f3N]];
+  const wantIt=q.correct==='want to';
+  document.getElementById('f3Mood').textContent=q.mood;
   document.getElementById('f3Scene').textContent=q.scene;
+  document.getElementById('f3Card').style.borderColor=wantIt?'#69f0ae':'#ff5252';
   document.getElementById('f3Sent').innerHTML=q.sentence.replace('___','<span class="blank">___</span>');
   document.getElementById('f3Prog').textContent='Sentence '+(f3N+1)+' of '+FILL_Q.length;
   document.getElementById('fb3').className='fb';document.getElementById('fb3').textContent='';
