@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 17 - Familias de palabras</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .question-box {
+      background:#f3e5f5;
+      border:3px solid #ce93d8;
+      border-radius:16px;
+      padding:16px 18px;
+      margin:16px 0 14px;
+      font-size:1.35rem;
+      color:#6a1b9a;
+    }
+    .root-word {
+      display:inline-block;
+      background:#fff;
+      border-radius:12px;
+      padding:2px 12px;
+      margin-left:6px;
+      color:#4a148c;
+      border:2px dashed #ab47bc;
+    }
+    .options {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:12px;
+      margin-top:8px;
+    }
+    .opt-btn {
+      border:none;
+      border-radius:14px;
+      padding:12px 8px;
+      font-family:'Patrick Hand',cursive;
+      font-size:1.12rem;
+      cursor:pointer;
+      background:#ede7f6;
+      color:#4527a0;
+      box-shadow:0 3px 10px rgba(0,0,0,.15);
+      transition:transform .12s;
+    }
+    .opt-btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .opt-btn.correct { background:#c8e6c9; color:#1b5e20; outline:3px solid #4caf50; }
+    .opt-btn.wrong { background:#ffcdd2; color:#b71c1c; outline:3px solid #ef5350; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🌳 Juego 17 - Familias de palabras</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Marca la palabra que pertenece a la misma familia.</p>
+
+    <div class="question-box" id="questionBox"></div>
+    <div class="options" id="options"></div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextQuestion()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+    const exercises = [
+      { root:'pan', options:['panadero','ventana','flor','camino'], answer:'panadero' },
+      { root:'mar', options:['marino','silla','pelota','nube'], answer:'marino' },
+      { root:'flor', options:['florero','tren','zapato','lápiz'], answer:'florero' },
+      { root:'sol', options:['soleado','carpeta','cuchara','ratón'], answer:'soleado' },
+      { root:'leche', options:['lechero','árbol','coche','puerta'], answer:'lechero' },
+      { root:'casa', options:['casita','pirata','helado','goma'], answer:'casita' },
+      { root:'libro', options:['librería','pincel','mesa','globo'], answer:'librería' },
+      { root:'mar', options:['maremoto','jirafa','camisa','hoja'], answer:'maremoto' },
+      { root:'canto', options:['cantante','sombrero','camión','diente'], answer:'cantante' },
+      { root:'jardín', options:['jardinero','naranja','ventilador','reloj'], answer:'jardinero' }
+    ];
+
+    const rounds = [...exercises].sort(() => Math.random() - 0.5);
+    const totalRounds = rounds.length;
+    let current = 0;
+    let score = 0;
+    let locked = false;
+
+    function showQuestion() {
+      const q = rounds[current];
+      locked = false;
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('progressBar').style.width = (current / totalRounds * 100) + '%';
+      document.getElementById('questionBox').innerHTML = `¿Cuál pertenece a la familia de <span class="root-word">${q.root}</span>?`;
+
+      const opts = [...q.options].sort(() => Math.random() - 0.5);
+      document.getElementById('options').innerHTML = opts.map(opt =>
+        `<button class="opt-btn" onclick="checkAnswer(this, '${opt}')">${opt}</button>`
+      ).join('');
+    }
+
+    function checkAnswer(btn, selected) {
+      if (locked) return;
+      locked = true;
+      const q = rounds[current];
+      const ok = selected === q.answer;
+
+      document.querySelectorAll('.opt-btn').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.answer) b.classList.add('correct');
+      });
+      if (!ok) btn.classList.add('wrong');
+
+      if (ok) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+
+      showFeedback(ok, ok ? '¡Correcto! Son de la misma familia.' : `La respuesta correcta era <strong>${q.answer}</strong>.`);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= totalRounds) {
+        maybePodio(17, score, totalRounds * 10);
+      } else {
+        showQuestion();
+      }
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>

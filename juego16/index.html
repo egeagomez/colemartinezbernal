@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 16 - Elementos del anuncio</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .ad-card {
+      background:#fff8e1;
+      border-radius:16px;
+      padding:18px;
+      margin:14px auto 18px;
+      max-width:560px;
+      border:3px solid #ffe082;
+      box-shadow:var(--shadow);
+      text-align:left;
+    }
+    .ad-image { font-size:3.1rem; text-align:center; margin-bottom:8px; }
+    .ad-line { font-size:1.2rem; margin:5px 0; }
+    .q-text { font-size:1.25rem; margin:10px 0 14px; color:var(--blue-dk); }
+    .options {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+      margin-top:6px;
+    }
+    .q-btn {
+      border:none;
+      border-radius:14px;
+      padding:12px 10px;
+      font-family:'Patrick Hand',cursive;
+      font-size:1.08rem;
+      cursor:pointer;
+      background:#e3f2fd;
+      color:#0d47a1;
+      box-shadow:0 3px 10px rgba(0,0,0,.15);
+      transition:transform .12s, filter .12s;
+    }
+    .q-btn:hover:not(:disabled) { transform:translateY(-2px); filter:brightness(1.03); }
+    .q-btn.correct { background:#c8e6c9; color:#1b5e20; outline:3px solid #4caf50; }
+    .q-btn.wrong { background:#ffcdd2; color:#b71c1c; outline:3px solid #ef5350; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>📰 Juego 16 - Elementos de un anuncio</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Lee el anuncio y elige el elemento correcto: marca, producto, eslogan o imagen.</p>
+
+    <div class="ad-card" id="adCard"></div>
+    <p class="q-text" id="qText"></p>
+    <div class="options" id="options"></div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextQuestion()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+    const ads = [
+      { marca:'SolFresh', producto:'Zumo de naranja', slogan:'Energía cada mañana', imagen:'🍊' },
+      { marca:'NubeLimpia', producto:'Detergente', slogan:'Blanco brillante al instante', imagen:'🧼' },
+      { marca:'RayoRun', producto:'Zapatillas deportivas', slogan:'Corre más lejos', imagen:'👟' },
+      { marca:'DinoSnack', producto:'Galletas de chocolate', slogan:'Cruje y sonríe', imagen:'🍪' },
+      { marca:'EcoDrop', producto:'Botella reutilizable', slogan:'Cuida el planeta bebiendo', imagen:'🧴' },
+      { marca:'LunaSoft', producto:'Peluche de oso', slogan:'Abraza tus sueños', imagen:'🧸' }
+    ];
+
+    const fieldLabels = {
+      marca:'¿Cuál es la marca del anuncio?',
+      producto:'¿Cuál es el producto del anuncio?',
+      slogan:'¿Cuál es el eslogan del anuncio?',
+      imagen:'¿Qué imagen representa el anuncio?'
+    };
+
+    const fields = ['marca','producto','slogan','imagen'];
+    const rounds = [];
+    const totalRounds = 10;
+    let current = 0;
+    let score = 0;
+    let locked = false;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildRounds() {
+      for (let i = 0; i < totalRounds; i++) {
+        const ad = ads[Math.floor(Math.random() * ads.length)];
+        const field = fields[Math.floor(Math.random() * fields.length)];
+        const correct = ad[field];
+        const wrongPool = [...new Set(ads.map(a => a[field]).filter(v => v !== correct))];
+        const wrongs = shuffle(wrongPool).slice(0, 3);
+        const options = shuffle([correct, ...wrongs]);
+        rounds.push({ ad, field, correct, options });
+      }
+    }
+
+    function showQuestion() {
+      const q = rounds[current];
+      locked = false;
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('progressBar').style.width = (current / totalRounds * 100) + '%';
+      const sloganVisible = q.field !== 'slogan';
+
+      document.getElementById('adCard').innerHTML = `
+        <div class="ad-image">${q.ad.imagen}</div>
+        <p class="ad-line"><strong>Marca:</strong> ${q.ad.marca}</p>
+        <p class="ad-line"><strong>Producto:</strong> ${q.ad.producto}</p>
+        <p class="ad-line"><strong>Eslogan:</strong> ${sloganVisible ? `\"${q.ad.slogan}\"` : '???'}</p>
+      `;
+      document.getElementById('qText').textContent = fieldLabels[q.field];
+
+      const optionsEl = document.getElementById('options');
+      optionsEl.innerHTML = q.options.map(opt =>
+        `<button class="q-btn" onclick="checkAnswer(this, '${escapeHtml(opt)}')">${opt}</button>`
+      ).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');
+    }
+
+    function checkAnswer(btn, selected) {
+      if (locked) return;
+      locked = true;
+      const q = rounds[current];
+      const ok = selected === q.correct;
+
+      document.querySelectorAll('.q-btn').forEach(b => {
+        const val = b.textContent;
+        b.disabled = true;
+        if (val === q.correct) b.classList.add('correct');
+      });
+
+      if (!ok) btn.classList.add('wrong');
+      if (ok) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+
+      showFeedback(ok, ok ? '¡Muy bien! Ese elemento está correcto.' : `Respuesta correcta: <strong>${q.correct}</strong>`);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= totalRounds) {
+        maybePodio(16, score, totalRounds * 10);
+      } else {
+        showQuestion();
+      }
+    }
+
+    buildRounds();
+    showQuestion();
+  </script>
+</body>
+</html>

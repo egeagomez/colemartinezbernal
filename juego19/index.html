@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 19 - Repaso general de Lengua</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .topic-badge {
+      display:inline-block;
+      border-radius:999px;
+      padding:4px 12px;
+      font-size:.95rem;
+      margin-bottom:10px;
+      background:#e8f5e9;
+      color:#2e7d32;
+      border:2px solid #a5d6a7;
+    }
+    .q-box {
+      background:#fff;
+      border-radius:16px;
+      border:3px solid #bbdefb;
+      padding:16px;
+      margin:8px 0 14px;
+      font-size:1.25rem;
+      color:#0d47a1;
+    }
+    .answers {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;
+    }
+    .ans-btn {
+      border:none;
+      border-radius:14px;
+      padding:12px 10px;
+      font-family:'Patrick Hand',cursive;
+      font-size:1.06rem;
+      cursor:pointer;
+      background:#f3e5f5;
+      color:#6a1b9a;
+      box-shadow:0 3px 10px rgba(0,0,0,.15);
+      transition:transform .12s;
+    }
+    .ans-btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .ans-btn.correct { background:#c8e6c9; color:#1b5e20; outline:3px solid #4caf50; }
+    .ans-btn.wrong { background:#ffcdd2; color:#b71c1c; outline:3px solid #ef5350; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🏁 Juego 19 - Repaso general para el examen</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Repaso final: anuncios, familias de palabras y ortografía.</p>
+
+    <span class="topic-badge" id="topicBadge"></span>
+    <div class="q-box" id="question"></div>
+    <div class="answers" id="answers"></div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextQuestion()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+    const questions = [
+      { topic:'Anuncios', q:'En un anuncio, ¿qué elemento dice una frase corta para convencer?', options:['Slogan','Marca','Producto','Noticia'], answer:'Slogan' },
+      { topic:'Anuncios', q:'Si un anuncio vende galletas, ¿qué es "galletas"?', options:['Producto','Marca','Eslogan','Imagen'], answer:'Producto' },
+      { topic:'Anuncios', q:'"DinoSnack" en un anuncio de galletas es...', options:['Marca','Imagen','Slogan','Familia léxica'], answer:'Marca' },
+      { topic:'Familias', q:'¿Qué palabra pertenece a la familia de pan?', options:['Panadería','Silla','Nube','Camión'], answer:'Panadería' },
+      { topic:'Familias', q:'¿Cuál es de la familia de mar?', options:['Marino','Lápiz','Puerta','Goma'], answer:'Marino' },
+      { topic:'Familias', q:'¿Qué palabra NO pertenece a la familia de flor?', options:['Ventana','Florero','Floral','Florecer'], answer:'Ventana' },
+      { topic:'Ortografía', q:'Completa: __rra (pelea entre países)', options:['gue','gui','güe','ga'], answer:'gue' },
+      { topic:'Ortografía', q:'Completa: pin__ino', options:['güi','gui','gue','go'], answer:'güi' },
+      { topic:'Ortografía', q:'Completa: ci__eña', options:['güe','gue','gui','gu'], answer:'güe' },
+      { topic:'Ortografía', q:'Completa: __tarra', options:['gui','gu','go','ga'], answer:'gui' },
+      { topic:'Anuncios', q:'¿Qué elemento es un dibujo o foto en un anuncio?', options:['Imagen','Marca','Slogan','Producto'], answer:'Imagen' },
+      { topic:'Familias', q:'¿Cuál es de la familia de libro?', options:['Librería','Pirata','Queso','Arena'], answer:'Librería' }
+    ];
+
+    const rounds = [...questions].sort(() => Math.random() - 0.5);
+    let current = 0;
+    let score = 0;
+    let locked = false;
+
+    function showQuestion() {
+      const q = rounds[current];
+      locked = false;
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('progressBar').style.width = (current / rounds.length * 100) + '%';
+      document.getElementById('topicBadge').textContent = 'Tema: ' + q.topic;
+      document.getElementById('question').textContent = q.q;
+
+      const options = [...q.options].sort(() => Math.random() - 0.5);
+      document.getElementById('answers').innerHTML = options.map(opt =>
+        `<button class="ans-btn" onclick="checkAnswer(this, '${opt}')">${opt}</button>`
+      ).join('');
+    }
+
+    function checkAnswer(btn, selected) {
+      if (locked) return;
+      locked = true;
+      const q = rounds[current];
+      const ok = selected === q.answer;
+
+      document.querySelectorAll('.ans-btn').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.answer) b.classList.add('correct');
+      });
+      if (!ok) btn.classList.add('wrong');
+
+      if (ok) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+
+      showFeedback(ok, ok ? '¡Respuesta correcta! Buen repaso.' : `Respuesta correcta: <strong>${q.answer}</strong>`);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= rounds.length) {
+        maybePodio(19, score, rounds.length * 10);
+      } else {
+        showQuestion();
+      }
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>

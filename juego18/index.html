@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego 18 - GA GUE GUI GO GU GÜE GÜI</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .word-box {
+      font-size:2.1rem;
+      margin:10px 0 14px;
+      color:var(--blue-dk);
+      letter-spacing:1px;
+    }
+    .blank-chip {
+      display:inline-block;
+      min-width:84px;
+      padding:4px 10px;
+      border-radius:12px;
+      border:3px dashed var(--blue);
+      background:#e3f2fd;
+      color:#0d47a1;
+    }
+    .help-text {
+      margin:0 0 12px;
+      font-size:1.04rem;
+      color:#666;
+    }
+    .syllable-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+      gap:10px;
+    }
+    .syll-btn {
+      border:none;
+      border-radius:14px;
+      padding:12px 8px;
+      font-family:'Patrick Hand',cursive;
+      font-size:1.25rem;
+      cursor:pointer;
+      background:#fff3e0;
+      color:#e65100;
+      box-shadow:0 3px 10px rgba(0,0,0,.15);
+      transition:transform .12s;
+    }
+    .syll-btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .syll-btn.correct { background:#c8e6c9; color:#1b5e20; outline:3px solid #4caf50; }
+    .syll-btn.wrong { background:#ffcdd2; color:#b71c1c; outline:3px solid #ef5350; }
+  </style>
+</head>
+<body>
+  <div class="game-header">
+    <h1>🔤 Juego 18 - GA GUE GUI GO GU GÜE GÜI</h1>
+    <div class="score-box">⭐ <span id="score">0</span></div>
+  </div>
+
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <p class="instruction">Completa la palabra con la sílaba correcta.</p>
+
+    <div class="word-box" id="wordBox"></div>
+    <p class="help-text" id="helpText"></p>
+    <div class="syllable-grid" id="options"></div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-green" id="nextBtn" style="display:none" onclick="nextQuestion()">Siguiente ▶</button>
+    </div>
+  </div>
+
+  <script src="../assets/score.js"></script>
+  <script>
+    const bank = ['ga','gue','gui','go','gu','güe','güi'];
+
+    const exercises = [
+      { left:'', right:'to', answer:'ga', full:'gato', hint:'Animal doméstico que dice miau.' },
+      { left:'fo', right:'ta', answer:'ga', full:'fogata', hint:'Fuego que se hace al aire libre.' },
+      { left:'', right:'ma', answer:'go', full:'goma', hint:'Sirve para borrar el lápiz.' },
+      { left:'', right:'loso', answer:'go', full:'goloso', hint:'Le encantan los dulces.' },
+      { left:'a', right:'ja', answer:'gu', full:'aguja', hint:'Tiene punta y sirve para coser.' },
+      { left:'', right:'sano', answer:'gu', full:'gusano', hint:'Animal pequeño y alargado.' },
+      { left:'', right:'rra', answer:'gue', full:'guerra', hint:'Lo contrario de la paz.' },
+      { left:'man', right:'ra', answer:'gue', full:'manguera', hint:'Sirve para regar.' },
+      { left:'', right:'tarra', answer:'gui', full:'guitarra', hint:'Instrumento musical de cuerdas.' },
+      { left:'', right:'sante', answer:'gui', full:'guisante', hint:'Verdura pequeña y verde.' },
+      { left:'ci', right:'eña', answer:'güe', full:'cigüeña', hint:'Ave de patas largas.' },
+      { left:'ver', right:'enza', answer:'güe', full:'vergüenza', hint:'Lo que sentimos cuando nos da corte.' },
+      { left:'pin', right:'ino', answer:'güi', full:'pingüino', hint:'Ave que vive en lugares fríos.' },
+      { left:'para', right:'itas', answer:'güi', full:'paragüitas', hint:'Protege de la lluvia.' }
+    ];
+
+    const rounds = [...exercises].sort(() => Math.random() - 0.5).slice(0, 10);
+    let current = 0;
+    let score = 0;
+    let locked = false;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function showQuestion() {
+      const q = rounds[current];
+      locked = false;
+      document.getElementById('nextBtn').style.display = 'none';
+      document.getElementById('progressBar').style.width = (current / rounds.length * 100) + '%';
+
+      document.getElementById('wordBox').innerHTML = `${q.left}<span class="blank-chip">?</span>${q.right}`;
+      document.getElementById('helpText').textContent = `Pista: ${q.hint}`;
+
+      const opts = shuffle([q.answer, ...shuffle(bank.filter(s => s !== q.answer)).slice(0, 3)]);
+      document.getElementById('options').innerHTML = opts.map(opt =>
+        `<button class="syll-btn" onclick="checkAnswer(this, '${opt}')">${opt}</button>`
+      ).join('');
+    }
+
+    function checkAnswer(btn, selected) {
+      if (locked) return;
+      locked = true;
+      const q = rounds[current];
+      const ok = selected === q.answer;
+
+      document.querySelectorAll('.syll-btn').forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.answer) b.classList.add('correct');
+      });
+      if (!ok) btn.classList.add('wrong');
+
+      if (ok) {
+        score += 10;
+        document.getElementById('score').textContent = score;
+      }
+
+      showFeedback(ok, ok ? `¡Genial! ${q.full}` : `La correcta era <strong>${q.answer}</strong>: ${q.full}`);
+      document.getElementById('nextBtn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current >= rounds.length) {
+        maybePodio(18, score, rounds.length * 10);
+      } else {
+        showQuestion();
+      }
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
