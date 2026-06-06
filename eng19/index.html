@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔧 Artificial Structures</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+/* Use cards */
+.use-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
+.u-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
+.u-dot.cur{background:#FFD700}.u-dot.seen{background:#42a5f5}
+.use-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #2979ff;border-radius:24px;padding:24px 20px;text-align:center;box-shadow:0 8px 28px rgba(41,121,255,.3)}
+.uc-em{font-size:4rem;display:block;margin:4px 0}
+.uc-use{font-size:2rem;font-weight:bold;color:#FFD700;margin:8px 0}
+.uc-desc{font-size:1rem;color:#90caf9;margin:6px 0;line-height:1.4}
+.uc-ex{font-size:.95rem;color:#a5d6a7;font-style:italic;margin-top:6px}
+.learn-nav{display:flex;align-items:center;gap:16px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+/* Quiz */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:20px;text-align:center;margin-bottom:10px}
+.q-em{font-size:3.5rem;display:block;margin-bottom:6px}
+.q-text{font-size:1.2rem;font-weight:bold;color:#fff;margin:6px 0}
+.q-prog{font-size:.85rem;color:#90caf9;margin-top:6px}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-grid.wide{grid-template-columns:1fr}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:13px 8px;cursor:pointer;font-family:inherit;font-size:.95rem;color:#fff;font-weight:bold;transition:transform .1s;line-height:1.3}
+.opt-btn:hover:not([disabled]){transform:scale(1.04);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+.recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.95rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🔧 Artificial Structures</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📖 Uses</div>
+  <div class="p-tab" id="tab2">🔗 Match</div>
+  <div class="p-tab" id="tab3">✅ Quiz</div>
+</div>
+
+<!-- Phase 1: Learn uses -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Structures have many uses! Learn them. 🔧</p>
+  <div class="use-dots" id="uDots"></div>
+  <div class="use-card" id="uCard"></div>
+  <div class="learn-nav">
+    <button class="nav-btn" id="uP" onclick="ucMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="uCnt">1 / 5</span>
+    <button class="nav-btn" id="uN" onclick="ucMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakUse()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>🔗 Start Matching! →</button>
+</div>
+
+<!-- Phase 2: Use → example match -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Which example goes with each use? 🔗</p>
+  <div class="q-box">
+    <span class="q-em" id="q2Em"></span>
+    <div class="q-text" id="q2Text"></div>
+    <div class="q-prog" id="q2Prog">Question 1 of 5</div>
+  </div>
+  <div class="opt-grid wide" id="q2Grid"></div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: Structure → use quiz -->
+<div class="phase" id="phase3">
+  <p class="ph-title">What is this structure used for? ✅</p>
+  <div class="q-box">
+    <span class="q-em" id="q3Em"></span>
+    <div class="q-text" id="q3Text"></div>
+    <div class="q-prog" id="q3Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid wide" id="q3Grid"></div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🏆</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">Structures champion!</div>
+    <div style="color:#90caf9">Score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="recommend" id="recommend"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const USES = [
+  { use:'protect',     em:'🛡️', desc:'Keeps animals or people safe from danger or weather.', ex:'doghouse, umbrella' },
+  { use:'support',     em:'🏛️', desc:'Holds something up above the ground.', ex:'bridge pillars, columns' },
+  { use:'hold things', em:'📦', desc:'Keeps things inside.', ex:'basket, box, rucksack' },
+  { use:'give shape',  em:'🎪', desc:'Gives shape to soft or flexible materials.', ex:'tent frame, plant support' },
+  { use:'reach',       em:'🌉', desc:'Helps you get to far or high places.', ex:'bridge, ladder' },
+];
+
+const MATCH_Q = [
+  { use:'protect 🛡️',    correct:'doghouse',    opts:['doghouse','bridge','basket','rucksack'] },
+  { use:'support 🏛️',    correct:'pillars',     opts:['pillars','basket','umbrella','rucksack'] },
+  { use:'hold things 📦', correct:'basket',     opts:['basket','ladder','bridge','doghouse'] },
+  { use:'give shape 🎪',  correct:'tent frame', opts:['tent frame','bridge','ladder','basket'] },
+  { use:'reach 🌉',       correct:'ladder',     opts:['ladder','basket','tent frame','doghouse'] },
+];
+
+const QUIZ_Q = [
+  { em:'🪜', q:'A ladder helps you...', correct:'reach high places', opts:['reach high places','protect animals','hold things inside','give shape'] },
+  { em:'🏠', q:'A doghouse helps to...', correct:'protect animals', opts:['protect animals','reach far places','hold things inside','give shape'] },
+  { em:'🧺', q:'A basket helps to...', correct:'hold things inside', opts:['hold things inside','reach far places','protect animals','support'] },
+  { em:'🎪', q:'A tent frame helps to...', correct:'give shape to the tent', opts:['give shape to the tent','reach far places','protect animals','hold things inside'] },
+  { em:'🌉', q:'A bridge helps you...', correct:'reach the other side', opts:['reach the other side','protect animals','hold things inside','give shape'] },
+  { em:'🏛️', q:'Pillars help to...', correct:'support the building', opts:['support the building','reach high places','protect animals','hold things inside'] },
+];
+
+let score=0, ucIdx=0, ucSeen=new Set();
+let q2N=0, q2OK=0, q2Order=[];
+let q3N=0, q3OK=0, q3Order=[];
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;};
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initQ2();
+  if(n===3)initQ3();
+}
+
+function ucRender(){
+  const u=USES[ucIdx];
+  document.getElementById('uCard').innerHTML=
+    '<span class="uc-em">'+u.em+'</span>'+
+    '<div class="uc-use">'+u.use+'</div>'+
+    '<div class="uc-desc">'+u.desc+'</div>'+
+    '<div class="uc-ex">📌 Examples: '+u.ex+'</div>';
+  document.getElementById('uCnt').textContent=(ucIdx+1)+' / '+USES.length;
+  document.getElementById('uP').disabled=ucIdx===0;
+  document.getElementById('uN').disabled=ucIdx===USES.length-1;
+  ucSeen.add(ucIdx);
+  document.getElementById('uDots').innerHTML=USES.map((_,i)=>'<div class="u-dot'+(i===ucIdx?' cur':ucSeen.has(i)?' seen':'')+'"></div>').join('');
+  if(ucSeen.size===USES.length){
+    document.getElementById('btn1').disabled=false;
+    document.getElementById('fb1').className='fb ok';
+    document.getElementById('fb1').textContent='✅ All uses learned! Let\'s practise!';
+  }
+}
+function ucMove(d){ucIdx=Math.max(0,Math.min(USES.length-1,ucIdx+d));ucRender();}
+function speakUse(){speak(USES[ucIdx].use);}
+ucRender();
+
+function initQ2(){q2N=0;q2OK=0;q2Order=shuffle(MATCH_Q.map((_,i)=>i));nextQ2();}
+function nextQ2(){
+  if(q2N>=MATCH_Q.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 '+q2OK+'/'+MATCH_Q.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const q=MATCH_Q[q2Order[q2N]];
+  document.getElementById('q2Em').textContent=q.use.split(' ')[1]||'❓';
+  document.getElementById('q2Text').textContent='Use: '+q.use;
+  document.getElementById('q2Prog').textContent='Question '+(q2N+1)+' of '+MATCH_Q.length;
+  const opts=shuffle(q.opts);
+  document.getElementById('q2Grid').innerHTML=opts.map(o=>
+    '<button class="opt-btn" data-opt="'+o+'" onclick="checkQ2(this,\''+q.correct.replace(/'/g,"\\'")+'\')">'+o+'</button>').join('');
+  document.getElementById('fb2').textContent='';
+  document.getElementById('q2Grid').dataset.correct=q.correct;
+}
+function checkQ2(btn,correct){
+  document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q2OK++;upScore(10);flash(true);
+    document.getElementById('fb2').className='fb ok';document.getElementById('fb2').textContent='✅ Correct! '+correct;
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q2Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb2').className='fb no';document.getElementById('fb2').textContent='❌ It was: '+correct;
+  }
+  q2N++;setTimeout(nextQ2,1700);
+}
+
+function initQ3(){q3N=0;q3OK=0;q3Order=shuffle(QUIZ_Q.map((_,i)=>i));nextQ3();}
+function nextQ3(){
+  if(q3N>=QUIZ_Q.length){
+    document.getElementById('fin').style.display='block';
+    document.getElementById('finSc').textContent=score;
+    const pct=Math.round((q2OK+q3OK)/(MATCH_Q.length+QUIZ_Q.length)*100);
+    const el=document.getElementById('recommend');
+    if(pct>=80)el.innerHTML='<b style="color:#69f0ae">Excellent! '+pct+'%</b><br>You know the uses of structures! 🌟 Try eng20 next!';
+    else if(pct>=60)el.innerHTML='<b style="color:#FFD700">Good! '+pct+'%</b><br>Remember the 5 uses: 🛡️ protect · 🏛️ support · 📦 hold things · 🎪 give shape · 🌉 reach. 📖';
+    else el.innerHTML='<b style="color:#ff5252">Keep practising! '+pct+'%</b><br>Go back to the flashcards and review the 5 uses. 💪';
+    return;
+  }
+  const q=QUIZ_Q[q3Order[q3N]];
+  document.getElementById('q3Em').textContent=q.em;
+  document.getElementById('q3Text').textContent=q.q;
+  document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+QUIZ_Q.length;
+  const opts=shuffle(q.opts);
+  document.getElementById('q3Grid').innerHTML=opts.map(o=>
+    '<button class="opt-btn" data-opt="'+o.replace(/'/g,"&#39;")+'" onclick="checkQ3(this)">'+o+'</button>').join('');
+  document.getElementById('fb3').textContent='';
+  document.getElementById('q3Grid').dataset.correct=q.correct;
+}
+function checkQ3(btn){
+  const correct=document.getElementById('q3Grid').dataset.correct;
+  document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q3OK++;upScore(10);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ Correct!';
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ It was: '+correct;
+  }
+  q3N++;setTimeout(nextQ3,1800);
+}
+</script>
+</body>
+</html>

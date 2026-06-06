@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎓 Grand Review — Structures</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:680px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:8px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+.area-bar{width:100%;display:flex;gap:8px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.area-chip{padding:4px 12px;border-radius:20px;font-size:.82rem;border:2px solid;font-weight:bold}
+.area-chip.vocab{border-color:#42a5f5;color:#42a5f5;background:rgba(66,165,245,.1)}
+.area-chip.sort{border-color:#69f0ae;color:#69f0ae;background:rgba(105,240,174,.1)}
+.area-chip.verbs{border-color:#ce93d8;color:#ce93d8;background:rgba(206,147,216,.1)}
+.q-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:16px;margin-bottom:10px}
+.q-section{font-size:.8rem;color:#FFD700;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px}
+.q-em{font-size:3.5rem;display:block;text-align:center;margin-bottom:4px}
+.q-text{font-size:1.15rem;font-weight:bold;color:#fff;text-align:center;margin:6px 0;line-height:1.4}
+.q-text .blank{display:inline-block;min-width:90px;border-bottom:3px solid #42a5f5;color:#FFD700;font-weight:bold;padding:0 4px}
+.q-prog{font-size:.85rem;color:#90caf9;text-align:center}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-grid.wide{grid-template-columns:1fr}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:13px 8px;cursor:pointer;font-family:inherit;font-size:.95rem;color:#fff;font-weight:bold;transition:transform .1s;text-align:left;line-height:1.3}
+.opt-btn:hover:not([disabled]){transform:scale(1.02);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+/* Sort phase buttons */
+.na-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+.na-btn{border:3px solid;border-radius:16px;padding:16px 8px;cursor:pointer;font-family:inherit;font-size:1.05rem;font-weight:bold;color:#fff;transition:transform .12s}
+.na-btn.nat-s{border-color:#69f0ae;background:linear-gradient(145deg,#0a2a14,#1a4a24)}
+.na-btn.art-s{border-color:#FFD700;background:linear-gradient(145deg,#2a1a00,#4a3000)}
+.na-btn:hover:not([disabled]){transform:scale(1.05)}.na-btn:disabled{cursor:default;opacity:.5}
+.na-btn.correct{outline:4px solid #FFD700;box-shadow:0 0 16px rgba(255,215,0,.5);opacity:1!important}
+.na-btn.wrong{opacity:.25!important;text-decoration:line-through}
+/* Results */
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:20px;text-align:center;width:100%}
+.report-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
+.report-card{border-radius:14px;padding:12px 8px;text-align:center}
+.report-card.green{background:rgba(105,240,174,.15);border:2px solid #69f0ae}
+.report-card.yellow{background:rgba(255,215,0,.1);border:2px solid #FFD700}
+.report-card.red{background:rgba(255,82,82,.1);border:2px solid #ff5252}
+.report-title{font-size:.8rem;color:#90caf9;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.report-pct{font-size:1.6rem;font-weight:bold}
+.report-label{font-size:.78rem;margin-top:4px;line-height:1.3}
+.rec-box{background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:14px;margin-top:12px;text-align:left;font-size:.93rem;line-height:1.7}
+.rec-item{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">🎓 Grand Review</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📚 Vocabulary</div>
+  <div class="p-tab" id="tab2">🌿 Sort</div>
+  <div class="p-tab" id="tab3">🌀 Verbs</div>
+  <div class="p-tab" id="tab4">📊 Results</div>
+</div>
+
+<!-- Phase 1: Vocabulary (10 questions) -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Part 1: Vocabulary — What structure is this? 📚</p>
+  <div class="area-bar"><div class="area-chip vocab">📚 Vocabulary</div></div>
+  <div class="q-card">
+    <div class="q-section">Name the structure</div>
+    <div class="q-em" id="v1Em"></div>
+    <div class="q-prog" id="v1Prog">Question 1 of 10</div>
+  </div>
+  <div class="opt-grid" id="v1Grid"></div>
+  <div class="fb" id="fb1"></div>
+</div>
+
+<!-- Phase 2: Natural or Artificial (8 questions) -->
+<div class="phase" id="phase2">
+  <p class="ph-title">Part 2: Natural 🌿 or Artificial 🔧?</p>
+  <div class="area-bar"><div class="area-chip sort">🌿 Sort</div></div>
+  <div class="q-card">
+    <div class="q-section">Natural or Artificial?</div>
+    <div class="q-em" id="v2Em"></div>
+    <div class="q-text" id="v2Word"></div>
+    <div class="q-prog" id="v2Prog">Question 1 of 8</div>
+  </div>
+  <div class="na-grid">
+    <button class="na-btn nat-s" id="btnNat" onclick="checkSort(true)">🌿 Natural</button>
+    <button class="na-btn art-s" id="btnArt" onclick="checkSort(false)">🔧 Artificial</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: Movement verbs (6 questions) -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Part 3: Movement Verbs — What action is this? 🌀</p>
+  <div class="area-bar"><div class="area-chip verbs">🌀 Verbs</div></div>
+  <div class="q-card">
+    <div class="q-section" id="v3Section">Choose the verb</div>
+    <div class="q-em" id="v3Em"></div>
+    <div class="q-text" id="v3Desc"></div>
+    <div class="q-prog" id="v3Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid" id="v3Grid"></div>
+  <div class="fb" id="fb3"></div>
+</div>
+
+<!-- Phase 4: Results -->
+<div class="phase" id="phase4">
+  <p class="ph-title">Your results for Structures! 📊</p>
+  <div class="fin" id="fin">
+    <div style="font-size:2.5rem" id="finEmoji">🎉</div>
+    <div style="font-size:1.4rem;font-weight:bold;margin:8px 0;color:#FFD700" id="finTitle">Grand Review Complete!</div>
+    <div style="color:#90caf9">Total score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="report-grid" id="reportGrid"></div>
+    <div class="rec-box" id="recBox"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const STRUCTURES = [
+  { word:'nest',       em:'🪺', natural:true  },
+  { word:'beaver dam', em:'🦫', natural:true  },
+  { word:'tree trunk', em:'🪵', natural:true  },
+  { word:'shell',      em:'🐚', natural:true  },
+  { word:'cave',       em:'🏔️', natural:true  },
+  { word:'skeleton',   em:'💀', natural:true  },
+  { word:'bridge',     em:'🌉', natural:false },
+  { word:'ladder',     em:'🪜', natural:false },
+  { word:'basket',     em:'🧺', natural:false },
+  { word:'rucksack',   em:'🎒', natural:false },
+];
+
+const SORT_ITEMS = [
+  { word:'nest',       em:'🪺', natural:true  },
+  { word:'shell',      em:'🐚', natural:true  },
+  { word:'cave',       em:'🏔️', natural:true  },
+  { word:'skeleton',   em:'💀', natural:true  },
+  { word:'bridge',     em:'🌉', natural:false },
+  { word:'ladder',     em:'🪜', natural:false },
+  { word:'basket',     em:'🧺', natural:false },
+  { word:'rucksack',   em:'🎒', natural:false },
+];
+
+const VERB_Q = [
+  { em:'🤸', desc:'Make something longer by pulling the ends apart.', correct:'stretch', opts:['stretch','push','spin','fold'] },
+  { em:'💪', desc:'Bring something towards you with force.', correct:'pull', opts:['pull','push','stretch','bend'] },
+  { em:'📦', desc:'Move something away from you with force.', correct:'push', opts:['push','pull','stretch','spin'] },
+  { em:'🌀', desc:'Turn something round and round.', correct:'spin', opts:['spin','fold','push','pull'] },
+  { em:'📋', desc:'Bend something so the surfaces touch each other.', correct:'fold', opts:['fold','bend','stretch','spin'] },
+  { em:'↩️', desc:'Curve something but the surfaces do NOT touch.', correct:'bend', opts:['bend','fold','pull','push'] },
+];
+
+let score=0;
+let vN=0, vOK=0, vOrder=[];
+let sN=0, sOK=0, sOrder=[];
+let gN=0, gOK=0;
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initSort();
+  if(n===3)initVerbs();
+  if(n===4)showResults();
+}
+
+// Phase 1: Vocabulary
+(function initVocab(){
+  vOrder=shuffle(STRUCTURES.map((_,i)=>i)).slice(0,10);
+  nextVocab();
+})();
+function nextVocab(){
+  if(vN>=10){
+    document.getElementById('tab1').classList.add('done');
+    document.getElementById('fb1').className='fb ok';
+    document.getElementById('fb1').innerHTML='🎉 Vocabulary: '+vOK+'/10 correct!';
+    setTimeout(()=>goTab(2),1400);return;
+  }
+  const ci=vOrder[vN];
+  document.getElementById('v1Em').textContent=STRUCTURES[ci].em;
+  document.getElementById('v1Prog').textContent='Question '+(vN+1)+' of 10';
+  const pool=STRUCTURES.map((_,i)=>i).filter(i=>i!==ci);
+  const opts=shuffle([ci,...shuffle(pool).slice(0,3)]);
+  document.getElementById('v1Grid').innerHTML=opts.map(oi=>
+    '<button class="opt-btn" data-ci="'+oi+'" onclick="checkVocab(this,'+ci+')">'+STRUCTURES[oi].word+'</button>').join('');
+  document.getElementById('fb1').textContent='';
+}
+function checkVocab(btn,ci){
+  document.querySelectorAll('#v1Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=parseInt(btn.dataset.ci)===ci;
+  if(ok){btn.classList.add('correct');vOK++;upScore(10);flash(true);
+    document.getElementById('fb1').className='fb ok';document.getElementById('fb1').textContent='✅ '+STRUCTURES[ci].word+'!';
+    speak(STRUCTURES[ci].word);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#v1Grid .opt-btn').forEach(b=>{if(parseInt(b.dataset.ci)===ci)b.classList.add('correct');});
+    flash(false);document.getElementById('fb1').className='fb no';document.getElementById('fb1').textContent='❌ It was: '+STRUCTURES[ci].word;
+  }
+  vN++;setTimeout(nextVocab,1600);
+}
+
+// Phase 2: Sort natural/artificial
+function initSort(){sN=0;sOK=0;sOrder=shuffle(SORT_ITEMS.map((_,i)=>i));nextSort();}
+function nextSort(){
+  if(sN>=SORT_ITEMS.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 Sort: '+sOK+'/'+SORT_ITEMS.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const si=sOrder[sN];
+  document.getElementById('v2Em').textContent=SORT_ITEMS[si].em;
+  document.getElementById('v2Word').textContent=SORT_ITEMS[si].word;
+  document.getElementById('v2Prog').textContent='Question '+(sN+1)+' of '+SORT_ITEMS.length;
+  document.getElementById('btnNat').disabled=false;
+  document.getElementById('btnArt').disabled=false;
+  document.getElementById('btnNat').classList.remove('correct','wrong');
+  document.getElementById('btnArt').classList.remove('correct','wrong');
+  document.getElementById('fb2').textContent='';
+}
+function checkSort(clickedNat){
+  const bN=document.getElementById('btnNat'), bA=document.getElementById('btnArt');
+  bN.disabled=true; bA.disabled=true;
+  const si=sOrder[sN];
+  const ok=clickedNat===SORT_ITEMS[si].natural;
+  if(ok){
+    (clickedNat?bN:bA).classList.add('correct');
+    sOK++;upScore(10);flash(true);
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').textContent=SORT_ITEMS[si].natural?'✅ "'+SORT_ITEMS[si].word+'" is natural! 🌿':'✅ "'+SORT_ITEMS[si].word+'" is artificial! 🔧';
+    speak(SORT_ITEMS[si].word);
+  }else{
+    (clickedNat?bN:bA).classList.add('wrong');
+    (clickedNat?bA:bN).classList.add('correct');
+    flash(false);
+    document.getElementById('fb2').className='fb no';
+    document.getElementById('fb2').textContent=SORT_ITEMS[si].natural?'❌ "'+SORT_ITEMS[si].word+'" IS natural! 🌿':'❌ "'+SORT_ITEMS[si].word+'" IS artificial! 🔧';
+  }
+  sN++;setTimeout(nextSort,1800);
+}
+
+// Phase 3: Movement verbs
+function initVerbs(){gN=0;gOK=0;nextVerb();}
+function nextVerb(){
+  if(gN>=VERB_Q.length){
+    document.getElementById('tab3').classList.add('done');
+    document.getElementById('fb3').className='fb ok';
+    document.getElementById('fb3').innerHTML='🎉 Verbs: '+gOK+'/'+VERB_Q.length+' correct!';
+    setTimeout(()=>goTab(4),1400);return;
+  }
+  const q=VERB_Q[gN];
+  document.getElementById('v3Em').textContent=q.em;
+  document.getElementById('v3Desc').textContent=q.desc;
+  document.getElementById('v3Prog').textContent='Question '+(gN+1)+' of '+VERB_Q.length;
+  const opts=shuffle(q.opts);
+  document.getElementById('v3Grid').innerHTML=opts.map(o=>
+    '<button class="opt-btn" data-opt="'+o+'" onclick="checkVerb(this)">'+o+'</button>').join('');
+  document.getElementById('fb3').textContent='';
+  document.getElementById('v3Grid').dataset.correct=q.correct;
+}
+function checkVerb(btn){
+  const correct=document.getElementById('v3Grid').dataset.correct;
+  document.querySelectorAll('#v3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');gOK++;upScore(10);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ '+correct+'!';
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#v3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ It was: '+correct;
+  }
+  gN++;setTimeout(nextVerb,1800);
+}
+
+// Phase 4: Results
+function showResults(){
+  document.getElementById('finSc').textContent=score;
+  const vPct=Math.round(vOK/10*100);
+  const sPct=Math.round(sOK/SORT_ITEMS.length*100);
+  const gPct=Math.round(gOK/VERB_Q.length*100);
+  const total=vOK+sOK+gOK;
+  const totalQ=10+SORT_ITEMS.length+VERB_Q.length;
+  const totalPct=Math.round(total/totalQ*100);
+
+  function gradeClass(p){return p>=80?'green':p>=55?'yellow':'red';}
+  function gradeEmoji(p){return p>=80?'🌟':p>=55?'👍':'💪';}
+  function gradeColor(p){return p>=80?'#69f0ae':p>=55?'#FFD700':'#ff5252';}
+
+  document.getElementById('reportGrid').innerHTML=
+    '<div class="report-card '+gradeClass(vPct)+'">'+
+    '<div class="report-title">📚 Vocab</div>'+
+    '<div class="report-pct" style="color:'+gradeColor(vPct)+'">'+vPct+'%</div>'+
+    '<div class="report-label">'+vOK+'/10 '+gradeEmoji(vPct)+'</div></div>'+
+    '<div class="report-card '+gradeClass(sPct)+'">'+
+    '<div class="report-title">🌿 Sort</div>'+
+    '<div class="report-pct" style="color:'+gradeColor(sPct)+'">'+sPct+'%</div>'+
+    '<div class="report-label">'+sOK+'/'+SORT_ITEMS.length+' '+gradeEmoji(sPct)+'</div></div>'+
+    '<div class="report-card '+gradeClass(gPct)+'">'+
+    '<div class="report-title">🌀 Verbs</div>'+
+    '<div class="report-pct" style="color:'+gradeColor(gPct)+'">'+gPct+'%</div>'+
+    '<div class="report-label">'+gOK+'/'+VERB_Q.length+' '+gradeEmoji(gPct)+'</div></div>';
+
+  if(totalPct>=80){document.getElementById('finEmoji').textContent='🏆';document.getElementById('finTitle').textContent='Excellent! You know Structures!';}
+  else if(totalPct>=60){document.getElementById('finEmoji').textContent='👍';document.getElementById('finTitle').textContent='Good work! Almost there!';}
+  else{document.getElementById('finEmoji').textContent='💪';document.getElementById('finTitle').textContent='Keep practising! You can do it!';}
+
+  let recs=[];
+  if(vPct<80)recs.push('<div class="rec-item">📚 <b>Vocabulary</b> ('+vPct+'%): Review <b>eng18</b> and <b>eng22</b>.<br><em>nest · beaver dam · tree trunk · shell · cave · skeleton · bridge · ladder · basket · rucksack</em></div>');
+  if(sPct<80)recs.push('<div class="rec-item">🌿 <b>Sort</b> ('+sPct+'%): Review <b>eng18</b>.<br><em>Natural: nest · shell · cave · skeleton · tree trunk · beaver dam<br>Artificial: bridge · ladder · basket · rucksack</em></div>');
+  if(gPct<80)recs.push('<div class="rec-item">🌀 <b>Verbs</b> ('+gPct+'%): Practise <b>eng20</b>.<br><em>stretch · pull · push · spin · fold · bend</em></div>');
+
+  document.getElementById('recBox').innerHTML=recs.length===0?
+    '<b style="color:#69f0ae">Amazing! '+totalPct+'%!</b> You know all about structures! 🌟🏗️':
+    '<b style="color:#FFD700">To improve, review:</b><br><br>'+recs.join('');
+}
+</script>
+</body>
+</html>

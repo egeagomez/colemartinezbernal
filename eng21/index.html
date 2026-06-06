@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📝 Structures: Sentences</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Patrick Hand',cursive;background:linear-gradient(135deg,#0d1b2a,#1b2a3b) fixed;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:32px}
+.top-bar{width:100%;max-width:660px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px}
+.back-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:14px;padding:5px 14px;font-family:inherit;font-size:.9rem;cursor:pointer;text-decoration:none}
+.back-btn:hover{background:#2979ff}
+.score-box{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:20px;padding:4px 16px;font-size:1rem}
+.phase-bar{display:flex;gap:6px;margin:6px 0 14px;flex-wrap:wrap;justify-content:center}
+.p-tab{padding:6px 16px;border-radius:20px;font-family:inherit;font-size:.88rem;border:2px solid #2979ff;background:#0d1b2a;color:#7eb3ff;cursor:default}
+.p-tab.active{background:#2979ff;color:#fff;font-weight:bold}
+.p-tab.done{background:#1b5e20;border-color:#4CAF50;color:#fff}
+.phase{display:none;flex-direction:column;align-items:center;width:100%;max-width:660px;padding:0 12px}
+.phase.active{display:flex}
+.ph-title{font-size:1.05rem;color:#90caf9;text-align:center;margin-bottom:10px}
+.fb{min-height:2rem;font-size:1.05rem;text-align:center;margin:8px 0}
+.fb.ok{color:#69f0ae}.fb.no{color:#ff5252}
+.btn-go{background:linear-gradient(135deg,#1b5e20,#388E3C);color:#FFD700;border:2px solid #FFD700;border-radius:20px;padding:9px 28px;font-family:inherit;font-size:1rem;cursor:pointer;margin-top:8px}
+.btn-go:hover{background:#4CAF50}.btn-go:disabled{opacity:.35;cursor:default}
+.flash-ov{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .12s;z-index:50}
+.flash-ov.g{background:rgba(76,175,80,.2);opacity:1}
+.flash-ov.r{background:rgba(244,67,54,.2);opacity:1}
+/* Sentence cards for Phase 1 */
+.sent-dots{display:flex;gap:7px;justify-content:center;margin-bottom:10px}
+.s-dot{width:12px;height:12px;border-radius:50%;background:#1a3a5c;border:2px solid #2979ff}
+.s-dot.cur{background:#FFD700}.s-dot.seen{background:#42a5f5}
+.sent-card{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #2979ff;border-radius:24px;padding:28px 20px;text-align:center;box-shadow:0 8px 28px rgba(41,121,255,.3)}
+.sc-em{font-size:3.5rem;display:block;margin:4px 0}
+.sc-text{font-size:1.25rem;font-weight:bold;color:#fff;margin:12px 0;line-height:1.5}
+.sc-label{font-size:.85rem;color:#FFD700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.learn-nav{display:flex;align-items:center;gap:16px;margin:12px 0 6px;justify-content:center}
+.nav-btn{background:#1a3a5c;color:#FFD700;border:2px solid #2979ff;border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{background:#2979ff}.nav-btn:disabled{opacity:.3;cursor:default}
+.spk-btn{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:2px solid #42a5f5;border-radius:20px;padding:7px 22px;font-family:inherit;font-size:.95rem;cursor:pointer}
+/* True/False Phase */
+.q-box{width:100%;background:linear-gradient(145deg,#0f2040,#1a3a5c);border:3px solid #FFD700;border-radius:18px;padding:18px;text-align:center;margin-bottom:10px}
+.q-stmt{font-size:1.15rem;font-weight:bold;color:#fff;line-height:1.5;margin:6px 0}
+.q-prog{font-size:.85rem;color:#90caf9;margin-top:6px}
+.tf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}
+.tf-btn{border:3px solid;border-radius:16px;padding:18px 8px;cursor:pointer;font-family:inherit;font-size:1.1rem;font-weight:bold;color:#fff;transition:transform .12s}
+.tf-btn.t-s{border-color:#69f0ae;background:linear-gradient(145deg,#0a2a14,#1a4a24)}
+.tf-btn.f-s{border-color:#ff5252;background:linear-gradient(145deg,#2a0a0a,#4a1414)}
+.tf-btn:hover:not([disabled]){transform:scale(1.05)}.tf-btn:disabled{cursor:default;opacity:.5}
+.tf-btn.correct{outline:4px solid #FFD700;box-shadow:0 0 16px rgba(255,215,0,.5);opacity:1!important}
+.tf-btn.wrong{opacity:.25!important;text-decoration:line-through}
+/* Complete Phase */
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-btn{background:linear-gradient(145deg,#0f1f35,#18304e);border:2px solid #2979ff;border-radius:14px;padding:13px 8px;cursor:pointer;font-family:inherit;font-size:1rem;color:#fff;font-weight:bold;transition:transform .1s;line-height:1.3}
+.opt-btn:hover:not([disabled]){transform:scale(1.04);border-color:#90caf9}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct{border-color:#69f0ae!important;background:rgba(105,240,174,.2)!important;color:#69f0ae!important}
+.opt-btn.wrong{opacity:.3!important;border-color:#f44336!important;text-decoration:line-through}
+.q-text{font-size:1.1rem;font-weight:bold;color:#fff;margin:6px 0;line-height:1.5}
+.q-text .blank{display:inline-block;min-width:90px;border-bottom:3px solid #42a5f5;color:#FFD700;font-weight:bold;padding:0 4px}
+.fin{background:#0a2010;border:2px solid #4CAF50;border-radius:16px;padding:22px;text-align:center;width:100%}
+.recommend{margin-top:12px;background:rgba(255,215,0,.08);border:2px solid #FFD700;border-radius:14px;padding:12px;font-size:.95rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="flash-ov" id="fov"></div>
+<div class="top-bar">
+  <a class="back-btn" href="../index.html">← Home</a>
+  <span style="color:#FFD700;font-size:1.05rem">📝 Structures: Sentences</span>
+  <div class="score-box">⭐ <span id="scoreDisp">0</span></div>
+</div>
+<div class="phase-bar">
+  <div class="p-tab active" id="tab1">📖 Read</div>
+  <div class="p-tab" id="tab2">✅ True or False?</div>
+  <div class="p-tab" id="tab3">📝 Complete</div>
+</div>
+
+<!-- Phase 1: Key sentences -->
+<div class="phase active" id="phase1">
+  <p class="ph-title">Read the key sentences! 📖</p>
+  <div class="sent-dots" id="sDots"></div>
+  <div class="sent-card" id="sCard"></div>
+  <div class="learn-nav">
+    <button class="nav-btn" id="sP" onclick="scMove(-1)">◀</button>
+    <span style="color:#90caf9;font-size:.9rem" id="sCnt">1 / 8</span>
+    <button class="nav-btn" id="sN" onclick="scMove(1)">▶</button>
+  </div>
+  <button class="spk-btn" onclick="speakSent()">🔊 Listen</button>
+  <div class="fb" id="fb1"></div>
+  <button class="btn-go" id="btn1" onclick="goTab(2)" disabled>✅ True or False? →</button>
+</div>
+
+<!-- Phase 2: True or False -->
+<div class="phase" id="phase2">
+  <p class="ph-title">True ✅ or False ❌?</p>
+  <div class="q-box">
+    <div class="q-stmt" id="q2Stmt"></div>
+    <div class="q-prog" id="q2Prog">Question 1 of 8</div>
+  </div>
+  <div class="tf-grid">
+    <button class="tf-btn t-s" id="btnTrue" onclick="checkTF(true)">✅ True</button>
+    <button class="tf-btn f-s" id="btnFalse" onclick="checkTF(false)">❌ False</button>
+  </div>
+  <div class="fb" id="fb2"></div>
+</div>
+
+<!-- Phase 3: Complete the sentence -->
+<div class="phase" id="phase3">
+  <p class="ph-title">Choose the missing word! 📝</p>
+  <div class="q-box">
+    <div class="q-text" id="q3Text"></div>
+    <div class="q-prog" id="q3Prog">Question 1 of 6</div>
+  </div>
+  <div class="opt-grid" id="q3Grid"></div>
+  <div class="fb" id="fb3"></div>
+  <div class="fin" id="fin" style="display:none">
+    <div style="font-size:3rem">🎓</div>
+    <div style="font-size:1.4rem;color:#69f0ae;font-weight:bold;margin:8px 0">Structures Reader!</div>
+    <div style="color:#90caf9">Score: <strong style="color:#FFD700" id="finSc"></strong> ⭐</div>
+    <div class="recommend" id="recommend"></div>
+    <a href="../index.html" style="display:inline-block;margin-top:14px;padding:10px 28px;background:#FFD700;color:#0d1b2a;border-radius:20px;font-weight:bold;text-decoration:none;font-family:inherit">🏠 Home</a>
+  </div>
+</div>
+
+<script>
+const SENTENCES = [
+  { text:'Structures can be natural or artificial.', em:'🏗️' },
+  { text:'Skeletons and shells are structures for animals\' bodies.', em:'💀🐚' },
+  { text:'Some animals use caves and tree trunks as homes.', em:'🏔️🪵' },
+  { text:'Others make dams and nests to live in.', em:'🦫🪺' },
+  { text:'These are all natural structures!', em:'🌿' },
+  { text:'We make artificial structures to help us do many things.', em:'🔧' },
+  { text:'We can sit or climb on them.', em:'🪜' },
+  { text:'We can put structures around objects or put things inside them.', em:'📦' },
+];
+
+const TF_Q = [
+  { stmt:'A bridge is a natural structure.', answer:false, explain:'A bridge is artificial — it is made by people.' },
+  { stmt:'A nest is a natural structure.', answer:true, explain:'A nest is made by birds — it is natural!' },
+  { stmt:'Skeletons are structures for animals\' bodies.', answer:true, explain:'Yes! Skeletons and shells are structures for animals\' bodies.' },
+  { stmt:'People make dams and nests.', answer:false, explain:'Animals make dams and nests to live in.' },
+  { stmt:'We can put things inside artificial structures.', answer:true, explain:'Yes! For example, a basket holds things inside.' },
+  { stmt:'A cave is an artificial structure.', answer:false, explain:'A cave is natural — it is made by nature, not by people.' },
+  { stmt:'Some animals use tree trunks as homes.', answer:true, explain:'Yes! Some animals live inside hollow tree trunks.' },
+  { stmt:'A ladder is a natural structure.', answer:false, explain:'A ladder is artificial — people make ladders.' },
+];
+
+const COMPLETE_Q = [
+  { text:'Skeletons and shells are structures for animals\' ___.', correct:'bodies', opts:['bodies','bones','homes','shells'] },
+  { text:'Some animals use caves and tree trunks as ___.', correct:'homes', opts:['homes','bodies','nests','caves'] },
+  { text:'Structures can be natural or ___.', correct:'artificial', opts:['artificial','natural','special','big'] },
+  { text:'Others make dams and nests to live ___.', correct:'in', opts:['in','on','under','around'] },
+  { text:'We make artificial structures to help us ___ many things.', correct:'do', opts:['do','make','build','find'] },
+  { text:'We can ___ structures around objects.', correct:'put', opts:['put','build','find','make'] },
+];
+
+let score=0, scIdx=0, scSeen=new Set();
+let q2N=0, q2OK=0, q2Order=[];
+let q3N=0, q3OK=0, q3Order=[];
+
+const upScore=n=>{score+=n;document.getElementById('scoreDisp').textContent=score;};
+const flash=ok=>{const e=document.getElementById('fov');e.className='flash-ov '+(ok?'g':'r');setTimeout(()=>e.className='flash-ov',300);};
+const speak=t=>{const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);};
+const shuffle=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=0|Math.random()*(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;};
+
+function goTab(n){
+  document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));
+  document.getElementById('phase'+n).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach((t,i)=>{t.classList.remove('active','done');if(i+1<n)t.classList.add('done');});
+  document.getElementById('tab'+n).classList.add('active');
+  if(n===2)initQ2();
+  if(n===3)initQ3();
+}
+
+function scRender(){
+  const s=SENTENCES[scIdx];
+  document.getElementById('sCard').innerHTML=
+    '<div class="sc-label">Key sentence '+(scIdx+1)+'</div>'+
+    '<span class="sc-em">'+s.em+'</span>'+
+    '<div class="sc-text">"'+s.text+'"</div>';
+  document.getElementById('sCnt').textContent=(scIdx+1)+' / '+SENTENCES.length;
+  document.getElementById('sP').disabled=scIdx===0;
+  document.getElementById('sN').disabled=scIdx===SENTENCES.length-1;
+  scSeen.add(scIdx);
+  document.getElementById('sDots').innerHTML=SENTENCES.map((_,i)=>'<div class="s-dot'+(i===scIdx?' cur':scSeen.has(i)?' seen':'')+'"></div>').join('');
+  if(scSeen.size===SENTENCES.length){
+    document.getElementById('btn1').disabled=false;
+    document.getElementById('fb1').className='fb ok';
+    document.getElementById('fb1').textContent='✅ All sentences read! Now let\'s test!';
+  }
+}
+function scMove(d){scIdx=Math.max(0,Math.min(SENTENCES.length-1,scIdx+d));scRender();}
+function speakSent(){speak(SENTENCES[scIdx].text);}
+scRender();
+
+function initQ2(){q2N=0;q2OK=0;q2Order=shuffle(TF_Q.map((_,i)=>i));nextQ2();}
+function nextQ2(){
+  if(q2N>=TF_Q.length){
+    document.getElementById('tab2').classList.add('done');
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').innerHTML='🎉 '+q2OK+'/'+TF_Q.length+' correct!';
+    setTimeout(()=>goTab(3),1400);return;
+  }
+  const q=TF_Q[q2Order[q2N]];
+  document.getElementById('q2Stmt').textContent='"'+q.stmt+'"';
+  document.getElementById('q2Prog').textContent='Question '+(q2N+1)+' of '+TF_Q.length;
+  document.getElementById('btnTrue').disabled=false;
+  document.getElementById('btnFalse').disabled=false;
+  document.getElementById('btnTrue').classList.remove('correct','wrong');
+  document.getElementById('btnFalse').classList.remove('correct','wrong');
+  document.getElementById('fb2').textContent='';
+}
+function checkTF(clickedTrue){
+  const bT=document.getElementById('btnTrue'), bF=document.getElementById('btnFalse');
+  bT.disabled=true; bF.disabled=true;
+  const q=TF_Q[q2Order[q2N]];
+  const ok=clickedTrue===q.answer;
+  if(ok){
+    (clickedTrue?bT:bF).classList.add('correct');
+    q2OK++;upScore(10);flash(true);
+    document.getElementById('fb2').className='fb ok';
+    document.getElementById('fb2').textContent='✅ Correct! '+q.explain;
+    speak(q.stmt);
+  }else{
+    (clickedTrue?bT:bF).classList.add('wrong');
+    (clickedTrue?bF:bT).classList.add('correct');
+    flash(false);
+    document.getElementById('fb2').className='fb no';
+    document.getElementById('fb2').textContent='❌ '+q.explain;
+  }
+  q2N++;setTimeout(nextQ2,2000);
+}
+
+function initQ3(){q3N=0;q3OK=0;q3Order=shuffle(COMPLETE_Q.map((_,i)=>i));nextQ3();}
+function nextQ3(){
+  if(q3N>=COMPLETE_Q.length){
+    document.getElementById('fin').style.display='block';
+    document.getElementById('finSc').textContent=score;
+    const pct=Math.round((q2OK+q3OK)/(TF_Q.length+COMPLETE_Q.length)*100);
+    const el=document.getElementById('recommend');
+    if(pct>=80)el.innerHTML='<b style="color:#69f0ae">Excellent! '+pct+'%</b><br>You understand structures very well! 🌟 Try eng22 for the big quiz!';
+    else if(pct>=60)el.innerHTML='<b style="color:#FFD700">Good! '+pct+'%</b><br>Remember: Natural structures are made by nature or animals. Artificial structures are made by people. 📖';
+    else el.innerHTML='<b style="color:#ff5252">Keep practising! '+pct+'%</b><br>Read the key sentences again in Phase 1. 💪';
+    return;
+  }
+  const q=COMPLETE_Q[q3Order[q3N]];
+  document.getElementById('q3Text').innerHTML='"'+q.text.replace('___','<span class="blank">___</span>')+'"';
+  document.getElementById('q3Prog').textContent='Question '+(q3N+1)+' of '+COMPLETE_Q.length;
+  const opts=shuffle(q.opts);
+  document.getElementById('q3Grid').innerHTML=opts.map(o=>
+    '<button class="opt-btn" data-opt="'+o+'" onclick="checkQ3(this)">'+o+'</button>').join('');
+  document.getElementById('fb3').textContent='';
+  document.getElementById('q3Grid').dataset.correct=q.correct;
+}
+function checkQ3(btn){
+  const correct=document.getElementById('q3Grid').dataset.correct;
+  document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>b.disabled=true);
+  const ok=btn.dataset.opt===correct;
+  if(ok){btn.classList.add('correct');q3OK++;upScore(10);flash(true);
+    document.getElementById('fb3').className='fb ok';document.getElementById('fb3').textContent='✅ "'+correct+'"!';
+    speak(correct);
+  }else{btn.classList.add('wrong');
+    document.querySelectorAll('#q3Grid .opt-btn').forEach(b=>{if(b.dataset.opt===correct)b.classList.add('correct');});
+    flash(false);document.getElementById('fb3').className='fb no';document.getElementById('fb3').textContent='❌ It was: "'+correct+'"';
+  }
+  q3N++;setTimeout(nextQ3,1800);
+}
+</script>
+</body>
+</html>
