@@ -82,28 +82,21 @@
   let prob = {};
   let spins = [0,0,0]; // H, T, U del resultado
 
-  // Genera dos números de 3 cifras con el patrón de "préstamos" según el nivel
+  // Genera dos números de 3 cifras: SIEMPRE hay préstamo de unidades,
+  // y a partir del nivel 1 también préstamo de decenas.
   function genDigits() {
-    let h1,h2,t1,t2,u1,u2;
-    for (let attempts=0; attempts<500; attempts++) {
-      h1=rnd(1,9); t1=rnd(0,9); u1=rnd(0,9);
-      h2 = (levelIdx===3 && Math.random()<0.3) ? 0 : rnd(1,h1);
-      t2=rnd(0,9); u2=rnd(0,9);
-      const num1=h1*100+t1*10+u1, num2=h2*100+t2*10+u2;
-      if (num1<=num2) continue;
-      const borrowU = u1<u2;
-      const tEff = t1 - (borrowU?1:0);
-      const borrowT = tEff<t2;
-      const hEff = h1 - (borrowT?1:0);
-      if (hEff<h2) continue;
-      if (levelIdx===0 && (borrowU||borrowT)) continue;
-      if (levelIdx===1 && (!borrowU || borrowT)) continue;
-      if (levelIdx===2 && (!borrowU || !borrowT)) continue;
-      if (levelIdx===3 && !(borrowU||borrowT)) continue;
-      return {h1,t1,u1,h2,t2,u2};
+    const u2 = rnd(1,9), u1 = rnd(0,u2-1); // u1 < u2 (préstamo de unidades siempre)
+    let h1,h2,t1,t2;
+    if (levelIdx === 0) {
+      // Solo préstamo de unidades
+      t1 = rnd(1,9); t2 = rnd(0,t1-1);
+      h1 = rnd(1,9); h2 = rnd(0,h1);
+    } else {
+      // Préstamo de unidades y de decenas
+      t1 = rnd(0,8); t2 = rnd(t1,9);
+      h1 = rnd(1,9); h2 = rnd(0,h1-1);
     }
-    // fallback sencillo si no se encuentra (no debería ocurrir)
-    return {h1:5,t1:3,u1:2,h2:2,t2:1,u2:1};
+    return {h1,t1,u1,h2,t2,u2};
   }
 
   function genProblem() {
@@ -168,9 +161,10 @@
       }
     } else {
       streak = 0; updateStreak(); Sound.wrong();
-      document.getElementById('msgBox').textContent = `😕 ${prob.num1} − ${prob.num2} = ${prob.total}`;
-      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+      document.getElementById('msgBox').textContent = '😕 No es correcto. ¡Inténtalo de nuevo con otra resta!';
+      document.getElementById('nextBtn').textContent = '🔁 Inténtalo de nuevo';
     }
+    if (allOk) document.getElementById('nextBtn').textContent = '✨ Siguiente resta';
     document.getElementById('nextBtn').style.display='inline-block';
   }
 

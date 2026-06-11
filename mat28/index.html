@@ -82,29 +82,19 @@
   let prob = {};
   let spins = [0,0,0]; // H, T, U del resultado
 
-  // Genera dígitos H,T,U de cada sumando según el nivel (controla las llevadas)
+  // Genera dígitos H,T,U de cada sumando: SIEMPRE hay llevada de unidades,
+  // y a partir del nivel 1 también llevada de decenas.
   function genDigits() {
-    let h1,h2,t1,t2,u1,u2;
+    const u1 = rnd(5,9), u2 = rnd(10-u1,9); // u1+u2 >= 10 (llevada de unidades siempre)
+    let h1,h2,t1,t2;
     if (levelIdx === 0) {
-      // Sin llevadas
-      h1=rnd(1,4); h2=rnd(1, 9-h1);
-      t1=rnd(0,4); t2=rnd(0, 9-t1);
-      u1=rnd(0,4); u2=rnd(0, 9-u1);
-    } else if (levelIdx === 1) {
-      // Llevada solo en unidades
-      u1=rnd(5,9); u2=rnd(10-u1,9);
+      // Solo llevada de unidades
       t1=rnd(0,4); t2=rnd(0, 8-t1);
       h1=rnd(1,4); h2=rnd(1, 9-h1);
-    } else if (levelIdx === 2) {
-      // Llevada en unidades y decenas
-      u1=rnd(5,9); u2=rnd(10-u1,9);
-      t1=rnd(5,9); t2=rnd(9-t1,9); // t1+t2+1 >= 10
-      h1=rnd(1,4); h2=rnd(1, 9-h1);
     } else {
-      // Llevadas en las tres columnas
-      u1=rnd(5,9); u2=rnd(10-u1,9);
-      t1=rnd(5,9); t2=rnd(9-t1,9);
-      h1=rnd(1,4); h2=rnd(1, 8-h1); // h1+h2+1 <= 9 (resultado de 3 cifras)
+      // Llevada de unidades y de decenas
+      t1=rnd(5,9); t2=rnd(9-t1,9); // t1+t2+1 >= 10
+      h1=rnd(1,7); h2=rnd(1, 8-h1); // h1+h2+1 <= 9 (resultado de 3 cifras)
     }
     return {h1,h2,t1,t2,u1,u2};
   }
@@ -171,9 +161,10 @@
       }
     } else {
       streak = 0; updateStreak(); Sound.wrong();
-      document.getElementById('msgBox').textContent = `😕 ${prob.num1} + ${prob.num2} = ${prob.total}`;
-      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+      document.getElementById('msgBox').textContent = '😕 No es correcto. ¡Inténtalo de nuevo con otra suma!';
+      document.getElementById('nextBtn').textContent = '🔁 Inténtalo de nuevo';
     }
+    if (allOk) document.getElementById('nextBtn').textContent = '✨ Siguiente suma';
     document.getElementById('nextBtn').style.display='inline-block';
   }
 
