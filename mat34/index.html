@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superficies Mágicas — Academia de Magia</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background: linear-gradient(135deg,#1a0533 0%,#2d004a 100%) fixed; }
+    .hp-header { background: linear-gradient(135deg,#2d004a,#4a0072); border-bottom: 3px solid #FFD700; color: #FFD700; text-shadow: 0 0 12px #a020f0; }
+    .hp-header .score-box { background:#4a0072; color:#FFD700; border:1px solid #7c43bd; }
+    .level-badge { display:inline-block; background:#4a0072; color:#FFD700; border:2px solid #FFD700; border-radius:20px; padding:4px 18px; font-size:1rem; margin:6px 0; font-family:'Patrick Hand',cursive; }
+    .streak-bar { display:flex; gap:6px; justify-content:center; margin:6px 0; }
+    .streak-dot { width:18px; height:18px; border-radius:50%; background:#4a0072; border:2px solid #7c43bd; transition:background .3s; }
+    .streak-dot.lit { background:#FFD700; border-color:#FFD700; }
+
+    .problem-card {
+      background:#fff; border-radius:16px; padding:18px 22px;
+      max-width:420px; margin:10px auto;
+      box-shadow:0 4px 20px rgba(160,32,240,.35);
+      border:3px solid #7c43bd; font-family:'Patrick Hand',cursive;
+    }
+    .prob-text { font-size:1.15rem; color:#4a0072; text-align:center; margin-bottom:14px; line-height:1.55; }
+    .obj-display { text-align:center; margin:10px 0 18px; }
+    .obj-emoji-big { font-size:5rem; display:block; }
+    .obj-name { font-size:1.3rem; color:#1a0533; font-weight:bold; margin-top:6px; }
+
+    .choice-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:14px 0; }
+    .choice-btn { background:#f3e5f5; border:3px solid #ce93d8; border-radius:14px; padding:14px 18px; font-size:1.05rem; font-family:'Patrick Hand',cursive; cursor:pointer; color:#4a0072; transition:all .15s; flex:1 1 110px; }
+    .choice-btn .ico { font-size:1.8rem; display:block; margin-bottom:4px; }
+    .choice-btn:hover { background:#e1bee7; transform:scale(1.04); }
+    .choice-btn.selected { background:#7c43bd; color:#fff; }
+    .choice-btn.correct { background:#C8E6C9 !important; border-color:#4CAF50 !important; color:#2E7D32; }
+    .choice-btn.wrong   { background:#FFCDD2 !important; border-color:#EF5350 !important; color:#c62828; animation:snake .4s; }
+
+    .btn-magic { background: linear-gradient(135deg,#7c43bd,#ab47bc); color:#fff; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; box-shadow:0 4px 14px rgba(100,0,200,.4); transition:transform .1s; }
+    .btn-gold { background:#FFD700; color:#2d004a; border:none; border-radius:20px; padding:12px 32px; font-size:1.15rem; font-family:'Patrick Hand',cursive; cursor:pointer; font-weight:bold; transition:transform .1s; }
+    .btn-magic:hover,.btn-gold:hover { transform:scale(1.04); }
+    #msgBox { min-height:1.6em; font-size:1.05rem; text-align:center; color:#FFD700; margin:8px 0; font-family:'Patrick Hand',cursive; }
+    .instruction { color:#e1bee7 !important; }
+    .game-area { background:rgba(255,255,255,.04); border:1px solid #4a0072; }
+    @keyframes snake { 0%{transform:rotate(0)} 20%{transform:rotate(-6deg)} 40%{transform:rotate(6deg)} 60%{transform:rotate(-4deg)} 80%{transform:rotate(4deg)} 100%{transform:rotate(0)} }
+    @keyframes hatPop { 0%{transform:scale(0) rotate(-20deg);opacity:0} 60%{transform:scale(1.3) rotate(8deg);opacity:1} 100%{transform:scale(1) rotate(0);opacity:1} }
+    .hat-anim { position:fixed; top:15%; left:50%; transform:translateX(-50%); font-size:5rem; z-index:999; pointer-events:none; animation:hatPop .7s ease forwards; }
+  </style>
+</head>
+<body>
+  <div class="game-header hp-header">
+    <h1>🔮 Superficies Mágicas</h1>
+    <div class="score-box">🧙 <span id="score">0</span></div>
+  </div>
+  <div class="game-area">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div style="text-align:center">
+      <div class="level-badge" id="levelBadge">🎓 Aprendiz</div>
+      <div class="streak-bar" id="streakBar"></div>
+      <p class="instruction">¿El objeto tiene superficies planas, curvas o las dos?</p>
+    </div>
+    <div class="problem-card" id="problemCard"></div>
+    <p id="msgBox"></p>
+    <div style="text-align:center;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+      <button class="btn-magic" id="checkBtn" onclick="checkAnswer()">🔮 Comprobar</button>
+      <button class="btn-gold"  id="nextBtn"  style="display:none" onclick="newProblem()">✨ Siguiente objeto</button>
+    </div>
+  </div>
+  <script src="../assets/score.js"></script>
+  <script>
+  const LEVELS = [
+    {name:'🎓 Aprendiz'},{name:'⚡ Mago'},{name:'🌟 Archimago'},{name:'🧙 Brujo Experto'}
+  ];
+  let levelIdx = parseInt(sessionStorage.getItem('mat34_level')||'0');
+  let streak = 0, totalScore = 0;
+  const STREAK_NEEDED = 3;
+  const MAX_QUESTIONS = 15;
+  let questionCount = 0;
+
+  function rnd(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+
+  // tier 0 = más fácil (objetos muy claros), tier 3 = más difícil
+  const OBJECTS = [
+    {name:'Pelota de fútbol', emoji:'⚽', tier:0, ans:'curva'},
+    {name:'Dado',             emoji:'🎲', tier:0, ans:'plana'},
+    {name:'Libro',            emoji:'📖', tier:0, ans:'plana'},
+    {name:'Globo',            emoji:'🎈', tier:0, ans:'curva'},
+    {name:'Balón de baloncesto', emoji:'🏀', tier:0, ans:'curva'},
+    {name:'Pelota de tenis',  emoji:'🎾', tier:0, ans:'curva'},
+    {name:'Caja de regalo',   emoji:'🎁', tier:1, ans:'plana'},
+    {name:'Naranja',          emoji:'🍊', tier:1, ans:'curva'},
+    {name:'Lata de refresco', emoji:'🥫', tier:1, ans:'ambas'},
+    {name:'Ladrillo',         emoji:'🧱', tier:1, ans:'plana'},
+    {name:'Caja de pizza',    emoji:'📦', tier:1, ans:'plana'},
+    {name:'Vaso',             emoji:'🥤', tier:2, ans:'ambas'},
+    {name:'Rollo de papel',   emoji:'🧻', tier:2, ans:'ambas'},
+    {name:'Cono de helado',   emoji:'🍦', tier:2, ans:'ambas'},
+    {name:'Manzana',          emoji:'🍎', tier:2, ans:'curva'},
+    {name:'Moneda',           emoji:'🪙', tier:3, ans:'ambas'},
+    {name:'Tambor',           emoji:'🥁', tier:3, ans:'ambas'},
+    {name:'Cubo de hielo',    emoji:'🧊', tier:3, ans:'plana'},
+  ];
+
+  const CHOICES = [
+    {v:'plana', label:'Plana', ico:'🔲'},
+    {v:'curva', label:'Curva', ico:'⚪'},
+    {v:'ambas', label:'Las dos (plana y curva)', ico:'🥫'},
+  ];
+
+  let prob = {};
+  let selectedChoice = null;
+  let lastObj = null;
+
+  function genProblem() {
+    questionCount++;
+    document.getElementById('progressBar').style.width = (questionCount / MAX_QUESTIONS * 100) + '%';
+    const pool = OBJECTS.filter(o => o.tier <= levelIdx);
+    let obj;
+    do { obj = pool[rnd(0,pool.length-1)]; } while(obj===lastObj && pool.length>1);
+    lastObj = obj;
+    prob = obj;
+    selectedChoice = null;
+    render();
+  }
+
+  function render() {
+    document.getElementById('problemCard').innerHTML = `
+      <div class="prob-text">Mira este objeto. ¿Cómo son sus superficies?</div>
+      <div class="obj-display">
+        <span class="obj-emoji-big">${prob.emoji}</span>
+        <div class="obj-name">${prob.name}</div>
+      </div>
+      <div class="choice-row">
+        ${CHOICES.map(c=>`<button class="choice-btn" data-v="${c.v}" onclick="selectChoice('${c.v}')"><span class="ico">${c.ico}</span>${c.label}</button>`).join('')}
+      </div>`;
+  }
+
+  function selectChoice(v) {
+    selectedChoice = v;
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      b.classList.remove('selected','correct','wrong');
+      if(b.dataset.v===v) b.classList.add('selected');
+    });
+  }
+
+  function checkAnswer() {
+    if (!selectedChoice) return;
+    document.getElementById('checkBtn').disabled = true;
+    const correct = selectedChoice === prob.ans;
+    document.querySelectorAll('.choice-btn').forEach(b=>{
+      if(b.dataset.v===prob.ans) b.classList.add('correct');
+      else if(b.dataset.v===selectedChoice) b.classList.add('wrong');
+    });
+    if (correct) {
+      totalScore += (levelIdx+1)*10; streak++;
+      document.getElementById('score').textContent = totalScore;
+      showHat(); updateStreak();
+      if(streak>=STREAK_NEEDED && levelIdx<3) {
+        levelIdx++; streak=0;
+        sessionStorage.setItem('mat34_level', levelIdx);
+        document.getElementById('msgBox').textContent = `✨ ¡Subiste de nivel! Ahora eres ${LEVELS[levelIdx].name}`;
+        updateLevelBadge();
+      } else {
+        document.getElementById('msgBox').textContent = ['¡Perfecto! 🎉','¡Excelente! ⚡','¡Brillante! 🌟','¡Mágico! 🧙'][levelIdx];
+      }
+    } else {
+      streak = 0; updateStreak(); Sound.wrong();
+      const ansLabel = CHOICES.find(c=>c.v===prob.ans).label;
+      document.getElementById('msgBox').textContent = `😕 ${prob.name} tiene superficie: ${ansLabel}`;
+      setTimeout(()=>document.getElementById('checkBtn').disabled=false,600);
+    }
+    document.getElementById('nextBtn').style.display='inline-block';
+  }
+
+  function newProblem() {
+    document.getElementById('nextBtn').style.display='none';
+    document.getElementById('checkBtn').disabled=false;
+    document.getElementById('msgBox').textContent='';
+    if(questionCount >= MAX_QUESTIONS) {
+      maybePodio('mat34', totalScore, MAX_QUESTIONS * 10);
+    } else {
+      genProblem();
+    }
+  }
+
+  function showHat() {
+    Sound.fanfare();
+    const h=document.createElement('div'); h.className='hat-anim';
+    h.textContent=['🧢','🎩','🪄','🧙'][levelIdx];
+    document.body.appendChild(h); setTimeout(()=>h.remove(),900);
+  }
+  function updateLevelBadge() { document.getElementById('levelBadge').textContent=LEVELS[levelIdx].name; }
+  function updateStreak() {
+    document.getElementById('streakBar').innerHTML=Array.from({length:STREAK_NEEDED},(_,i)=>
+      `<div class="streak-dot ${i<streak?'lit':''}"></div>`).join('');
+  }
+
+  updateLevelBadge(); updateStreak(); genProblem();
+  </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Repaso — Examen de Matemáticas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background:#fff; color:#222; align-items:flex-start; font-size:18px; }
+    .sheet { width:100%; max-width:900px; margin:0 auto; }
+    .sheet h1 { text-align:center; color:#4a0072; font-size:1.8rem; margin-bottom:4px; }
+    .sheet .subtitle { text-align:center; color:#7c43bd; margin-bottom:18px; }
+    .section { border:2px solid #b39ddb; border-radius:14px; padding:14px 18px; margin-bottom:18px; background:#faf5ff; }
+    .section h2 { color:#4a0072; font-size:1.25rem; margin-bottom:8px; border-bottom:2px dashed #ce93d8; padding-bottom:4px; }
+    .section h3 { color:#7c43bd; font-size:1.05rem; margin:10px 0 6px; }
+    .section ol, .section ul { margin-left:24px; margin-bottom:8px; }
+    .section li { margin-bottom:10px; line-height:1.6; }
+    .blankline { display:inline-block; min-width:60px; border-bottom:2px solid #999; margin:0 4px; }
+    .vert-op { display:inline-flex; flex-direction:column; align-items:flex-end; font-family:'Courier New',monospace; font-size:1.3rem; font-weight:bold; margin:6px 18px; vertical-align:top; }
+    .vert-op .line { border-top:3px solid #333; width:100%; margin-top:2px; }
+    .vert-op .row { display:flex; justify-content:flex-end; gap:6px; }
+    .vert-op .digit { width:1.1em; text-align:center; }
+    .vert-op .answer-row .digit { border-bottom:2px dotted #999; }
+    .vert-grid { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; margin:10px 0; }
+    .obj-table { width:100%; border-collapse:collapse; margin-top:6px; }
+    .obj-table th, .obj-table td { border:1px solid #ce93d8; padding:6px 10px; text-align:center; }
+    .obj-table th { background:#e1bee7; color:#4a0072; }
+    .print-bar { text-align:center; margin:14px 0; }
+    .print-bar button { font-family:'Patrick Hand',cursive; font-size:1.05rem; padding:10px 26px; border-radius:20px; border:none; background:#4a0072; color:#FFD700; cursor:pointer; }
+    .answers { border:2px dashed #4CAF50; background:#f1fff1; }
+    .answers h2 { color:#2e7d32; border-bottom-color:#a5d6a7; }
+    .back-link { display:block; text-align:center; margin:10px 0 18px; color:#7c43bd; }
+    @media print {
+      .print-bar, .back-link { display:none; }
+      .section { break-inside: avoid; }
+      .answers { break-before: page; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <h1>📋 Ficha de repaso — Examen de Matemáticas</h1>
+    <p class="subtitle">2º de Primaria · Hasta el número 1000</p>
+    <a class="back-link" href="../asignaturas.html#mates">⬅ Volver a Matemáticas</a>
+    <div class="print-bar"><button onclick="window.print()">🖨️ Imprimir ficha</button></div>
+
+    <div class="section">
+      <h2>1. Números hasta el 1000</h2>
+      <h3>a) Escribe el número:</h3>
+      <ol type="a">
+        <li>Tres centenas, cuatro decenas y dos unidades = <span class="blankline"></span></li>
+        <li>Cinco centenas y seis decenas = <span class="blankline"></span></li>
+        <li>Nueve centenas y nueve unidades = <span class="blankline"></span></li>
+        <li>Una centena, cero decenas y cinco unidades = <span class="blankline"></span></li>
+        <li>Siete centenas, ocho decenas y ocho unidades = <span class="blankline"></span></li>
+      </ol>
+      <h3>b) Descompón en centenas (C), decenas (D) y unidades (U):</h3>
+      <ol type="a">
+        <li>463 = <span class="blankline"></span> C + <span class="blankline"></span> D + <span class="blankline"></span> U</li>
+        <li>705 = <span class="blankline"></span> C + <span class="blankline"></span> D + <span class="blankline"></span> U</li>
+        <li>290 = <span class="blankline"></span> C + <span class="blankline"></span> D + <span class="blankline"></span> U</li>
+        <li>38 = <span class="blankline"></span> C + <span class="blankline"></span> D + <span class="blankline"></span> U</li>
+        <li>999 = <span class="blankline"></span> C + <span class="blankline"></span> D + <span class="blankline"></span> U</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>2. Series y comparaciones (&gt; y &lt;)</h2>
+      <h3>a) Completa las series:</h3>
+      <ol type="a">
+        <li>120, 130, 140, <span class="blankline"></span>, <span class="blankline"></span></li>
+        <li>500, 450, 400, <span class="blankline"></span>, <span class="blankline"></span></li>
+        <li>87, 88, 89, <span class="blankline"></span>, <span class="blankline"></span></li>
+        <li>300, 320, 340, <span class="blankline"></span>, <span class="blankline"></span></li>
+        <li>999, 998, 997, <span class="blankline"></span>, <span class="blankline"></span></li>
+      </ol>
+      <h3>b) Escribe &lt;, &gt; o =:</h3>
+      <ol type="a">
+        <li>245 <span class="blankline"></span> 254</li>
+        <li>600 <span class="blankline"></span> 599</li>
+        <li>333 <span class="blankline"></span> 333</li>
+        <li>87 <span class="blankline"></span> 102</li>
+        <li>750 <span class="blankline"></span> 705</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>3. Descomposición y reagrupación</h2>
+      <p>Recuerda el ejemplo: 9 decenas + 4 decenas = 13 decenas = 1 centena y 3 decenas.</p>
+      <ol type="a">
+        <li>8 unidades + 5 unidades = <span class="blankline"></span> unidades = <span class="blankline"></span> decena y <span class="blankline"></span> unidades</li>
+        <li>7 unidades + 6 unidades = <span class="blankline"></span> unidades = <span class="blankline"></span> decena y <span class="blankline"></span> unidades</li>
+        <li>9 decenas + 4 decenas = <span class="blankline"></span> decenas = <span class="blankline"></span> centena y <span class="blankline"></span> decenas</li>
+        <li>6 decenas + 7 decenas = <span class="blankline"></span> decenas = <span class="blankline"></span> centena y <span class="blankline"></span> decenas</li>
+        <li>9 unidades + 9 unidades = <span class="blankline"></span> unidades = <span class="blankline"></span> decena y <span class="blankline"></span> unidades</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>4. Sumas con llevadas (3 cifras)</h2>
+      <div class="vert-grid">
+        <div class="vert-op"><div class="row"><span class="digit">3</span><span class="digit">5</span><span class="digit">7</span></div><div class="row"><span class="digit">+2</span><span class="digit">6</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">4</span><span class="digit">8</span><span class="digit">9</span></div><div class="row"><span class="digit">+1</span><span class="digit">7</span><span class="digit">5</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">2</span><span class="digit">4</span><span class="digit">6</span></div><div class="row"><span class="digit">+1</span><span class="digit">5</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">5</span><span class="digit">7</span><span class="digit">3</span></div><div class="row"><span class="digit">+3</span><span class="digit">2</span><span class="digit">9</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">6</span><span class="digit">9</span><span class="digit">8</span></div><div class="row"><span class="digit">+2</span><span class="digit">0</span><span class="digit">7</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>5. Restas con llevadas (3 cifras)</h2>
+      <div class="vert-grid">
+        <div class="vert-op"><div class="row"><span class="digit">5</span><span class="digit">4</span><span class="digit">2</span></div><div class="row"><span class="digit">−1</span><span class="digit">8</span><span class="digit">7</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">8</span><span class="digit">0</span><span class="digit">3</span></div><div class="row"><span class="digit">−2</span><span class="digit">5</span><span class="digit">6</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">4</span><span class="digit">1</span><span class="digit">0</span></div><div class="row"><span class="digit">−1</span><span class="digit">6</span><span class="digit">5</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">7</span><span class="digit">0</span><span class="digit">0</span></div><div class="row"><span class="digit">−3</span><span class="digit">4</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">9</span><span class="digit">2</span><span class="digit">5</span></div><div class="row"><span class="digit">−4</span><span class="digit">6</span><span class="digit">9</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>6. Problemas de dinero</h2>
+      <ol>
+        <li>Tienes una moneda de 2€, una de 1€ y una de 50 céntimos. ¿Cuánto dinero tienes en total?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Un cuento cuesta 8€. Pagas con un billete de 10€. ¿Cuánto dinero te devuelven?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Quieres comprar un juguete que cuesta 15€. Tienes ahorrados 9€. ¿Cuánto dinero te falta?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>7. Problemas de suma</h2>
+      <ol>
+        <li>En una granja hay 145 gallinas y compran 78 más. ¿Cuántas gallinas hay ahora?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Marcos tiene 234 cromos y su amigo le regala 156. ¿Cuántos cromos tiene ahora?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>En el cine hay 128 personas en la sala 1 y 95 personas en la sala 2. ¿Cuántas personas hay en total?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>8. Problemas de resta</h2>
+      <ol>
+        <li>En un parque había 350 árboles y han talado 124. ¿Cuántos árboles quedan?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Lucía tenía 200€ ahorrados y se gasta 85€ en un regalo. ¿Cuánto dinero le queda?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Un autobús llevaba 423 billetes vendidos y devuelven 158. ¿Cuántos billetes quedan vendidos?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>9. Problemas de multiplicación (suma repetida)</h2>
+      <ol>
+        <li>Cada caja tiene 4 botellas. Hay 5 cajas. ¿Cuántas botellas hay en total?<br>
+            Suma repetida: <span class="blankline" style="min-width:240px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>En cada fila del cine hay 6 butacas. Hay 4 filas. ¿Cuántas butacas hay en total?<br>
+            Suma repetida: <span class="blankline" style="min-width:240px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Cada bolsa tiene 3 caramelos. Hay 7 bolsas. ¿Cuántos caramelos hay en total?<br>
+            Suma repetida: <span class="blankline" style="min-width:240px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>10. Objetos: superficie plana o curva</h2>
+      <p>Marca con una X si el objeto tiene superficie plana, curva o las dos.</p>
+      <table class="obj-table">
+        <tr><th>Objeto</th><th>Plana</th><th>Curva</th><th>Las dos</th></tr>
+        <tr><td>⚽ Pelota de fútbol</td><td></td><td></td><td></td></tr>
+        <tr><td>🎲 Dado</td><td></td><td></td><td></td></tr>
+        <tr><td>🥫 Lata de refresco</td><td></td><td></td><td></td></tr>
+        <tr><td>📖 Libro</td><td></td><td></td><td></td></tr>
+        <tr><td>🍊 Naranja</td><td></td><td></td><td></td></tr>
+        <tr><td>🥤 Vaso</td><td></td><td></td><td></td></tr>
+        <tr><td>🎁 Caja de regalo</td><td></td><td></td><td></td></tr>
+        <tr><td>🎈 Globo</td><td></td><td></td><td></td></tr>
+        <tr><td>🧻 Rollo de papel</td><td></td><td></td><td></td></tr>
+        <tr><td>🧱 Ladrillo</td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="section answers">
+      <h2>✅ Soluciones</h2>
+      <h3>1. Números hasta 1000</h3>
+      <p>a) 342 · 560 · 909 · 105 · 788<br>
+         b) 463 = 4C+6D+3U · 705 = 7C+0D+5U · 290 = 2C+9D+0U · 38 = 0C+3D+8U · 999 = 9C+9D+9U</p>
+      <h3>2. Series y comparaciones</h3>
+      <p>a) 150,160 · 350,300 · 90,91 · 360,380 · 996,995<br>
+         b) &lt; · &gt; · = · &lt; · &gt;</p>
+      <h3>3. Descomposición y reagrupación</h3>
+      <p>13u = 1D y 3U · 13u = 1D y 3U · 13d = 1C y 3D · 13d = 1C y 3D · 18u = 1D y 8U</p>
+      <h3>4. Sumas con llevadas</h3>
+      <p>357+268=625 · 489+175=664 · 246+158=404 · 573+329=902 · 698+207=905</p>
+      <h3>5. Restas con llevadas</h3>
+      <p>542−187=355 · 803−256=547 · 410−165=245 · 700−348=352 · 925−469=456</p>
+      <h3>6. Problemas de dinero</h3>
+      <p>1) 2€+1€+0,50€ = 3,50€ &nbsp; 2) 10€−8€ = 2€ &nbsp; 3) 15€−9€ = 6€</p>
+      <h3>7. Problemas de suma</h3>
+      <p>1) 145+78 = 223 &nbsp; 2) 234+156 = 390 &nbsp; 3) 128+95 = 223</p>
+      <h3>8. Problemas de resta</h3>
+      <p>1) 350−124 = 226 &nbsp; 2) 200−85 = 115 &nbsp; 3) 423−158 = 265</p>
+      <h3>9. Problemas de multiplicación</h3>
+      <p>1) 4+4+4+4+4 = 20 &nbsp; 2) 6+6+6+6 = 24 &nbsp; 3) 3+3+3+3+3+3+3 = 21</p>
+      <h3>10. Superficies</h3>
+      <p>Plana: dado, libro, caja de regalo, ladrillo<br>
+         Curva: pelota de fútbol, naranja, globo<br>
+         Las dos: lata de refresco, vaso, rollo de papel</p>
+    </div>
+
+    <a class="back-link" href="../asignaturas.html#mates">⬅ Volver a Matemáticas</a>
+  </div>
+</body>
+</html>
