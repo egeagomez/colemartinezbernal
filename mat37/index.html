@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Restas — Examen de Matemáticas</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body { background:#fff; color:#222; align-items:flex-start; font-size:18px; }
+    .sheet { width:100%; max-width:900px; margin:0 auto; }
+    .sheet h1 { text-align:center; color:#4a0072; font-size:1.8rem; margin-bottom:4px; }
+    .sheet .subtitle { text-align:center; color:#7c43bd; margin-bottom:18px; }
+    .section { border:2px solid #b39ddb; border-radius:14px; padding:14px 18px; margin-bottom:18px; background:#faf5ff; }
+    .section h2 { color:#4a0072; font-size:1.25rem; margin-bottom:8px; border-bottom:2px dashed #ce93d8; padding-bottom:4px; }
+    .section h3 { color:#7c43bd; font-size:1.05rem; margin:10px 0 6px; }
+    .section ol, .section ul { margin-left:24px; margin-bottom:8px; }
+    .section li { margin-bottom:10px; line-height:1.6; }
+    .blankline { display:inline-block; min-width:60px; border-bottom:2px solid #999; margin:0 4px; }
+    .vert-op { display:inline-flex; flex-direction:column; align-items:flex-end; font-family:'Courier New',monospace; font-size:1.3rem; font-weight:bold; margin:6px 18px; vertical-align:top; }
+    .vert-op .line { border-top:3px solid #333; width:100%; margin-top:2px; }
+    .vert-op .row { display:flex; justify-content:flex-end; gap:6px; }
+    .vert-op .digit { width:1.1em; text-align:center; }
+    .vert-op .answer-row .digit { border-bottom:2px dotted #999; }
+    .vert-grid { display:flex; flex-wrap:wrap; gap:24px; justify-content:center; margin:10px 0; }
+    .print-bar { text-align:center; margin:14px 0; }
+    .print-bar button { font-family:'Patrick Hand',cursive; font-size:1.05rem; padding:10px 26px; border-radius:20px; border:none; background:#4a0072; color:#FFD700; cursor:pointer; }
+    .answers { border:2px dashed #4CAF50; background:#f1fff1; }
+    .answers h2 { color:#2e7d32; border-bottom-color:#a5d6a7; }
+    .back-link { display:block; text-align:center; margin:10px 0 18px; color:#7c43bd; }
+    @media print {
+      .print-bar, .back-link { display:none; }
+      .section { break-inside: avoid; }
+      .answers { break-before: page; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <h1>➖ Ficha de restas con llevadas</h1>
+    <p class="subtitle">2º de Primaria · Restas de 3 cifras</p>
+    <a class="back-link" href="../asignaturas.html#mates">⬅ Volver a Matemáticas</a>
+    <div class="print-bar"><button onclick="window.print()">🖨️ Imprimir ficha</button></div>
+
+    <div class="section">
+      <h2>a) Restas sin llevadas</h2>
+      <div class="vert-grid">
+        <div class="vert-op"><div class="row"><span class="digit">4</span><span class="digit">5</span><span class="digit">8</span></div><div class="row"><span class="digit">−2</span><span class="digit">3</span><span class="digit">5</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">7</span><span class="digit">6</span><span class="digit">9</span></div><div class="row"><span class="digit">−5</span><span class="digit">4</span><span class="digit">3</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">8</span><span class="digit">9</span><span class="digit">4</span></div><div class="row"><span class="digit">−2</span><span class="digit">7</span><span class="digit">1</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">5</span><span class="digit">8</span><span class="digit">7</span></div><div class="row"><span class="digit">−3</span><span class="digit">6</span><span class="digit">4</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>b) Restas con llevada de unidades</h2>
+      <div class="vert-grid">
+        <div class="vert-op"><div class="row"><span class="digit">5</span><span class="digit">8</span><span class="digit">2</span></div><div class="row"><span class="digit">−3</span><span class="digit">5</span><span class="digit">7</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">4</span><span class="digit">7</span><span class="digit">3</span></div><div class="row"><span class="digit">−1</span><span class="digit">5</span><span class="digit">6</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">6</span><span class="digit">4</span><span class="digit">5</span></div><div class="row"><span class="digit">−2</span><span class="digit">1</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">8</span><span class="digit">6</span><span class="digit">1</span></div><div class="row"><span class="digit">−2</span><span class="digit">3</span><span class="digit">7</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>c) Restas con llevada de decenas y unidades</h2>
+      <div class="vert-grid">
+        <div class="vert-op"><div class="row"><span class="digit">6</span><span class="digit">2</span><span class="digit">3</span></div><div class="row"><span class="digit">−2</span><span class="digit">5</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">9</span><span class="digit">1</span><span class="digit">4</span></div><div class="row"><span class="digit">−3</span><span class="digit">7</span><span class="digit">6</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">8</span><span class="digit">0</span><span class="digit">5</span></div><div class="row"><span class="digit">−2</span><span class="digit">4</span><span class="digit">7</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+        <div class="vert-op"><div class="row"><span class="digit">9</span><span class="digit">3</span><span class="digit">2</span></div><div class="row"><span class="digit">−4</span><span class="digit">6</span><span class="digit">8</span></div><div class="line"></div><div class="row answer-row"><span class="digit"></span><span class="digit"></span><span class="digit"></span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>d) Problemas de resta</h2>
+      <ol>
+        <li>Una biblioteca tiene 540 libros y prestan 285. ¿Cuántos libros quedan en la biblioteca?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>En una granja había 612 ovejas y se venden 347. ¿Cuántas ovejas quedan?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+        <li>Pedro tenía 800€ ahorrados y se gasta 463€ en una bicicleta. ¿Cuánto dinero le queda?<br>
+            Operación: <span class="blankline" style="min-width:200px"></span> &nbsp; Solución: <span class="blankline"></span></li>
+      </ol>
+    </div>
+
+    <div class="section answers">
+      <h2>✅ Soluciones</h2>
+      <h3>a) Sin llevadas</h3>
+      <p>458−235=223 &nbsp; 769−543=226 &nbsp; 894−271=623 &nbsp; 587−364=223</p>
+      <h3>b) Llevada de unidades</h3>
+      <p>582−357=225 &nbsp; 473−156=317 &nbsp; 645−218=427 &nbsp; 861−237=624</p>
+      <h3>c) Llevada de decenas y unidades</h3>
+      <p>623−258=365 &nbsp; 914−376=538 &nbsp; 805−247=558 &nbsp; 932−468=464</p>
+      <h3>d) Problemas</h3>
+      <p>1) 540−285 = 255 &nbsp; 2) 612−347 = 265 &nbsp; 3) 800−463 = 337</p>
+    </div>
+
+    <a class="back-link" href="../asignaturas.html#mates">⬅ Volver a Matemáticas</a>
+  </div>
+</body>
+</html>
