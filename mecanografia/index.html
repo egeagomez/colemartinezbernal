@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MecanoKids - Mecanografía para Niños</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==================== PROFILE SELECTION ==================== -->
+  <div id="screen-profiles" class="screen active">
+    <div class="screen-content">
+      <h1 class="app-title">MecanoKids</h1>
+      <p class="subtitle">¿Quién va a practicar hoy?</p>
+      <div id="profile-list" class="profile-grid"></div>
+      <button id="btn-new-profile" class="btn btn-primary btn-large">+ Nuevo Jugador</button>
+      <p id="profile-limit-msg" class="hidden">Máximo de jugadores alcanzado</p>
+    </div>
+  </div>
+
+  <!-- ==================== PROFILE CREATION ==================== -->
+  <div id="screen-create-profile" class="screen">
+    <div class="screen-content">
+      <h2>Nuevo Jugador</h2>
+      <div class="form-group">
+        <label for="profile-name">Tu nombre:</label>
+        <input type="text" id="profile-name" maxlength="20" placeholder="Escribe tu nombre..." class="input-large">
+      </div>
+      <div class="form-group">
+        <label>Elige tu avatar:</label>
+        <div id="avatar-picker" class="avatar-grid"></div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-save-profile" class="btn btn-primary">Crear Jugador</button>
+        <button id="btn-cancel-profile" class="btn btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN MENU ==================== -->
+  <div id="screen-menu" class="screen">
+    <div class="screen-content">
+      <div id="menu-profile-header" class="profile-header">
+        <span id="menu-avatar" class="avatar-display"></span>
+        <span id="menu-player-name" class="player-name"></span>
+      </div>
+      <h1 class="app-title">MecanoKids</h1>
+      <div class="menu-grid">
+        <button id="btn-lessons" class="menu-card card-lessons">
+          <span class="menu-icon">📚</span>
+          <span class="menu-label">Lecciones</span>
+        </button>
+        <button id="btn-free-practice" class="menu-card card-practice">
+          <span class="menu-icon">✏️</span>
+          <span class="menu-label">Práctica Libre</span>
+        </button>
+        <button id="btn-games" class="menu-card card-games">
+          <span class="menu-icon">🎮</span>
+          <span class="menu-label">Juegos</span>
+        </button>
+        <button id="btn-progress" class="menu-card card-progress">
+          <span class="menu-icon">📊</span>
+          <span class="menu-label">Mi Progreso</span>
+        </button>
+      </div>
+      <button id="btn-change-player" class="btn btn-secondary btn-small">Cambiar Jugador</button>
+    </div>
+  </div>
+
+  <!-- ==================== LESSON SELECTION ==================== -->
+  <div id="screen-lessons" class="screen">
+    <div class="screen-content">
+      <div class="screen-header">
+        <button class="btn-back" data-target="screen-menu">← Volver</button>
+        <h2>Lecciones</h2>
+      </div>
+      <div id="lesson-list" class="lesson-grid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== EXERCISE ==================== -->
+  <div id="screen-exercise" class="screen">
+    <div class="screen-content exercise-layout">
+      <div class="exercise-header">
+        <button class="btn-back" data-target="screen-lessons">← Salir</button>
+        <h3 id="exercise-title"></h3>
+        <div class="exercise-stats">
+          <span class="stat"><span class="stat-label">PPM</span> <span id="stat-ppm">0</span></span>
+          <span class="stat"><span class="stat-label">Precisión</span> <span id="stat-accuracy">100%</span></span>
+          <span class="stat"><span class="stat-label">Tiempo</span> <span id="stat-time">0:00</span></span>
+        </div>
+      </div>
+      <div id="exercise-text" class="exercise-text"></div>
+      <div id="virtual-keyboard" class="keyboard"></div>
+    </div>
+  </div>
+
+  <!-- ==================== EXERCISE RESULTS ==================== -->
+  <div id="screen-results" class="screen">
+    <div class="screen-content results-layout">
+      <div id="confetti-container"></div>
+      <h2 id="results-title"></h2>
+      <div id="results-stars" class="stars-display"></div>
+      <div class="results-stats">
+        <div class="result-stat">
+          <span class="result-value" id="result-ppm">0</span>
+          <span class="result-label">Pulsaciones/min</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="result-accuracy">0%</span>
+          <span class="result-label">Precisión</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="result-time">0:00</span>
+          <span class="result-label">Tiempo</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="result-errors">0</span>
+          <span class="result-label">Errores</span>
+        </div>
+      </div>
+      <p id="results-message" class="results-message"></p>
+      <div id="results-medal" class="medal-display hidden"></div>
+      <div class="btn-row">
+        <button id="btn-retry" class="btn btn-primary">Repetir</button>
+        <button id="btn-next-lesson" class="btn btn-primary hidden">Siguiente Lección</button>
+        <button id="btn-back-lessons" class="btn btn-secondary">Volver a Lecciones</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MI PROGRESO ==================== -->
+  <div id="screen-progress" class="screen">
+    <div class="screen-content">
+      <div class="screen-header">
+        <button class="btn-back" data-target="screen-menu">← Volver</button>
+        <h2>Mi Progreso</h2>
+      </div>
+      <div class="progress-overview">
+        <div class="progress-stat-card">
+          <span class="progress-value" id="progress-lessons">0/0</span>
+          <span class="progress-label">Lecciones</span>
+          <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar"></div>
+          </div>
+        </div>
+        <div class="progress-stat-card">
+          <span class="progress-value" id="progress-ppm">0</span>
+          <span class="progress-label">PPM Promedio</span>
+        </div>
+        <div class="progress-stat-card">
+          <span class="progress-value" id="progress-accuracy">0%</span>
+          <span class="progress-label">Precisión Promedio</span>
+        </div>
+      </div>
+      <h3>Medallas</h3>
+      <div id="medals-display" class="medals-grid"></div>
+      <h3>Detalle por Lección</h3>
+      <div id="lesson-stats-list" class="lesson-stats-list"></div>
+    </div>
+  </div>
+
+  <!-- ==================== GAME SELECTION ==================== -->
+  <div id="screen-games" class="screen">
+    <div class="screen-content">
+      <div class="screen-header">
+        <button class="btn-back" data-target="screen-menu">← Volver</button>
+        <h2>Juegos</h2>
+      </div>
+      <div class="menu-grid">
+        <button class="menu-card card-rain game-select" data-game="rain">
+          <span class="menu-icon">🌧️</span>
+          <span class="menu-label">Lluvia de Letras</span>
+        </button>
+        <button class="menu-card card-race game-select" data-game="race">
+          <span class="menu-icon">🏎️</span>
+          <span class="menu-label">Carrera de Palabras</span>
+        </button>
+        <button class="menu-card card-time game-select" data-game="time">
+          <span class="menu-icon">⏱️</span>
+          <span class="menu-label">Contrarreloj</span>
+        </button>
+      </div>
+      <p id="games-locked-msg" class="hidden">Completa 3 lecciones para desbloquear los juegos</p>
+    </div>
+  </div>
+
+  <!-- ==================== LLUVIA DE LETRAS ==================== -->
+  <div id="screen-game-rain" class="screen">
+    <div class="screen-content game-layout">
+      <div class="game-header">
+        <button class="btn-back" data-target="screen-games">← Salir</button>
+        <div class="game-stats-bar">
+          <span class="stat">Puntos: <span id="rain-score">0</span></span>
+          <span class="stat">Vidas: <span id="rain-lives">❤️❤️❤️</span></span>
+          <span class="stat">PPM: <span id="rain-ppm">0</span></span>
+        </div>
+      </div>
+      <div id="rain-area" class="rain-area"></div>
+      <input type="text" id="rain-input" class="game-input" autocomplete="off" autocapitalize="off">
+    </div>
+  </div>
+
+  <!-- ==================== CARRERA DE PALABRAS ==================== -->
+  <div id="screen-game-race" class="screen">
+    <div class="screen-content game-layout">
+      <div class="game-header">
+        <button class="btn-back" data-target="screen-games">← Salir</button>
+        <div class="game-stats-bar">
+          <span class="stat">PPM: <span id="race-ppm">0</span></span>
+          <span class="stat">Precisión: <span id="race-accuracy">100%</span></span>
+        </div>
+      </div>
+      <div class="race-track">
+        <div class="race-lane">
+          <span class="racer" id="racer-player">🚗</span>
+          <span class="racer-label">Tú</span>
+        </div>
+        <div class="race-lane">
+          <span class="racer" id="racer-cpu">🚙</span>
+          <span class="racer-label">Robot</span>
+        </div>
+        <div class="finish-line">🏁</div>
+      </div>
+      <div id="race-word-display" class="race-word"></div>
+      <input type="text" id="race-input" class="game-input" autocomplete="off" autocapitalize="off">
+    </div>
+  </div>
+
+  <!-- ==================== CONTRARRELOJ ==================== -->
+  <div id="screen-game-time" class="screen">
+    <div class="screen-content game-layout">
+      <div class="game-header">
+        <button class="btn-back" data-target="screen-games">← Salir</button>
+        <div class="game-stats-bar">
+          <span class="stat">Tiempo: <span id="time-countdown">60</span>s</span>
+          <span class="stat">Palabras: <span id="time-words">0</span></span>
+          <span class="stat">PPM: <span id="time-ppm">0</span></span>
+        </div>
+      </div>
+      <div id="time-select" class="time-select">
+        <h3>Elige el tiempo:</h3>
+        <button class="btn btn-primary time-option" data-seconds="30">30 segundos</button>
+        <button class="btn btn-primary time-option" data-seconds="60">60 segundos</button>
+        <button class="btn btn-primary time-option" data-seconds="90">90 segundos</button>
+      </div>
+      <div id="time-game-area" class="hidden">
+        <div id="time-word-display" class="race-word"></div>
+        <input type="text" id="time-input" class="game-input" autocomplete="off" autocapitalize="off">
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GAME RESULTS ==================== -->
+  <div id="screen-game-results" class="screen">
+    <div class="screen-content results-layout">
+      <div id="game-confetti-container"></div>
+      <h2 id="game-results-title"></h2>
+      <div class="results-stats">
+        <div class="result-stat">
+          <span class="result-value" id="game-result-score">0</span>
+          <span class="result-label" id="game-result-score-label">Puntuación</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="game-result-ppm">0</span>
+          <span class="result-label">PPM</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="game-result-accuracy">0%</span>
+          <span class="result-label">Precisión</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-value" id="game-result-extra">0</span>
+          <span class="result-label" id="game-result-extra-label">Errores</span>
+        </div>
+      </div>
+      <div id="game-results-medal" class="medal-display hidden"></div>
+      <div class="btn-row">
+        <button id="btn-game-retry" class="btn btn-primary">Jugar de Nuevo</button>
+        <button id="btn-game-back" class="btn btn-secondary">Volver a Juegos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FREE PRACTICE ==================== -->
+  <div id="screen-free-practice" class="screen">
+    <div class="screen-content exercise-layout">
+      <div class="exercise-header">
+        <button class="btn-back" data-target="screen-menu">← Salir</button>
+        <h3>Práctica Libre</h3>
+        <div class="exercise-stats">
+          <span class="stat"><span class="stat-label">PPM</span> <span id="free-stat-ppm">0</span></span>
+          <span class="stat"><span class="stat-label">Precisión</span> <span id="free-stat-accuracy">100%</span></span>
+        </div>
+      </div>
+      <div id="free-exercise-text" class="exercise-text"></div>
+      <div id="free-virtual-keyboard" class="keyboard"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
