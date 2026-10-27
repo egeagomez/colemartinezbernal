@@ -47,7 +47,7 @@
     <div class="medal-row" id="medalRow"></div>
     <div class="btn-row">
       <button class="btn btn-green" onclick="nextGame()">Siguiente juego ▶</button>
-      <a href="../index.html" class="btn btn-blue">Menú principal 🏠</a>
+      <a href="index.html" class="btn btn-blue">Menú principal 🏠</a>
     </div>
   </div>
   <script src="assets/score.js"></script>
@@ -67,20 +67,20 @@
     const { p: prefix, n: num } = parseId(fromRaw);
 
     // Last game number per subject
-    const MAX_GAMES = { juego:19, mat:24, eng:9, sci:9, soc:12 };
+    const MAX_GAMES = { juego:19, mat:37, eng:17, sci:15, soc:17 };
     // Menu hash per subject
     const MENU_HASH = { juego:'#lengua', mat:'#mates', eng:'#english', sci:'#science', soc:'#social' };
 
     function nextGame() {
       const next = num + 1;
       const max  = MAX_GAMES[prefix] || 15;
-      if (next <= max) window.location.href = `../${prefix}${next}/index.html`;
-      else             window.location.href = '../asignaturas.html' + (MENU_HASH[prefix] || '');
+      if (next <= max) window.location.href = `${prefix}${next}/index.html`;
+      else             window.location.href = 'asignaturas.html' + (MENU_HASH[prefix] || '');
     }
 
     // Update menu button href dynamically
     document.querySelector('.btn-row a.btn-blue').href =
-      '../asignaturas.html' + (MENU_HASH[prefix] || '');
+      'asignaturas.html' + (MENU_HASH[prefix] || '');
 
     function renderMedal(gameId) {
       const s = scores[gameId];
@@ -120,8 +120,7 @@
     // Mostrar medallas de los últimos juegos jugados
     const medalRow = document.getElementById('medalRow');
     const ids = Object.keys(scores).sort((a,b)=>{
-      const da=scores[a].date||'', db=scores[b].date||'';
-      return db.localeCompare(da);
+      return (Number(scores[b].date) || 0) - (Number(scores[a].date) || 0);
     }).slice(0,4);
     medalRow.innerHTML = ids.map(renderMedal).join('') ||
       '<p style="color:#888">Aún no hay puntuaciones guardadas.</p>';

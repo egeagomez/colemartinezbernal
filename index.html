@@ -1,78 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Selector de Asignatura</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087e95">
+  <meta name="description" content="Juegos de repaso de segundo y tercero de Primaria: Lengua, Matemáticas, Inglés, Ciencias y dictados a tu ritmo.">
+  <title>Aprendemos jugando · Segundo y Tercero</title>
+  <link rel="icon" href="icono.svg" type="image/svg+xml">
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:'Patrick Hand',cursive;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      background:
-        radial-gradient(circle at 15% 15%, rgba(255,255,255,.18), transparent 35%),
-        radial-gradient(circle at 85% 75%, rgba(255,255,255,.12), transparent 30%),
-        linear-gradient(135deg,#0d47a1 0%,#00695c 45%,#5d4037 100%);
-      color:#fff;
-    }
-    .selector-wrap{
-      width:100%;
-      max-width:920px;
-      background:rgba(0,0,0,.28);
-      border:2px solid rgba(255,255,255,.25);
-      border-radius:24px;
-      padding:28px 24px 26px;
-      box-shadow:0 16px 40px rgba(0,0,0,.35);
-      backdrop-filter:blur(4px);
-    }
-    .title{font-size:2.3rem;text-align:center;color:#FFD700;text-shadow:0 0 14px rgba(255,215,0,.45)}
-    .subtitle{font-size:1.1rem;text-align:center;color:#e8f5e9;margin-top:4px;margin-bottom:20px}
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-      gap:14px;
-    }
-    .pick{
-      text-decoration:none;
-      color:#fff;
-      border:2px solid;
-      border-radius:16px;
-      padding:18px 12px 14px;
-      text-align:center;
-      transition:transform .15s, box-shadow .15s;
-      box-shadow:0 6px 18px rgba(0,0,0,.28);
-      display:block;
-    }
-    .pick:hover{transform:translateY(-3px)}
-    .pick .icon{font-size:2.2rem;display:block;margin-bottom:4px}
-    .pick .name{font-size:1.2rem;font-weight:bold}
-    .lengua{background:linear-gradient(145deg,#29B6F6,#0277bd);border-color:#b3e5fc}
-    .mates{background:linear-gradient(145deg,#4a0072,#2d004a);border-color:#b39ddb}
-    .english{background:linear-gradient(145deg,#1b5e20,#0d2a10);border-color:#81c784}
-    .science{background:linear-gradient(145deg,#00695c,#002a22);border-color:#4db6ac}
-    .social{background:linear-gradient(145deg,#5d4037,#3e2723);border-color:#bcaaa4}
-    .hint{margin-top:18px;text-align:center;color:#fff8e1;font-size:.95rem}
+    :root{font-family:'Trebuchet MS','Segoe UI',sans-serif;color:#183f50;background:#edf8f7;font-size:18px}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 95% 0,#fff0cc,transparent 55%),radial-gradient(ellipse at 0 85%,#d8f1f1,transparent 55%)}.shell{max-width:1050px;padding:28px 30px;margin:auto}header{display:flex;align-items:center;gap:12px;padding-bottom:24px;border-bottom:1px solid #c9dfe1;font-weight:800}.logo{padding:10px;border:1px solid #c9dfe1;border-radius:15px;background:white;font-size:1.7rem}header small{display:block;color:#526b76;font-weight:400;font-size:.75rem;margin-top:5px}.intro{padding:55px 0 32px;max-width:760px}.eyebrow{text-transform:uppercase;letter-spacing:2px;color:#087e95;font-weight:800;font-size:.74rem}h1{font-size:clamp(2.3rem,5vw,3.8rem);line-height:1.1;letter-spacing:-1.6px;margin:18px 0}h1 span{color:#087e95}.lead{color:#526b76;line-height:1.7;max-width:650px}.courses{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:10px 0 36px}.course{display:flex;flex-direction:column;padding:30px;border:1px solid #c9dfe1;border-top:6px solid var(--accent);border-radius:24px;background:#fffef9;text-decoration:none;color:inherit;box-shadow:0 5px 0 #dcebea;transition:transform .15s}.course:hover{transform:translateY(-5px)}.course:focus-visible{outline:4px solid #ab4c00;outline-offset:5px}.number{display:flex;align-items:center;justify-content:space-between;gap:12px}.number strong{font-size:3rem;letter-spacing:-2px}.number span{font-size:2.7rem}.course h2{font-size:1.4rem;margin:20px 0 12px}.course p{color:#526b76;line-height:1.65;margin:0 0 24px}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:30px}.tags span{font-size:.75rem;padding:7px 10px;background:var(--tint);border-radius:9px}.enter{margin-top:auto;display:flex;justify-content:space-between;align-items:center;border-radius:13px;padding:14px 18px;background:var(--accent);color:white;font-weight:800}.note{padding:20px 24px;background:#fff9e8;border:1px solid #e8dbb8;border-radius:17px;line-height:1.7;font-size:.9rem}.note strong{display:block}footer{font-size:.75rem;color:#526b76;text-align:center;line-height:1.9;margin:35px 0 12px}@media(max-width:650px){.shell{padding:20px}.intro{padding-top:35px}.courses{grid-template-columns:1fr;gap:20px}.course{padding:25px}h1{font-size:2.6rem}}@media(prefers-reduced-motion:reduce){.course{transition:none}}
   </style>
 </head>
 <body>
-  <main class="selector-wrap">
-    <h1 class="title">Elige Asignatura</h1>
-    <p class="subtitle">Pantalla principal de acceso</p>
-
-    <section class="grid" aria-label="Selector de asignaturas">
-      <a class="pick lengua" href="asignaturas.html#lengua"><span class="icon">📚</span><span class="name">Lengua</span></a>
-      <a class="pick mates" href="asignaturas.html#mates"><span class="icon">🧙</span><span class="name">Matemáticas</span></a>
-      <a class="pick english" href="asignaturas.html#english"><span class="icon">🇬🇧</span><span class="name">English</span></a>
-      <a class="pick science" href="asignaturas.html#science"><span class="icon">🔬</span><span class="name">Science</span></a>
-      <a class="pick social" href="asignaturas.html#social"><span class="icon">🏺</span><span class="name">Sociales</span></a>
-    </section>
-
-    <p class="hint">La portada muestra solo el selector, sin contenidos de juegos.</p>
-  </main>
+  <div class="shell">
+    <header><span class="logo" aria-hidden="true">📚</span><div>Aprendemos jugando<small>Francisco Martínez Bernal · Molina de Segura</small></div></header>
+    <main>
+      <section class="intro"><p class="eyebrow">Cada día, una pequeña aventura</p><h1>Elige tu curso.<br>¡Y <span>vamos a jugar!</span></h1><p class="lead">Un lugar para repasar, descubrir y seguir aprendiendo. Elige Segundo o Tercero y encuentra tus juegos.</p></section>
+      <section class="courses" aria-label="Elige tu curso">
+        <a class="course" href="segundo/" style="--accent:#2f7051;--tint:#e7f2e9"><div class="number"><strong>2.º</strong><span aria-hidden="true">🌳</span></div><h2>Segundo de Primaria</h2><p>Las aventuras del año pasado, reunidas para volver a practicar cuando quieras.</p><div class="tags"><span>Lengua</span><span>Matemáticas</span><span>English</span><span>Science</span><span>Sociales</span><span>Mecanografía</span></div><span class="enter">Entrar en Segundo <span aria-hidden="true">→</span></span></a>
+        <a class="course" href="tercero/" style="--accent:#087e95;--tint:#e4f1f6"><div class="number"><strong>3.º</strong><span aria-hidden="true">🦉</span></div><h2>Tercero de Primaria</h2><p>Nuevos retos de Lengua: construye palabras, descubre sus familias y escribe a tu ritmo.</p><div class="tags"><span>10 juegos de Lengua</span><span>90 preguntas</span><span>2 dictados con audio</span></div><span class="enter">Entrar en Tercero <span aria-hidden="true">→</span></span></a>
+      </section>
+      <aside class="note"><strong>✏️ Para los dictados, prepara tu cuaderno.</strong>Escucha fragmentos cortos y escribe sin prisa. Puedes repetirlos o pedir más tiempo.</aside>
+    </main>
+    <footer>Pasito a pasito, palabra a palabra.<br>Juegos de repaso para practicar en familia.</footer>
+  </div>
 </body>
 </html>

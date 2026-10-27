@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Segundo de Primaria · Elige tu asignatura</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Patrick Hand',cursive;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,.18), transparent 35%),
+        radial-gradient(circle at 85% 75%, rgba(255,255,255,.12), transparent 30%),
+        linear-gradient(135deg,#0d47a1 0%,#00695c 45%,#5d4037 100%);
+      color:#fff;
+    }
+    .selector-wrap{
+      width:100%;
+      max-width:920px;
+      background:rgba(0,0,0,.28);
+      border:2px solid rgba(255,255,255,.25);
+      border-radius:24px;
+      padding:28px 24px 26px;
+      box-shadow:0 16px 40px rgba(0,0,0,.35);
+      backdrop-filter:blur(4px);
+    }
+    .title{font-size:2.3rem;text-align:center;color:#FFD700;text-shadow:0 0 14px rgba(255,215,0,.45)}
+    .subtitle{font-size:1.1rem;text-align:center;color:#e8f5e9;margin-top:4px;margin-bottom:20px}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:14px;
+    }
+    .pick{
+      text-decoration:none;
+      color:#fff;
+      border:2px solid;
+      border-radius:16px;
+      padding:18px 12px 14px;
+      text-align:center;
+      transition:transform .15s, box-shadow .15s;
+      box-shadow:0 6px 18px rgba(0,0,0,.28);
+      display:block;
+    }
+    .pick:hover{transform:translateY(-3px)}
+    .pick .icon{font-size:2.2rem;display:block;margin-bottom:4px}
+    .pick .name{font-size:1.2rem;font-weight:bold}
+    .lengua{background:linear-gradient(145deg,#29B6F6,#0277bd);border-color:#b3e5fc}
+    .mates{background:linear-gradient(145deg,#4a0072,#2d004a);border-color:#b39ddb}
+    .english{background:linear-gradient(145deg,#1b5e20,#0d2a10);border-color:#81c784}
+    .science{background:linear-gradient(145deg,#00695c,#002a22);border-color:#4db6ac}
+    .social{background:linear-gradient(145deg,#5d4037,#3e2723);border-color:#bcaaa4}
+    .hint{margin-top:18px;text-align:center;color:#fff8e1;font-size:.95rem}
+  </style>
+</head>
+<body>
+  <main class="selector-wrap">
+    <a href="../" style="display:inline-block;color:#fff;margin-bottom:18px">← Elegir otro curso</a>
+    <h1 class="title">Segundo de Primaria</h1>
+    <p class="subtitle">Elige tu asignatura</p>
+
+    <section class="grid" aria-label="Selector de asignaturas">
+      <a class="pick lengua" href="asignaturas.html#lengua"><span class="icon">📚</span><span class="name">Lengua</span></a>
+      <a class="pick mates" href="asignaturas.html#mates"><span class="icon">🧙</span><span class="name">Matemáticas</span></a>
+      <a class="pick english" href="asignaturas.html#english"><span class="icon">🇬🇧</span><span class="name">English</span></a>
+      <a class="pick science" href="asignaturas.html#science"><span class="icon">🔬</span><span class="name">Science</span></a>
+      <a class="pick social" href="asignaturas.html#social"><span class="icon">🏺</span><span class="name">Sociales</span></a>
+      <a class="pick lengua" href="mecanografia/"><span class="icon">⌨️</span><span class="name">Mecanografía</span></a>
+    </section>
+
+    <p class="hint">Los juegos del año pasado, listos para seguir practicando.</p>
+  </main>
+</body>
+</html>

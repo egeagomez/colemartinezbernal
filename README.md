@@ -1,0 +1,32 @@
+# Aprendemos jugando · Segundo y Tercero
+
+Juegos de repaso de Primaria para practicar en familia.
+
+- `index.html`: portada para elegir curso.
+- `segundo/`: todos los juegos anteriores, sus imágenes, puntuaciones y selector de asignaturas. Incluye Lengua, Matemáticas, English, Science, Sociales y Mecanografía.
+- `tercero/`: diez juegos de Lengua (90 preguntas) y dos dictados con audio en castellano. La lectura se divide en fragmentos cortos, con repetición y avance manual o pausas automáticas de 12 o 18 segundos.
+
+## Abrir la web
+
+Se puede abrir `index.html` directamente en un navegador o servir esta carpeta como sitio estático. No necesita base de datos, instalación de dependencias ni compilación. Los resultados y borradores se guardan solo en el navegador y no se sincronizan entre dispositivos.
+
+## GitHub Pages
+
+Publicar la rama `main` desde la raíz (`/`) en Settings → Pages. `.nojekyll` permite servir directamente los archivos HTML, CSS, JavaScript, imágenes y audios.
+
+- Portada: `https://egeagomez.github.io/colemartinezbernal/`
+- Segundo: `https://egeagomez.github.io/colemartinezbernal/segundo/`
+- Tercero: `https://egeagomez.github.io/colemartinezbernal/tercero/`
+
+Las rutas son relativas y permiten alojar la web bajo el nombre del repositorio. Las fotografías originales del libro y del cuaderno de tercero no forman parte del sitio.
+
+## Comprobar los archivos
+
+```text
+python tools/verificar-sitio.py
+node tercero/tools/verificar.cjs
+```
+
+El primer comando comprueba enlaces, recursos y mayúsculas de los nombres de archivo, que deben coincidir en GitHub Pages. El segundo comprueba el contenido de tercero y la correspondencia entre dictados y audios.
+
+Las instrucciones de Docker siguen disponibles en `DEPLOY.md`; el `Dockerfile` publica la portada y ambos cursos.
