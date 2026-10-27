@@ -4,7 +4,7 @@ Juegos de repaso de Primaria para practicar en familia.
 
 - `index.html`: portada para elegir curso.
 - `segundo/`: todos los juegos anteriores, sus imágenes, puntuaciones y selector de asignaturas. Incluye Lengua, Matemáticas, English, Science, Sociales y Mecanografía.
-- `tercero/`: diez juegos de Lengua (90 preguntas) y dos dictados con audio en castellano. La lectura se divide en fragmentos cortos, con repetición y avance manual o pausas automáticas de 12 o 18 segundos.
+- `tercero/`: selector de asignaturas. `tercero/lengua/` contiene diez juegos de Lengua (90 preguntas) y dos dictados con audio en castellano. `tercero/mates/` contiene doce juegos de Matemáticas: cálculo en columna, parejas de operaciones, numeración, problemas guiados, figuras, perímetros, áreas y relojes.
 
 ## Abrir la web
 
@@ -24,7 +24,9 @@ Las rutas son relativas y permiten alojar la web bajo el nombre del repositorio.
 
 ```text
 python tools/verificar-sitio.py
-node tercero/tools/verificar.cjs
+node tercero/lengua/tools/verificar.cjs
+node tercero/mates/tools/verificar.cjs
+node tools/verificar-sintaxis.cjs
 ```
 
 El primer comando comprueba enlaces, recursos y mayúsculas de los nombres de archivo, que deben coincidir en GitHub Pages. El segundo comprueba el contenido de tercero y la correspondencia entre dictados y audios.

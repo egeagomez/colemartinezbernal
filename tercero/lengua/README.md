@@ -26,4 +26,4 @@ Fotografías del libro y del cuaderno facilitadas por la familia: páginas 20–
 - `tools/generar-audios.ps1`: regenera los audios en Windows con una voz es-ES instalada. Ejecutar con Windows PowerShell 5.1. No cambia las voces ni la configuración del equipo.
 - `node tools/verificar.cjs`: comprueba el contenido, la corrección de palabras y la correspondencia entre textos y audios.
 
-La portada principal del repositorio permite elegir Segundo o Tercero. Estos archivos se publican en GitHub Pages dentro de `tercero/`.
+La portada principal del repositorio permite elegir Segundo o Tercero. En Tercero se puede elegir Lengua o Matemáticas. Estos archivos se publican en GitHub Pages dentro de `tercero/lengua/`; los estilos comunes están en `tercero/assets/`.

@@ -1,20 +1,22 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#087e95">
-  <title>La aventura de las palabras · Lengua 3.º</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="assets/content.js" defer></script>
-  <script src="assets/app.js" defer></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#087e95"><title>Tercero de Primaria · Elige tu asignatura</title>
+  <link rel="icon" href="../icono.svg" type="image/svg+xml"><link rel="stylesheet" href="assets/style.css">
+  <style>.subject-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.subject-card{min-height:290px;padding:30px}.subject-card h2{margin:12px 0}.subject-card p{margin:12px 0 25px}.subject-card .button{margin-top:auto}.subject-card .card-icon{font-size:3rem}.subject-hero{padding:40px 0 30px}.subject-hero p{margin-top:20px;color:var(--muted);max-width:650px}@media(max-width:650px){.subject-grid{grid-template-columns:1fr}}</style>
+  <script>
+    // Conserva los enlaces de Lengua publicados antes del selector de asignaturas.
+    const legacy=['mb-mp','detectives','silabas','guiones','familias','intruso','frases','simples','compuestas','repaso','dictado-1','dictado-2'];
+    if(legacy.includes(location.hash.slice(1)))location.replace('lengua/'+location.hash);
+  </script>
 </head>
-<body>
-  <div class="shell">
-    <header class="topbar"><a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">📚</span><span>La aventura de las palabras<small>Lengua · 3.º de Primaria</small></span></a><a class="course" href="../" aria-label="Elegir otro curso" style="text-decoration:none">← Cursos</a></header>
-    <main id="app"></main>
-    <footer>Pasito a pasito, palabra a palabra. <span>Francisco Martínez Bernal · Molina de Segura</span></footer>
-  </div>
-  <noscript>Activa JavaScript para jugar.</noscript>
-</body>
-</html>
+<body><div class="shell">
+  <header class="topbar"><a class="brand" href="../"><span class="brand-icon" aria-hidden="true">📚</span><span>Aprendemos jugando<small>Tercero de Primaria</small></span></a><a class="course" href="../" style="text-decoration:none">← Cursos</a></header>
+  <main><section class="subject-hero"><p class="eyebrow">Una aventura en cada asignatura</p><h1>¿Qué vamos a<br><span class="highlight">practicar hoy?</span></h1><p>Elige Lengua o Matemáticas. Lee con calma, prueba y aprende de cada intento.</p></section>
+    <section class="cards subject-grid" aria-label="Asignaturas de Tercero">
+      <a class="card subject-card" href="lengua/" style="--card-color:#087e95"><span class="card-icon" aria-hidden="true">🦉</span><h2>Lengua</h2><p>Palabras, sílabas, familias y frases. Además, dos dictados con audio muy pausado para escribir en tu cuaderno.</p><span class="card-foot">10 juegos · 2 dictados</span><span class="button">Entrar en Lengua →</span></a>
+      <a class="card subject-card" href="mates/" style="--card-color:#7651a5"><span class="card-icon" aria-hidden="true">🧙</span><h2>Matemáticas</h2><p>Sumas y restas, problemas con sus datos y operaciones, números, figuras, perímetros, áreas y relojes.</p><span class="card-foot">12 juegos · Ayuda paso a paso</span><span class="button" style="background:#7651a5">Entrar en Matemáticas →</span></a>
+    </section><aside class="help-panel"><p>✏️ Ten cerca tu cuaderno. En los problemas, subraya los datos, escribe la operación y termina con una respuesta. No hay cronómetro.</p></aside>
+  </main><footer>Francisco Martínez Bernal · Molina de Segura<br>Pasito a pasito, seguimos aprendiendo.</footer>
+</div></body></html>
