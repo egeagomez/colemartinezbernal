@@ -1,6 +1,6 @@
 'use strict';
 
-window.ScienceContent = (() => {
+window.PracticeContent = (() => {
   const living = ['Living thing', 'Non-living thing'];
   const kinds = ['Living thing', 'Natural non-living thing', 'Artificial non-living thing'];
   const vital = ['Nutrition', 'Interaction', 'Reproduction'];
@@ -254,5 +254,16 @@ window.ScienceContent = (() => {
     ['Plants / animals / fungi / Monera / protists', 'Plantas / animales / hongos / moneras / protistas']
   ];
 
-  return { games, groups, diagrams, glossary };
+  const theme = {
+    storageKey: 'science-tercero-unit-1',
+    subject: 'Science',
+    title: 'Science',
+    accent: 'Lab',
+    unit: 'Unit 1 · Living things',
+    description: 'Explore living things, look inside cells and get ready for your Science test.',
+    mascot: '🔬',
+    familyNote: 'Los cinco reinos siguen el modelo que usa la unidad.'
+  };
+
+  return { games, groups, diagrams, glossary, theme };
 })();

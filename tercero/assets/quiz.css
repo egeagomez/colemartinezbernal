@@ -11,7 +11,7 @@ body {
 }
 
 .course { text-decoration: none; }
-.science-hero {
+.quiz-hero {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   align-items: center;
@@ -19,8 +19,8 @@ body {
   padding: 36px 0 28px;
 }
 
-.science-hero p:not(.eyebrow) { max-width: 30em; margin-top: 14px; color: var(--muted); }
-.lab-illustration {
+.quiz-hero p:not(.eyebrow) { max-width: 30em; margin-top: 14px; color: var(--muted); }
+.quiz-illustration {
   display: grid;
   place-items: center;
   min-height: 168px;
@@ -30,16 +30,16 @@ body {
   font-size: clamp(4rem, 11vw, 6.4rem);
 }
 
-.science-card { --card-color: #75ac9d; }
-.science-card h3 { margin: 0 0 8px; }
-.science-review { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
-.science-glossary summary { cursor: pointer; font-weight: 700; color: var(--teal); }
-.science-glossary dl { margin: 16px 0 0; }
-.science-glossary dt { font-weight: 700; }
-.science-glossary dd { margin: 2px 0 10px; color: var(--muted); }
-.science-progress { width: 100%; height: 12px; accent-color: var(--teal); }
-.science-example { margin: 6px auto 12px; font-size: 3.2rem; text-align: center; }
-.science-blank { color: var(--teal); white-space: nowrap; }
+.quiz-card { --card-color: #75ac9d; }
+.quiz-card h3 { margin: 0 0 8px; }
+.quiz-review { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.quiz-glossary summary { cursor: pointer; font-weight: 700; color: var(--teal); }
+.quiz-glossary dl { margin: 16px 0 0; }
+.quiz-glossary dt { font-weight: 700; }
+.quiz-glossary dd { margin: 2px 0 10px; color: var(--muted); }
+.quiz-progress { width: 100%; height: 12px; accent-color: var(--teal); }
+.quiz-example { margin: 6px auto 12px; font-size: 3.2rem; text-align: center; }
+.quiz-blank { color: var(--teal); white-space: nowrap; }
 
 .cell-figure { width: min(100%, 480px); margin: 12px auto 18px; text-align: center; }
 .cell-figure figcaption { margin-bottom: 6px; color: var(--muted); font-size: .84rem; }
@@ -104,14 +104,14 @@ body {
 }
 .plant .point-2::after { top: 100%; }
 .plant .point-4::after, .animal .point-3::after { bottom: 100%; }
-.cell-point.target, .cell-point[aria-pressed="true"], .science-match.selected { background: #ffe3a0; border-color: #9b6616; }
+.cell-point.target, .cell-point[aria-pressed="true"], .quiz-match.selected { background: #ffe3a0; border-color: #9b6616; }
 .cell-point.correct, .choice.correct { background: #d6edd8; border-color: #2a7347; opacity: 1; }
 .cell-point.wrong, .choice.wrong { background: #ffe6de; border-color: #ad573f; opacity: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.science-matches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
-.science-matches > div { display: grid; align-content: start; gap: 8px; }
-.science-match {
+.quiz-matches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+.quiz-matches > div { display: grid; align-content: start; gap: 8px; }
+.quiz-match {
   min-height: 50px;
   padding: 9px;
   border: 2px solid #b6d6cf;
@@ -121,20 +121,20 @@ body {
   overflow-wrap: anywhere;
 }
 
-.science-match small { display: block; margin-top: 4px; color: #28644a; }
-.science-order ol { min-height: 48px; margin: 14px 0 8px; padding: 12px 15px 12px 40px; border: 1px solid #b6d6cf; border-radius: 12px; }
-.science-order .button { margin-top: 10px; }
-.science-write { display: grid; gap: 8px; max-width: 360px; margin: 20px 0; font-weight: 700; }
-.science-write input { min-height: 48px; width: 100%; padding: 9px; border: 2px solid #8bb2a9; border-radius: 10px; color: var(--ink); }
-.science-solution { margin: 8px 0; overflow-wrap: anywhere; }
-.science-solution ul { margin: 6px 0; padding-left: 22px; }
-.science-glossary.help-panel { margin-bottom: 14px; }
+.quiz-match small { display: block; margin-top: 4px; color: #28644a; }
+.quiz-order ol { min-height: 48px; margin: 14px 0 8px; padding: 12px 15px 12px 40px; border: 1px solid #b6d6cf; border-radius: 12px; }
+.quiz-order .button { margin-top: 10px; }
+.quiz-write { display: grid; gap: 8px; max-width: 360px; margin: 20px 0; font-weight: 700; }
+.quiz-write input { min-height: 48px; width: 100%; padding: 9px; border: 2px solid #8bb2a9; border-radius: 10px; color: var(--ink); }
+.quiz-solution { margin: 8px 0; overflow-wrap: anywhere; }
+.quiz-solution ul { margin: 6px 0; padding-left: 22px; }
+.quiz-glossary.help-panel { margin-bottom: 14px; }
 
 @media (max-width: 650px) {
-  .science-hero { grid-template-columns: 1fr; }
-  .lab-illustration { display: none; }
-  .science-matches { gap: 8px; }
-  .science-match { font-size: .85rem; }
+  .quiz-hero { grid-template-columns: 1fr; }
+  .quiz-illustration { display: none; }
+  .quiz-matches { gap: 8px; }
+  .quiz-match { font-size: .85rem; }
 }
 
 @media (max-width: 380px) {

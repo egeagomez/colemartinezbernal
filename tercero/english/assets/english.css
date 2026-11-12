@@ -1,0 +1,28 @@
+:root {
+  --ink: #442c29;
+  --teal: #984624;
+  --muted: #704e44;
+  background: #fff4e8;
+}
+
+body {
+  background: radial-gradient(ellipse at 95% 0, #ffe7ac, transparent 48%),
+    radial-gradient(ellipse at 0 60%, #f7e2df, transparent 55%);
+}
+
+.quiz-illustration {
+  border-color: #e2b899;
+  background: #fbe5ca;
+}
+
+.quiz-card { --card-color: #c27955; }
+
+.english-print {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.english-print p { margin-top: 4px; }

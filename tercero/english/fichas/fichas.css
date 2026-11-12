@@ -1,0 +1,47 @@
+.course { text-decoration: none; }
+.sheet-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 22px 0 14px; }
+.sheet-controls nav { display: flex; flex-wrap: wrap; gap: 5px; padding: 5px; border: 1px solid #d8baa8; border-radius: 12px; background: #fff; }
+.sheet-controls nav a { padding: 7px 10px; border-radius: 7px; font-weight: 700; text-decoration: none; }
+.sheet-controls nav a[aria-current] { background: #f9e5d4; box-shadow: inset 0 0 0 2px var(--teal); }
+.sheet-controls .actions { margin: 0; }
+.sheet-status { flex-basis: 100%; color: var(--muted); }
+.sheet-status:empty { margin-top: -12px; }
+
+.worksheet { padding: clamp(16px, 4vw, 38px); border: 1px solid #d8baa8; border-radius: 18px; background: #fff; color: #222; }
+.worksheet-header h1 { margin: 5px 0 13px; font-size: clamp(1.75rem, 4vw, 2.55rem); letter-spacing: normal; }
+.sheet-fields { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+.sheet-fields span { display: flex; align-items: baseline; gap: 7px; }
+.sheet-fields i { flex: 1; border-bottom: 1px solid; }
+
+.sheet-block { margin-top: 18px; padding-top: 10px; border-top: 1px solid #bfab9e; break-inside: avoid; }
+.sheet-block h2 { margin: 0 0 3px; font-size: 1.18rem; }
+.sheet-block p { font-size: .9rem; }
+.sheet-block ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 26px; margin: 7px 0 0; padding: 0 0 0 1.7em; }
+.sheet-block li { padding-inline-start: .15em; break-inside: avoid; }
+.sheet-cue { display: block; overflow-wrap: break-word; }
+.answer-line { display: block; min-height: 1.1em; border-bottom: 1px solid #777; }
+.sheet-solutions summary { cursor: pointer; }
+.sheet-solutions #answers { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 12px; margin-top: 12px; }
+.sheet-solutions ol { padding-left: 1.5em; }
+
+@media screen and (max-width: 530px) {
+  .sheet-block ol { grid-template-columns: 1fr; }
+  .sheet-fields { gap: 10px; }
+}
+
+@page { size: A4 portrait; margin: 13mm; }
+
+@media print {
+  :root, body { background: #fff; color: #000; }
+  body { min-height: 0; }
+  .screen-only { display: none !important; }
+  .shell, main, .worksheet { width: auto; max-width: none; margin: 0; padding: 0; }
+  .worksheet { border: 0; border-radius: 0; color: #000; font: 11pt/1.24 Arial, sans-serif; }
+  .worksheet-header h1 { margin: 1mm 0 4mm; font-size: 23pt; }
+  .sheet-fields { gap: 7mm; margin-bottom: 3mm; }
+  .sheet-block { margin-top: 4mm; padding-top: 2mm; border-color: #888; }
+  .sheet-block h2 { font-size: 13pt; }
+  .sheet-block p { font-size: 10pt; line-height: 1.3; }
+  .sheet-block ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm 8mm; margin-top: 2mm; }
+  .answer-line { min-height: 7mm; }
+}

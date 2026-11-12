@@ -1,9 +1,10 @@
 'use strict';
 
 (() => {
-  const { games, groups, diagrams, glossary } = window.ScienceContent;
+  const { games, groups, diagrams = {}, glossary, theme } = window.PracticeContent;
   const app = document.getElementById('app');
-  const storageKey = 'science-tercero-unit-1';
+  const extraMenu = document.getElementById('practice-extra')?.innerHTML ?? '';
+  const { storageKey, subject, title, accent, unit, description, mascot, familyNote = '' } = theme;
   const questionBank = new Map(games.flatMap(game => game.questions.map(question => [question.id, question])));
 
   function loadProgress() {
@@ -36,13 +37,13 @@
   }
 
   function normalise(value) {
-    return value.trim().toLowerCase().replace(/[.!?]+$/, '').trim().replace(/\s+/g, ' ');
+    return value.trim().toLowerCase().replace(/[‘’´]/g, "'").replace(/[.!?]+$/, '').trim().replace(/\s+/g, ' ');
   }
 
   const byId = id => document.getElementById(id);
   const current = () => state.questions[state.index];
   const button = (action, label, style = '') => `<button class="button ${style}" type="button" data-action="${action}">${label}</button>`;
-  const glossaryMarkup = `<details class="help-panel science-glossary">
+  const glossaryMarkup = `<details class="help-panel quiz-glossary">
     <summary lang="es">Glosario inglés–español</summary>
     <dl>${glossary.map(([en, es]) => `<dt>${en}</dt><dd lang="es">${es}</dd>`).join('')}</dl>
   </details>`;
@@ -50,32 +51,33 @@
   function showMenu() {
     state = null;
     const done = games.filter(game => records[game.id]).length;
-    app.innerHTML = `<section class="science-hero">
+    app.innerHTML = `<section class="quiz-hero">
       <div>
-        <p class="eyebrow">Unit 1 · Living things</p>
-        <h1>Science <span class="highlight">Lab</span></h1>
-        <p>Explore living things, look inside cells and get ready for your Science test.</p>
+        <p class="eyebrow">${unit}</p>
+        <h1>${title} <span class="highlight">${accent}</span></h1>
+        <p>${description}</p>
         <div class="actions">
-          <a class="button" href="#living">Start exploring →</a>
+          <a class="button" href="#${games[0].id}">Start exploring →</a>
           <a class="button secondary" href="#exam">Practice test</a>
         </div>
       </div>
-      <div class="lab-illustration" aria-hidden="true">🔬</div>
+      <div class="quiz-illustration" aria-hidden="true">${mascot}</div>
     </section>
     <div class="summary-strip"><strong>⭐ Your progress</strong><span>${done} of ${games.length} games completed</span></div>
-    ${pending.size ? `<aside class="help-panel science-review"><p>Try ${pending.size} ${pending.size === 1 ? 'question' : 'questions'} again.</p>
+    ${pending.size ? `<aside class="help-panel quiz-review"><p>Try ${pending.size} ${pending.size === 1 ? 'question' : 'questions'} again.</p>
       <a class="button gold" href="#review">Review my mistakes →</a></aside>` : ''}
+    ${extraMenu}
     ${glossaryMarkup}
     ${groups.map((group, index) => `<section aria-labelledby="group-${index}">
       <div class="section-heading"><h2 id="group-${index}">${group}</h2></div>
-      <div class="cards">${games.filter(game => game.group === index).map(game => `<a class="card science-card" href="#${game.id}">
+      <div class="cards">${games.filter(game => game.group === index).map(game => `<a class="card quiz-card" href="#${game.id}">
         <span class="card-icon" aria-hidden="true">${game.icon}</span><h3>${game.title}</h3><p>${game.description}</p>
         <div class="card-foot"><span>${game.questions.length} challenges</span>${records[game.id] ? `<span>★ Best: ${records[game.id].best}%</span>` : ''}</div>
       </a>`).join('')}</div>
     </section>`).join('')}
     <details class="help-panel" lang="es"><summary>Para la familia</summary>
       <p>Las preguntas y correcciones están en inglés. El glosario sirve de apoyo. No hay cronómetro. El simulacro mezcla los contenidos de la unidad.</p>
-      <p>Se puntúa el primer intento y se pueden repasar los errores. El progreso se guarda en este navegador. Los cinco reinos siguen el modelo que usa la unidad.</p>
+      <p>Se puntúa el primer intento y se pueden repasar los errores. El progreso se guarda en este navegador.${familyNote ? ` ${familyNote}` : ''}</p>
     </details>`;
   }
 
@@ -85,10 +87,10 @@
   }
 
   function frame(content) {
-    return `<a class="back" href="#">← All Science games</a>
+    return `<a class="back" href="#">← All ${subject} games</a>
       <div class="game-head">
-        <div><p class="eyebrow">Unit 1 · Living things</p><h1>${state.game.title}</h1></div>
-        <div class="score" id="science-score" aria-label="Correct answers">⭐ ${state.score} / ${state.questions.length}</div>
+        <div><p class="eyebrow">${unit}</p><h1>${state.game.title}</h1></div>
+        <div class="score" id="quiz-score" aria-label="Correct answers">⭐ ${state.score} / ${state.questions.length}</div>
       </div>
       <section class="board">${content}</section>`;
   }
@@ -130,14 +132,14 @@
 
   function matchMarkup(question) {
     return `<p class="hint">Tap a word, then its match. You can change a pair before checking.</p>
-      <div class="science-matches">
-        <div>${question.pairs.map(([term], i) => `<button type="button" class="science-match ${state.active === i ? 'selected' : ''}"
+      <div class="quiz-matches">
+        <div>${question.pairs.map(([term], i) => `<button type="button" class="quiz-match ${state.active === i ? 'selected' : ''}"
           data-action="match-left" data-index="${i}" aria-pressed="${state.active === i}" ${state.locked ? 'disabled' : ''}>
           ${term}${state.links.has(i) ? '<small>✓ Paired</small>' : ''}
         </button>`).join('')}</div>
         <div>${state.options.map((option, i) => {
           const linked = [...state.links].find(([, value]) => value === i);
-          return `<button type="button" class="science-match" data-action="match-right" data-index="${i}" ${state.locked ? 'disabled' : ''}>
+          return `<button type="button" class="quiz-match" data-action="match-right" data-index="${i}" ${state.locked ? 'disabled' : ''}>
             ${option}${linked ? `<small>↔ ${question.pairs[linked[0]][0]}</small>` : ''}
           </button>`;
         }).join('')}</div>
@@ -145,7 +147,7 @@
   }
 
   function orderMarkup() {
-    return `<div class="science-order">
+    return `<div class="quiz-order">
       <ol aria-label="Your order">${state.order.map(i => `<li>${state.options[i]}</li>`).join('')}</ol>
       <div class="actions">${state.options.map((option, i) => `<button type="button" class="choice" data-action="order" data-index="${i}"
         ${state.locked || state.order.includes(i) ? 'disabled' : ''}>${option}</button>`).join('')}</div>
@@ -154,13 +156,13 @@
   }
 
   function taskMarkup(question) {
-    const visual = question.diagram ? diagramMarkup(question) : question.icon ? `<div class="science-example" aria-hidden="true">${question.icon}</div>` : '';
+    const visual = question.diagram ? diagramMarkup(question) : question.icon ? `<div class="quiz-example" aria-hidden="true">${question.icon}</div>` : '';
     if (question.type === 'choice') return visual + optionMarkup(question);
     if (question.type === 'spot') return visual;
     if (question.type === 'match') return matchMarkup(question);
     if (question.type === 'order') return orderMarkup();
     return `${question.bank.length ? `<p class="rule"><strong>Word bank</strong> · ${question.bank.join(' · ')}</p>` : ''}
-      <label class="science-write">Your answer
+      <label class="quiz-write">Your answer
         <input id="written-answer" type="text" lang="en" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60">
       </label>`;
   }
@@ -174,18 +176,18 @@
       state.options.push(state.options.shift());
     }
     app.innerHTML = frame(`<p class="progress-label">Challenge ${state.index + 1} of ${state.questions.length}</p>
-      <progress class="science-progress" aria-label="Progress" value="${state.index}" max="${state.questions.length}"></progress>
-      <h2 class="question" id="science-question" tabindex="-1">${question.prompt.replace('___', '<span class="science-blank">_____</span>')}</h2>
+      <progress class="quiz-progress" aria-label="Progress" value="${state.index}" max="${state.questions.length}"></progress>
+      <h2 class="question" id="quiz-question" tabindex="-1">${question.prompt.replace('___', '<span class="quiz-blank">_____</span>')}</h2>
       <form id="answer-form">
-        <div id="science-task">${taskMarkup(question)}</div>
-        <div id="science-feedback" role="status" aria-live="polite"></div>
+        <div id="quiz-task">${taskMarkup(question)}</div>
+        <div id="quiz-feedback" role="status" aria-live="polite"></div>
         <div class="check-row">
           <button type="submit" id="check-answer" class="button">Check answer ✓</button>
           <button type="button" id="next-question" class="button gold" data-action="next" hidden>${state.index + 1 === state.questions.length ? 'See results 🏆' : 'Next challenge →'}</button>
         </div>
       </form>
       ${glossaryMarkup}`);
-    byId('science-question').focus();
+    byId('quiz-question').focus();
   }
 
   function grade(question) {
@@ -210,7 +212,7 @@
     if (question.type === 'order') return question.answer.join(' → ');
     if (question.type === 'match') return `<ul>${question.pairs.map(([term, answer]) => `<li>${term} → ${answer}</li>`).join('')}</ul>`;
     if (question.type === 'spot') return `Point ${diagrams[question.diagram].parts.indexOf(question.answer) + 1} · ${question.answer}`;
-    if (question.type === 'write') return question.answer[0];
+    if (question.type === 'write') return question.example ?? question.answer[0];
     return question.answer;
   }
 
@@ -218,7 +220,7 @@
     if (state.locked) return;
     const question = current();
     const result = grade(question);
-    const feedback = byId('science-feedback');
+    const feedback = byId('quiz-feedback');
     if (result === null) {
       feedback.className = 'feedback again';
       feedback.textContent = {
@@ -238,12 +240,12 @@
     }
     saveProgress();
     if (question.type === 'write') byId('written-answer').disabled = true;
-    else byId('science-task').innerHTML = taskMarkup(question);
+    else byId('quiz-task').innerHTML = taskMarkup(question);
     feedback.className = `feedback ${result ? 'good' : 'again'}`;
     feedback.innerHTML = `<strong>${result ? '⭐ Well done!' : '🌱 Let’s check it.'}</strong>
-      ${result ? '' : `<div class="science-solution"><strong>${question.type === 'write' ? 'Example answer' : 'Correct answer'}</strong> · ${solution(question)}</div>`}
+      ${result ? '' : `<div class="quiz-solution"><strong>${question.type === 'write' ? 'Example answer' : 'Correct answer'}</strong> · ${solution(question)}</div>`}
       <p>${question.why}</p>`;
-    byId('science-score').textContent = `⭐ ${state.score} / ${state.questions.length}`;
+    byId('quiz-score').textContent = `⭐ ${state.score} / ${state.questions.length}`;
     byId('check-answer').hidden = true;
     byId('next-question').hidden = false;
     byId('next-question').focus();
@@ -258,7 +260,7 @@
     }
     app.innerHTML = frame(`<div class="result">
       <div class="trophy" aria-hidden="true">🏆</div>
-      <h2 tabindex="-1" id="science-result">Round complete!</h2>
+      <h2 tabindex="-1" id="quiz-result">Round complete!</h2>
       <div class="grade">${score} / ${questions.length}</div><p>Correct answers</p>
       <div class="check-row">
         ${game.id !== 'review' ? button('replay', 'Play again', 'secondary') : ''}
@@ -266,7 +268,7 @@
         ${pending.size ? button('review', 'Review my mistakes →', 'gold') : ''}
       </div>
     </div>`);
-    byId('science-result').focus();
+    byId('quiz-result').focus();
   }
 
   function advance() {
@@ -291,7 +293,7 @@
     if (action === 'match-left') state.active = index;
     if (action === 'match-right') {
       if (state.active === null) {
-        const feedback = byId('science-feedback');
+        const feedback = byId('quiz-feedback');
         feedback.className = 'feedback again';
         feedback.textContent = 'Choose a word in the left column first.';
         return;
@@ -302,10 +304,10 @@
       state.links.set(state.active, index);
       state.active = null;
     }
-    const task = byId('science-task');
+    const task = byId('quiz-task');
     task.innerHTML = taskMarkup(current());
-    byId('science-feedback').textContent = '';
-    byId('science-feedback').className = '';
+    byId('quiz-feedback').textContent = '';
+    byId('quiz-feedback').className = '';
     const sameButton = task.querySelector(`[data-action="${action}"][data-index="${index}"]:enabled`);
     const nextButton = task.querySelector('[data-action="order"]:enabled') ?? byId('check-answer');
     (sameButton ?? nextButton).focus();

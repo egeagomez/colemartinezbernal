@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#984624">
+  <title>Fichas imprimibles · English 3.º</title>
+  <link rel="icon" href="../../../icono.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../assets/english.css">
+  <link rel="stylesheet" href="fichas.css">
+  <script src="../assets/topics.js" defer></script>
+  <script src="fichas.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar screen-only">
+      <a class="brand" href="../"><span class="brand-icon" aria-hidden="true">🏅</span><span>English Club<small>English · 3.º de Primaria</small></span></a>
+      <a class="course" href="../" lang="es">← English</a>
+    </header>
+    <main>
+      <section class="sheet-controls screen-only" lang="es" aria-label="Controles de la ficha">
+        <nav aria-label="Elegir tema">
+          <a href="?tema=deportes" id="tab-deportes">Deportes</a>
+          <a href="?tema=dias" id="tab-dias">Días</a>
+          <a href="?tema=preguntas" id="tab-preguntas">Preguntas</a>
+          <a href="?tema=yoga" id="tab-yoga">Yoga</a>
+          <a href="?tema=repaso" id="tab-repaso">Repaso general</a>
+        </nav>
+        <div class="actions">
+          <button type="button" class="button secondary" id="generate">Generar otra versión</button>
+          <button type="button" class="button" id="print">Imprimir ficha</button>
+        </div>
+        <p class="sheet-status" id="status" role="status"></p>
+      </section>
+      <article class="worksheet" aria-labelledby="sheet-title">
+        <header class="worksheet-header">
+          <p>English · 3.º de Primaria</p>
+          <h1 id="sheet-title">English review</h1>
+          <div class="sheet-fields"><span>Name <i></i></span><span>Date <i></i></span></div>
+        </header>
+        <div id="exercises"></div>
+      </article>
+      <details class="help-panel screen-only sheet-solutions" id="solutions">
+        <summary lang="es">Ver soluciones para corregir</summary>
+        <div id="answers"></div>
+      </details>
+      <noscript lang="es">Activa JavaScript para generar la ficha.</noscript>
+    </main>
+  </div>
+</body>
+</html>
