@@ -5,10 +5,20 @@
   <meta name="theme-color" content="#7651a5"><title>La aventura de los números · Matemáticas 3.º</title>
   <link rel="icon" href="../../icono.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="assets/mates.css">
-  <script src="assets/content.js" defer></script><script src="assets/model.js" defer></script><script src="assets/app.js" defer></script>
+  <script src="assets/content.js" defer></script><script src="assets/model.js" defer></script><script src="assets/app.js?v=fichas" defer></script>
 </head>
 <body><div class="shell">
   <header class="topbar"><a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">🧙</span><span>La aventura de los números<small>Matemáticas · 3.º de Primaria</small></span></a><a class="course" href="../" aria-label="Elegir otra asignatura" style="text-decoration:none">← Asignaturas</a></header>
   <main id="app"></main><footer>Francisco Martínez Bernal · Molina de Segura<br>Piensa, prueba y descubre. Sin prisa.</footer>
+  <template id="worksheet-links">
+    <section class="help-panel" aria-labelledby="fichas-heading">
+      <h2 id="fichas-heading">Fichas para imprimir</h2>
+      <p>Genera 12 operaciones con llevadas para practicar en papel.</p>
+      <div class="actions">
+        <a class="button" href="fichas/?tipo=sumas">Ficha de sumas</a>
+        <a class="button secondary" href="fichas/?tipo=restas">Ficha de restas</a>
+      </div>
+    </section>
+  </template>
 </div><noscript>Activa JavaScript para jugar.</noscript></body>
 </html>

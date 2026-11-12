@@ -1,0 +1,121 @@
+.worksheet-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 24px 0 12px;
+}
+
+.worksheet-tools nav {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #c9b6d8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.worksheet-tools nav a {
+  padding: 8px 15px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.worksheet-tools nav a[aria-current] {
+  background: #ede4f7;
+  box-shadow: inset 0 0 0 2px var(--teal);
+}
+
+.worksheet-tools .actions { margin: 0; }
+.worksheet-status { flex-basis: 100%; min-height: 1.35em; color: var(--muted); }
+
+.worksheet {
+  padding: clamp(14px, 4vw, 38px);
+  border: 1px solid #c9b6d8;
+  border-radius: 18px;
+  background: #fff;
+  color: #222;
+}
+
+.worksheet-header h1 {
+  margin: 5px 0 14px;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  letter-spacing: normal;
+}
+
+.worksheet-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+  margin: 0 0 12px;
+}
+
+.worksheet-fields span { display: flex; align-items: baseline; gap: 7px; }
+.worksheet-fields i { flex: 1; border-bottom: 1px solid; }
+
+.worksheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.worksheet-exercise {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 20px 8px 10px;
+  border: 1px solid #d4cbdc;
+  border-radius: 10px;
+  break-inside: avoid;
+}
+
+.exercise-number { position: absolute; top: 7px; left: 9px; font-size: .8rem; }
+
+.worksheet-operation {
+  width: min(100%, 9rem);
+  font: 1.4rem/1.2 Consolas, "Courier New", monospace;
+  text-align: center;
+}
+
+.operation-row { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; }
+.operation-row span { min-height: 1.2em; }
+.carry-row { margin-bottom: 4px; font-size: .85em; }
+.carry-row span:not(:first-child) { margin-inline: 1.5px; border: 1px dashed #888; border-radius: 2px; }
+.operation-result { min-height: 1.5em; margin-top: 3px; border-top: 1.5px solid; }
+
+.worksheet-solutions ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 8px 25px;
+  margin: 14px 0 0;
+  padding-left: 1.6em;
+}
+
+@media screen and (max-width: 600px) {
+  .worksheet-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .worksheet-fields { gap: 10px; }
+  .worksheet-tools .actions { gap: 8px; }
+}
+
+@page { size: A4 portrait; margin: 13mm; }
+
+@media print {
+  :root, body { background: #fff; color: #000; }
+  body { min-height: 0; }
+  .screen-only { display: none !important; }
+  .shell, main, .worksheet { width: auto; max-width: none; margin: 0; padding: 0; }
+  .worksheet { border: 0; border-radius: 0; color: #000; font: 11pt/1.25 Arial, sans-serif; }
+  .worksheet-header h1 { margin: 2mm 0 4mm; font-size: 24pt; }
+  .worksheet-fields { gap: 8mm; margin-bottom: 4mm; }
+  .worksheet-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4mm; margin-top: 5mm; }
+  .worksheet-exercise { height: 48mm; padding: 5mm 2mm 1mm; border-color: #777; border-radius: 2mm; }
+  .exercise-number { top: 2mm; left: 3mm; font-size: 10pt; }
+  .worksheet-operation { width: 40mm; font-size: 19pt; }
+  .carry-row span:not(:first-child) { border-color: #666; }
+}

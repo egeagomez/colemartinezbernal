@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7651a5">
+  <title>Fichas de cálculo · Matemáticas 3.º</title>
+  <link rel="icon" href="../../../icono.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <link rel="stylesheet" href="../assets/mates.css">
+  <link rel="stylesheet" href="fichas.css">
+  <script src="fichas.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar screen-only">
+      <a class="brand" href="../"><span class="brand-icon" aria-hidden="true">🧙</span><span>La aventura de los números<small>Matemáticas · 3.º de Primaria</small></span></a>
+      <a class="course" href="../">← Matemáticas</a>
+    </header>
+    <main>
+      <section class="worksheet-tools screen-only" aria-label="Controles de la ficha">
+        <nav aria-label="Tipo de ficha">
+          <a href="?tipo=sumas" id="tab-sumas">Sumas</a>
+          <a href="?tipo=restas" id="tab-restas">Restas</a>
+        </nav>
+        <div class="actions">
+          <button class="button secondary" type="button" id="generate">Generar otra ficha</button>
+          <button class="button" type="button" id="print">Imprimir ficha</button>
+        </div>
+        <p class="worksheet-status" id="status" role="status"></p>
+      </section>
+      <article class="worksheet" aria-labelledby="sheet-title">
+        <header class="worksheet-header">
+          <p>Matemáticas · 3.º de Primaria</p>
+          <h1 id="sheet-title">Ficha de cálculo</h1>
+          <div class="worksheet-fields"><span>Nombre <i></i></span><span>Fecha <i></i></span></div>
+          <p id="instruction">Resuelve las operaciones. Usa las casillas pequeñas para anotar las llevadas.</p>
+        </header>
+        <ol class="worksheet-grid" id="exercises" aria-label="Operaciones"></ol>
+      </article>
+      <details class="help-panel screen-only worksheet-solutions" id="solutions">
+        <summary>Ver soluciones para corregir</summary>
+        <ol id="answers"></ol>
+      </details>
+      <noscript><p class="help-panel">Activa JavaScript para generar la ficha.</p></noscript>
+    </main>
+  </div>
+</body>
+</html>
